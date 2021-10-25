@@ -1,0 +1,6 @@
+dataset:
+  name: football
+  tag: null
+  type: csv
+  input_path: data/toy_dataset.csv
+  output_path: data/toy_dataset_output.csv

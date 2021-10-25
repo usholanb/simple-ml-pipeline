@@ -1,0 +1,7 @@
+model:
+  name: xgboost
+  tag: uan
+  type: csv
+  
+trainer:
+    name: sklearn
