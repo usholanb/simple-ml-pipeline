@@ -1,0 +1,11 @@
+model:
+  name: rfc
+  tag: uan
+  type: csv
+  
+trainer:
+    name: iris_trainer
+
+
+dataset:
+  input_path: data/toy_dataset.csv

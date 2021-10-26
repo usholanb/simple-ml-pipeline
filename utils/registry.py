@@ -22,30 +22,12 @@ class Registry:
     r"""Class for registry object which acts as central source of truth."""
     mapping = {
         # Mappings to respective classes.
-        "task_name_mapping": {},
         "dataset_name_mapping": {},
         "model_name_mapping": {},
         "logger_name_mapping": {},
         "trainer_name_mapping": {},
         "state": {},
     }
-
-    @classmethod
-    def register_task(cls, name):
-        r"""Register a new task to registry with key 'name'
-        Args:
-            name: Key with which the task will be registered.
-        Usage::
-            @registry.register_task("train_xgboost.yml")
-            class TrainTask(BaseTask):
-                ...
-        """
-
-        def wrap(func):
-            cls.mapping["task_name_mapping"][name] = func
-            return func
-
-        return wrap
 
     @classmethod
     def register_dataset(cls, name):
@@ -110,9 +92,9 @@ class Registry:
 
     @classmethod
     def register_trainer(cls, name):
-        r"""Register a trainer to registry with key 'name'
+        r"""Register a trainers to registry with key 'name'
         Args:
-            name: Key with which the trainer will be registered.
+            name: Key with which the trainers will be registered.
         Usage::
             from ocpmodels.common.registry import registry
             @registry.register_trainer("active_discovery")
@@ -144,10 +126,6 @@ class Registry:
             current = current[part]
 
         current[path[-1]] = obj
-
-    @classmethod
-    def get_task_class(cls, name):
-        return cls.mapping["task_name_mapping"].get(name, None)
 
     @classmethod
     def get_dataset_class(cls, name):

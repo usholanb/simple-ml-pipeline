@@ -1,16 +1,23 @@
 import logging
 import yaml
+from typing import List, AnyStr, Dict
+from pathlib import Path
+import copy
+import os
+import importlib
+import glob
 
 
-def load_config(path: str, previous_includes: list = []):
+def load_config(path: AnyStr, previous_includes: List = None):
+    previous_includes = [] if previous_includes is None else previous_includes
     path = Path(path)
     if path in previous_includes:
         raise ValueError(
             f"Cyclic config include detected. {path} included in sequence {previous_includes}."
         )
     previous_includes = previous_includes + [path]
-
-    direct_config = yaml.safe_load(open(path, "r"))
+    with open(path, "r") as f_in:
+        direct_config = yaml.safe_load(f_in)
 
     # Load config from included files.
     if "includes" in direct_config:
@@ -69,41 +76,34 @@ def setup_imports():
         return
     # Automatically load all of the modules, so that
     # they register with registry
-    root_folder = registry.get("ocpmodels_root", no_warning=True)
 
-    if root_folder is None:
-        root_folder = os.path.dirname(os.path.abspath(__file__))
-        root_folder = os.path.join(root_folder, "..")
+    UTILS_DIR = os.path.dirname(os.path.abspath(__file__))
+    MODULES_DIR = os.path.join(UTILS_DIR, "../modules")
 
-    trainer_folder = os.path.join(root_folder, "trainers")
+    trainer_folder = os.path.join(MODULES_DIR, "trainers")
     trainer_pattern = os.path.join(trainer_folder, "**", "*.py")
-    datasets_folder = os.path.join(root_folder, "datasets")
+    datasets_folder = os.path.join(MODULES_DIR, "datasets")
     datasets_pattern = os.path.join(datasets_folder, "*.py")
-    model_folder = os.path.join(root_folder, "models")
+    model_folder = os.path.join(MODULES_DIR, "models")
     model_pattern = os.path.join(model_folder, "*.py")
-    task_folder = os.path.join(root_folder, "tasks")
-    task_pattern = os.path.join(task_folder, "*.py")
 
-    importlib.import_module("ocpmodels.common.logger")
+    # importlib.import_module("utils.common.logger")
 
     files = (
         glob.glob(datasets_pattern, recursive=True)
         + glob.glob(model_pattern, recursive=True)
         + glob.glob(trainer_pattern, recursive=True)
-        + glob.glob(task_pattern, recursive=True)
     )
 
     for f in files:
-        for key in ["/trainers", "/datasets", "/models", "/tasks"]:
+        for key in ["/trainers", "/datasets", "/models"]:
             if f.find(key) != -1:
                 splits = f.split(os.sep)
                 file_name = splits[-1]
                 module_name = file_name[: file_name.find(".py")]
-                importlib.import_module(
-                    "ocpmodels.%s.%s" % (key[1:], module_name)
-                )
+                importlib.import_module(f"modules.{key[1:]}.{module_name}")
 
-    experimental_folder = os.path.join(root_folder, "../experimental/")
+    experimental_folder = os.path.join(MODULES_DIR, "../experimental/")
     if os.path.exists(experimental_folder):
         experimental_files = glob.glob(
             experimental_folder + "**/*py",
@@ -127,3 +127,44 @@ def setup_imports():
             importlib.import_module(module_name)
 
     registry.register("imports_setup", True)
+
+
+def merge_dicts(dict1: Dict, dict2: Dict):
+    """Recursively merge two dictionaries.
+    Values in dict2 override values in dict1. If dict1 and dict2 contain a dictionary as a
+    value, this will call itself recursively to merge these dictionaries.
+    This does not modify the input dictionaries (creates an internal copy).
+    Additionally returns a list of detected duplicates.
+    Adapted from https://github.com/TUM-DAML/seml/blob/master/seml/utils.py
+    Parameters
+    ----------
+    dict1: dict
+        First dict.
+    dict2: dict
+        Second dict. Values in dict2 will override values from dict1 in case they share the same key.
+    Returns
+    -------
+    return_dict: dict
+        Merged dictionaries.
+    """
+    if not isinstance(dict1, dict):
+        raise ValueError(f"Expecting dict1 to be dict, found {type(dict1)}.")
+    if not isinstance(dict2, dict):
+        raise ValueError(f"Expecting dict2 to be dict, found {type(dict2)}.")
+
+    return_dict = copy.deepcopy(dict1)
+    duplicates = []
+
+    for k, v in dict2.items():
+        if k not in dict1:
+            return_dict[k] = v
+        else:
+            if isinstance(v, dict) and isinstance(dict1[k], dict):
+                return_dict[k], duplicates_k = merge_dicts(dict1[k], dict2[k])
+                duplicates += [f"{k}.{dup}" for dup in duplicates_k]
+            else:
+                return_dict[k] = dict2[k]
+                duplicates.append(k)
+
+    return return_dict, duplicates
+

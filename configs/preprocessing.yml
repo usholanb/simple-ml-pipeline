@@ -1,6 +1,25 @@
 dataset:
-  name: football
+  name: csv_dataset
   tag: null
-  type: csv
-  input_path: data/toy_dataset.csv
-  output_path: data/toy_dataset_output.csv
+  output_type: csv
+  input_path:
+    train: data/toy_dataset.csv
+    test: data/toy_dataset.csv
+  output_path: processed_data/toy_dataset_output.csv
+  label: -1
+  shuffle: 1
+  split_ratio:
+    train: 0.8
+    valid: 0.1
+    test: 0.1
+
+
+#dataset:
+#  name: toy
+#  tag: null
+#  type: csv
+#  input_path: {"all": data/toy_dataset.csv}
+#  output_path: data/toy_dataset_output.csv
+#  label: -1
+#  shuffle: 1
+#  split_ratio: {"train": 0.8, "valid": 0.1, "test": 0.1}

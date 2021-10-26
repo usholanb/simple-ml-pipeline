@@ -6,9 +6,11 @@ from modules.containers.train_container import TrainContainer
 
 class BaseModel(ABC):
 
-    def __init__(self, config: Dict = Provide[TrainContainer.config]):
-        self.config = config
+    @abstractmethod
+    def get_classifier(self):
+        """ returns a model object created with external library """
 
-    @property
-    def name(self):
-        return self.config.get('model').get('name')
+    @abstractmethod
+    def predict(self, examples):
+        """ makes prediction on examples of dim N X M where N is number of
+          examples and M number of features """
