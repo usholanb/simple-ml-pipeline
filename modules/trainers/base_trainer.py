@@ -7,5 +7,9 @@ from modules.models.base_model import BaseModel
 class BaseTrainer(ABC):
 
     @abstractmethod
-    def train(self, dataset, model: BaseModel):
+    def train(self, config) -> None:
         """ trains the model with dataset """
+
+    @abstractmethod
+    def ce_loss(self, targets, probs):
+        """ returns Cross Entropy loss """

@@ -1,11 +1,21 @@
 model:
   name: rfc
   tag: uan
-  type: csv
+
+optim:
+  n_estimators: 10
+  max_depth: [2, 3]
+
   
 trainer:
-    name: iris_trainer
-
+    name: sklearn_trainer
+    tag: 'uan'
+    resources_per_trial:
+      cpu: 2
+      gpu: 0
 
 dataset:
-  input_path: data/toy_dataset.csv
+  input_path: processed_data/toy_dataset_output.csv
+  type: csv
+
+

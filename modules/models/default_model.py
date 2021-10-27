@@ -1,13 +1,12 @@
 from typing import Dict
-from modules.containers.train_container import TrainContainer
 from modules.models.base_model import BaseModel
 
 
 class DefaultModel(BaseModel):
 
-    def __init__(self, config: Dict = TrainContainer.config):
-        self.config = config
-        self.clf = self.get_classifier()
+    def __init__(self, configs: Dict):
+        self.config = configs
+        self.clf = self.get_classifier(configs.get('optim').get('search_space'))
 
     @property
     def name(self):

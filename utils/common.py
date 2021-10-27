@@ -1,4 +1,6 @@
 import logging
+import sys
+
 import yaml
 from typing import List, AnyStr, Dict
 from pathlib import Path
@@ -6,6 +8,10 @@ import copy
 import os
 import importlib
 import glob
+from typing import AnyStr
+import pickle
+
+from utils.constants import DATA_DIR, CONFIGS_DIR, PREDICTIONS_DIR, TRAIN_RESULTS_DIR, PROJECT_DIR
 
 
 def load_config(path: AnyStr, previous_includes: List = None):
@@ -168,3 +174,38 @@ def merge_dicts(dict1: Dict, dict2: Dict):
 
     return return_dict, duplicates
 
+
+def create_folder(folder_path):
+    if not os.path.exists(folder_path):
+        os.makedirs(folder_path)
+
+
+def setup_directories():
+    for folder_path in dir(sys.modules['utils.constants']):
+        if folder_path.endswith('_DIR'):
+            create_folder(getattr(sys.modules['utils.constants'], folder_path))
+
+
+def pickle_model(obj, path: AnyStr) -> None:
+    with open(path, 'wb') as f_in:
+        pickle.dump(obj, f_in)
+
+
+def unpickle_model(path: AnyStr):
+    with open(path, 'rb') as f_out:
+        obj = pickle.load(f_out)
+    return obj
+
+
+def add_grid_search_parameters(config: Dict):
+    from ray import tune
+    grid = False
+    new_search_space = {}
+    for k, v in config.get('optim').items():
+        if isinstance(v, list):
+            new_search_space[k] = tune.grid_search(v)
+            grid = True
+        else:
+            new_search_space[k] = v
+    config['optim']['search_space'] = new_search_space
+    return grid
