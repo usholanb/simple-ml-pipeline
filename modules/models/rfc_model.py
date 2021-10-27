@@ -1,5 +1,5 @@
 from sklearn.ensemble import RandomForestClassifier
-from modules.models.sklearn_model import SKLearnModel
+from modules.models.base_models.sklearn_model import SKLearnModel
 from utils.registry import registry
 
 

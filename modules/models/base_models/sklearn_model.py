@@ -1,5 +1,4 @@
-from modules.models.base_model import BaseModel
-from modules.models.default_model import DefaultModel
+from modules.models.base_models.default_model import DefaultModel
 
 
 class SKLearnModel(DefaultModel):
@@ -16,5 +15,5 @@ class SKLearnModel(DefaultModel):
     def predict_proba(self, examples):
         """ outputs probs, rewrite if your sklearn model
                                     doesnt have this function"""
-        self.clf.predict_proba(examples)
+        return self.clf.predict_proba(examples)
 

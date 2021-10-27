@@ -1,5 +1,5 @@
 from typing import Dict
-from modules.models.base_model import BaseModel
+from modules.models.base_models.base_model import BaseModel
 
 
 class DefaultModel(BaseModel):

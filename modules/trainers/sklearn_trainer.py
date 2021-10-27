@@ -40,7 +40,6 @@ class SKLearnTrainer(DefaultTrainer):
         else:
             print(losses)
 
-
     def ce_loss(self, targets, probs):
         return sklearn.metrics.accuracy_score(targets, probs)
 

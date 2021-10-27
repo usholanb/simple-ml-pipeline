@@ -4,16 +4,16 @@ includes:
 
 
 model:
-  name: rfc
+  name: dense_net
   tag: uan
 
 optim:
-  n_estimators: [10, 12]
-  max_depth: 2
+  lr: 0.001
+  wd: 0.0001
 
   
 trainer:
-    name: sklearn_trainer
+    name: torch_trainer
     tag: 'uan'
     resources_per_trial:
       cpu: 2

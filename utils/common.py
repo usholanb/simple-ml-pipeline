@@ -199,7 +199,7 @@ def unpickle_model(path: AnyStr):
     return obj
 
 
-def add_grid_search_parameters(config: Dict):
+def add_grid_search_parameters(config: Dict) -> None:
     from ray import tune
     grid = False
     new_search_space = {}
@@ -210,7 +210,10 @@ def add_grid_search_parameters(config: Dict):
         else:
             new_search_space[k] = v
     config['optim']['search_space'] = new_search_space
-    return grid
+    if not grid:
+        hp_name, hp = list(config.get('optim').items())[0]
+        config['optim']['hp_name'] = [hp]
+
 
 
 def inside_tune():

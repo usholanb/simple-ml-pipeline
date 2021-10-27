@@ -1,6 +1,3 @@
-from modules.datasets.base_dataset import BaseDataset
-from modules.models.base_model import BaseModel
-from modules.trainers.base_trainer import BaseTrainer
 from modules.trainers.default_trainer import DefaultTrainer
 from utils.registry import registry
 
