@@ -1,16 +1,18 @@
 from torch import nn
-from modules.models.base_models.default_model import DefaultModel
+from modules.wrappers.base_wrappers.default_wrapper import DefaultWrapper
 from typing import Dict, List
+import torch
 
 
-class TorchModel(DefaultModel):
+class TorchWrapper(DefaultWrapper):
     """ Any neural net model in pytorch """
-
-    # def __init__(self, configs: Dict, label_types: List):
-    #     super(DefaultModel, self).__init__(configs, label_types)
 
     def predict(self, examples):
         return self.clf.forward(examples)
 
     def forward(self, examples):
+
         return self.clf.forward(examples)
+
+    def train(self):
+        self.clf.train()

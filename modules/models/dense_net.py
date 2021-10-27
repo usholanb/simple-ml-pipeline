@@ -1,11 +1,7 @@
 from torch import nn
 import torch.nn.functional as F
-
 from modules.models.base_models.base_special_model import BaseSpecialModel
-from modules.models.base_models.torch_model import TorchModel
 from utils.registry import registry
-
-
 
 
 @registry.register_special_model('dense_net')

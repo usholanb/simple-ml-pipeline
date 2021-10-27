@@ -1,7 +1,7 @@
-from modules.models.base_models.default_model import DefaultModel
+from modules.wrappers.base_wrappers.default_wrapper import DefaultWrapper
 
 
-class SKLearnModel(DefaultModel):
+class SKLearnWrapper(DefaultWrapper):
     """ Any neural net model in pytorch """
 
     def predict(self, examples):

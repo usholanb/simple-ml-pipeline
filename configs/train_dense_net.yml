@@ -8,8 +8,7 @@ model:
   tag: uan
 
 optim:
-  lr: 0.001
-  wd: 0.0001
+  input_dim: 4
 
   
 trainer:

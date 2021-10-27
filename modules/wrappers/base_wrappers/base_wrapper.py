@@ -4,7 +4,7 @@ from typing import Dict
 from modules.containers.train_container import TrainContainer
 
 
-class BaseModel(ABC):
+class BaseWrapper(ABC):
 
     @abstractmethod
     def get_classifier(self, hps: Dict):

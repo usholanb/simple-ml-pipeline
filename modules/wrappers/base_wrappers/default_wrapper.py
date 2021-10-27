@@ -1,8 +1,8 @@
 from typing import Dict, List
-from modules.models.base_models.base_model import BaseModel
+from modules.wrappers.base_wrappers.base_wrapper import BaseWrapper
 
 
-class DefaultModel(BaseModel):
+class DefaultWrapper(BaseWrapper):
 
     def __init__(self, configs: Dict, label_types: List):
         self.config = configs

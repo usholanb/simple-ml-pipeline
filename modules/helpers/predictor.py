@@ -1,5 +1,5 @@
 class Predictor:
-    """ uses all models pointed in prediction config to
+    """ uses all wrappers pointed in prediction config to
         make and save several prediction files """
 
     def __init__(self, config, dataset):

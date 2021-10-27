@@ -22,16 +22,15 @@ class TorchTrainer(DefaultTrainer):
         if model_class is not None:
             model = model_class(self.configs, self.label_types)
         else:
-            model = registry.get_model_class('special_model')\
+            model = registry.get_model_class('special_wrapper')\
                 (self.configs, self.label_types)
 
-        optimizer = self.get_optimizer(model)
 
+        optimizer = self.get_optimizer(model)
         for i in range(10):
-            model.train()
             optimizer.zero_grad()
             outputs = model.forward(data['train_x'])
-            probs = self.activation_function(outputs)
+            probs = self.output_function(outputs)
             loss = self.get_loss(data['train_y'], probs)
             loss.backward()
             optimizer.step()
@@ -39,9 +38,9 @@ class TorchTrainer(DefaultTrainer):
             if i % 2 == 0:
                 model.eval()
                 valid_outputs = model.forward(data['valid'])
-                valid_probs = self.activation_function(valid_outputs)
+                valid_probs = self.output_function(valid_outputs)
                 valid_loss = self.get_loss(data['valid_y'], valid_probs)
-                losses = {'valid': valid_loss}
+                losses = {'valid': valid_loss.item()}
                 if inside_tune():
                     if 'valid' in losses:
                         tune.report(valid_loss=losses['valid'])
@@ -50,8 +49,8 @@ class TorchTrainer(DefaultTrainer):
                 else:
                     print(losses)
 
-    def activation_function(self, outputs):
-        return torch.nn.LogSoftmax(dim=1)(outputs)
+    def output_function(self, outputs):
+        return torch.nn.LogSoftmax(dim=1)(outputs).argmax(axis=1)
 
     def get_optimizer(self, model):
         return optim.SGD(model.parameters(), lr=0.001, momentum=0.9)

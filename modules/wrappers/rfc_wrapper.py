@@ -1,10 +1,10 @@
 from sklearn.ensemble import RandomForestClassifier
-from modules.models.base_models.sklearn_model import SKLearnModel
+from modules.wrappers.base_wrappers.sklearn_wrapper import SKLearnWrapper
 from utils.registry import registry
 
 
 @registry.register_model('rfc')
-class RFCModel(SKLearnModel):
+class RFCWrapper(SKLearnWrapper):
 
     def get_classifier(self, hps=None):
         hps = hps if hps is not None else {}

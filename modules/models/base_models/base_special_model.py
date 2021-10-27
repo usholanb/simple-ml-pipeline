@@ -7,3 +7,5 @@ class BaseSpecialModel(nn.Module):
     @abstractmethod
     def forward(self, *args, **kwargs):
         """ passes data through network and returns outputs """
+
+
