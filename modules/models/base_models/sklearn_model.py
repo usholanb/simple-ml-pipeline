@@ -12,7 +12,7 @@ class SKLearnModel(DefaultModel):
     def fit(self, inputs, targets):
         self.clf.fit(inputs.to_numpy(), targets.to_numpy())
 
-    def predict_proba(self, examples):
+    def forward(self, examples):
         """ outputs probs, rewrite if your sklearn model
                                     doesnt have this function"""
         return self.clf.predict_proba(examples)

@@ -13,7 +13,7 @@ dataset:
   output_path: processed_data/toy_dataset_output.csv
   # index or name of the labels column in the input data
   label: target
-  shuffle: 0 # can be (0, false null) OR (anything else, which means true)
+  shuffle: 1 # can be (0, false null) OR (anything else, which means true)
    # if "split_ratio" doesn't sum to 1, then valid + test will be 1 - train
   split_ratio:
     train: 0.8

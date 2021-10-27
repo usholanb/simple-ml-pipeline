@@ -26,6 +26,7 @@ class Registry:
         "model_name_mapping": {},
         "logger_name_mapping": {},
         "trainer_name_mapping": {},
+        "special_model_name_mapping": {},
         "state": {},
     }
 
@@ -63,6 +64,23 @@ class Registry:
 
         def wrap(func):
             cls.mapping["model_name_mapping"][name] = func
+            return func
+
+        return wrap
+
+    @classmethod
+    def register_special_model(cls, name):
+        r"""Register a model to registry with key 'name'
+        Args:
+            name: Key with which the model will be registered.
+        Usage::
+            @registry.register_special_model("cgcnn")
+            class CGCNN():
+                ...
+        """
+
+        def wrap(func):
+            cls.mapping["special_model_name_mapping"][name] = func
             return func
 
         return wrap
@@ -134,6 +152,10 @@ class Registry:
     @classmethod
     def get_model_class(cls, name):
         return cls.mapping["model_name_mapping"].get(name, None)
+
+    @classmethod
+    def get_special_model_class(cls, name):
+        return cls.mapping["special_model_name_mapping"].get(name, None)
 
     @classmethod
     def get_logger_class(cls, name):

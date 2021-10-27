@@ -16,5 +16,5 @@ class BaseModel(ABC):
           examples and M number of features """
 
     @abstractmethod
-    def predict_proba(self, examples):
-        """ outputs probs """
+    def forward(self, examples):
+        """ outputs forward """

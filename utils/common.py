@@ -94,6 +94,8 @@ def setup_imports():
     datasets_pattern = os.path.join(datasets_folder, "*.py")
     model_folder = os.path.join(MODULES_DIR, "models")
     model_pattern = os.path.join(model_folder, "*.py")
+    special_model_folder = os.path.join(model_folder, "special_models")
+    special_model_pattern = os.path.join(special_model_folder, "*.py")
 
     # importlib.import_module("utils.common.logger")
 
@@ -101,6 +103,7 @@ def setup_imports():
         glob.glob(datasets_pattern, recursive=True)
         + glob.glob(model_pattern, recursive=True)
         + glob.glob(trainer_pattern, recursive=True)
+        + glob.glob(special_model_pattern, recursive=True)
     )
 
     for f in files:
@@ -199,7 +202,7 @@ def unpickle_model(path: AnyStr):
     return obj
 
 
-def add_grid_search_parameters(config: Dict) -> None:
+def add_grid_search_parameters(config: Dict) -> bool:
     from ray import tune
     grid = False
     new_search_space = {}
@@ -210,10 +213,7 @@ def add_grid_search_parameters(config: Dict) -> None:
         else:
             new_search_space[k] = v
     config['optim']['search_space'] = new_search_space
-    if not grid:
-        hp_name, hp = list(config.get('optim').items())[0]
-        config['optim']['hp_name'] = [hp]
-
+    return grid
 
 
 def inside_tune():

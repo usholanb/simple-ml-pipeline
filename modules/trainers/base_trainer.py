@@ -8,5 +8,6 @@ class BaseTrainer(ABC):
         """ trains the model with dataset """
 
     @abstractmethod
-    def ce_loss(self, targets, probs):
-        """ returns Cross Entropy loss """
+    def get_loss(self, y_true, y_pred):
+        """ returns some loss func """
+        return

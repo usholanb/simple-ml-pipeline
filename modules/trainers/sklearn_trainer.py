@@ -3,6 +3,7 @@ from modules.trainers.default_trainer import DefaultTrainer
 from utils.common import setup_imports, inside_tune
 from utils.registry import registry
 import sklearn
+import numpy as np
 
 
 @registry.register_trainer('sklearn_trainer')
@@ -11,25 +12,22 @@ class SKLearnTrainer(DefaultTrainer):
     def train(self) -> None:
         """ trains sklearn model with dataset """
         setup_imports()
-        model = registry.get_model_class(
-            self.configs.get('model').get('name')
-        )(self.configs)
-
-        dataset = self.dataset
         split_i = self.configs.get('constants').get('FINAL_SPLIT_INDEX')
         label_i = self.configs.get('constants').get('FINAL_LABEL_INDEX')
-        split_column = dataset.iloc[:, split_i]
-        train_y = dataset.loc[split_column == 'train'].iloc[:, label_i]
-        train_x = dataset.loc[split_column == 'train'].iloc[:, 2:]
-        model.fit(train_x, train_y)
+        split_column = self.dataset.iloc[:, split_i]
+        data = self.prepare_train(split_i, label_i)
+
+        self.create_model()
+
+        self.model.fit(data['train_x'], data['train_y'])
         losses = {}
         for split_name in ['valid', 'test']:
-            split_y = dataset.loc[split_column == split_name].iloc[:, label_i]
+            split_y = self.dataset.loc[split_column == split_name].iloc[:, label_i]
             if len(split_y) == 0:
                 continue
-            split_x = dataset.loc[split_column == split_name].iloc[:, 2:]
-            probs = model.predict_proba(split_x)
-            loss = self.ce_loss(split_y.to_numpy(), probs)
+            split_x = self.dataset.loc[split_column == split_name].iloc[:, 2:]
+            probs = self.model.forward(split_x)
+            loss = self.get_loss(split_y.to_numpy(), probs)
             losses[split_name] = loss
 
         if inside_tune():
@@ -40,8 +38,12 @@ class SKLearnTrainer(DefaultTrainer):
         else:
             print(losses)
 
-    def ce_loss(self, targets, probs):
-        return sklearn.metrics.accuracy_score(targets, probs)
+    def get_loss(self, y_true, y_pred):
+        if len(y_pred.shape) == 1:
+            y_pred_2d = np.zeros((len(y_pred), len(self.label_types)))
+            y_pred_2d[np.arange((len(y_pred))), y_pred] = 1
+            y_pred = y_pred_2d
+        return sklearn.metrics.log_loss(y_true, y_pred, labels=self.label_types)
 
 
 
