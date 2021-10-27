@@ -21,16 +21,17 @@ class CSVDataset(DefaultDataset):
         return data.sample(frac=1).reset_index(drop=True)
 
     def save(self, saver: Saver) -> None:
-        saver.save(self.data, self.config)
+        saver.save(self.data, self.configs)
 
-    def reset_label_index(self, data: Dict, index: (AnyStr, int)) -> Dict:
+    def reset_label_index(self, data: Dict, label_index: (AnyStr, int)) -> Dict:
         for split_name, split in data.items():
             columns = split.columns.tolist()
-            if isinstance(index, str):
-                index = columns.index(index)
-            first_column = columns[0]
-            columns[0] = columns[index]
-            columns[index] = first_column
+            if isinstance(label_index, str):
+                label_index = columns.index(label_index)
+            label_i = self.configs.get('constants').get('FINAL_LABEL_INDEX')
+            column_for_label = columns[label_i]
+            columns[label_i] = columns[label_index]
+            columns[label_index] = column_for_label
             data[split_name] = split[columns]
         return data
 

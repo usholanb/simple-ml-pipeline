@@ -14,7 +14,8 @@ def train(configs, dataset):
     trainer = registry.get_trainer_class(
         configs.get('trainer').get('name')
     )(configs, dataset)
-    trainer.train(configs)
+    trainer.train()
+
 
 
 def grid_search(configs: Dict):

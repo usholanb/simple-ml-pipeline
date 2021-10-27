@@ -8,7 +8,7 @@ class BaseDataset(ABC):
     """ To distinguish datasets between sports """
 
     @abstractmethod
-    def __init__(self):
+    def __init__(self, configs):
         """ self.data must be set """
         self.data = None
 
@@ -30,7 +30,7 @@ class BaseDataset(ABC):
 
     @property
     def name(self) -> AnyStr:
-        return self.config.get('dataset').get('name')
+        return self.configs.get('dataset').get('name')
 
     @abstractmethod
     def save(self, saver: Saver) -> None:
@@ -43,5 +43,6 @@ class BaseDataset(ABC):
     @abstractmethod
     def concat_dataset(self, data):
         """ concats splits (train, test and eval) and sets column """
+
 
         

@@ -7,7 +7,7 @@ from modules.models.base_model import BaseModel
 class BaseTrainer(ABC):
 
     @abstractmethod
-    def train(self, config) -> None:
+    def train(self) -> None:
         """ trains the model with dataset """
 
     @abstractmethod

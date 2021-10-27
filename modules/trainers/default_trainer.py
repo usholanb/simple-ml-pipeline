@@ -7,7 +7,7 @@ import numpy as np
 
 
 class DefaultTrainer(BaseTrainer):
-    def __init__(self, config, dataset):
-        self.config = config
+    def __init__(self, configs, dataset):
+        self.configs = configs
         self.dataset = dataset
 

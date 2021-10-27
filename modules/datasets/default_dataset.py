@@ -5,13 +5,13 @@ from modules.datasets.base_dataset import BaseDataset
 
 class DefaultDataset(BaseDataset):
 
-    def __init__(self, config):
-        self.config = config
+    def __init__(self, configs):
+        self.configs = configs
         self.data = None
 
     def split(self, all_data: pd.DataFrame) -> Dict:
         data = {}
-        split_ratio = self.config.get('dataset').get('split_ratio')
+        split_ratio = self.configs.get('dataset').get('split_ratio')
         train_ratio = split_ratio['train']
         train_end = int(train_ratio*len(all_data))
         data['train'] = all_data.loc[:train_end - 1, :]
@@ -25,26 +25,25 @@ class DefaultDataset(BaseDataset):
             data[other_set] = all_data.loc[train_end:, :]
         return data
 
-
     def collect(self):
-        input_path = self.config.get('dataset').get('input_path')
+        input_path = self.configs.get('dataset').get('input_path')
         if isinstance(input_path, str):
             data = self.read_source(input_path)
             data = self.split(data)
         else:
             data = {split: self.read_source(i_path) for split, i_path in input_path.items()}
             assert 'train' in input_path, 'one of the splits must be "train"'
-        if self.config.get('dataset').get('shuffle', True):
+        if self.configs.get('dataset').get('shuffle', True):
             data['train'] = self.shuffle(data['train'])
-        data = self.reset_label_index(data, self.config.get('dataset').get('label'))
-
+        data = self.reset_label_index(data, self.configs.get('dataset').get('label'))
         data = self.concat_dataset(data)
-        if isinstance(data.iloc[0, 0], float):
-            data.iloc[:, 0] = data.iloc[:, 0].astype('int32')
+        label_i = self.configs.get('constants').get('FINAL_LABEL_INDEX')
+        if isinstance(data.iloc[0, label_i], float):
+            data.iloc[:, label_i] = data.iloc[:, label_i].astype('int32')
         self.data = data
 
     def concat_dataset(self, data):
         for split_name, split in data.items():
-            split['split'] = split_name
+            split.insert(loc=self.configs.get('constants').get('FINAL_SPLIT_INDEX'), column='split', value=split_name)
         return pd.concat(data.values(), ignore_index=True)
 

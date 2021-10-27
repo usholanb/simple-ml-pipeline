@@ -1,10 +1,15 @@
+includes:
+  - configs/constant_configs.yml
+
+
+
 model:
   name: rfc
   tag: uan
 
 optim:
-  n_estimators: 10
-  max_depth: [2, 3]
+  n_estimators: [10]
+  max_depth: 2
 
   
 trainer:
@@ -13,6 +18,9 @@ trainer:
     resources_per_trial:
       cpu: 2
       gpu: 0
+    save:
+      - best
+      - all
 
 dataset:
   input_path: processed_data/toy_dataset_output.csv

@@ -10,6 +10,8 @@ import importlib
 import glob
 from typing import AnyStr
 import pickle
+import ray
+
 
 from utils.constants import DATA_DIR, CONFIGS_DIR, PREDICTIONS_DIR, TRAIN_RESULTS_DIR, PROJECT_DIR
 
@@ -209,3 +211,8 @@ def add_grid_search_parameters(config: Dict):
             new_search_space[k] = v
     config['optim']['search_space'] = new_search_space
     return grid
+
+
+def inside_tune():
+    return ray.tune.is_session_enabled()
+
