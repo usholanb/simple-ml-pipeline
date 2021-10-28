@@ -12,14 +12,11 @@ class SKLearnTrainer(DefaultTrainer):
     def train(self) -> None:
         """ trains sklearn model with dataset """
         setup_imports()
-        split_i = self.configs.get('constants').get('FINAL_SPLIT_INDEX')
-        label_i = self.configs.get('constants').get('FINAL_LABEL_INDEX')
-        split_column = self.dataset.iloc[:, split_i]
-        data = self.prepare_train(split_i, label_i)
+        data = self.prepare_train()
 
-        self.create_model()
+        model = self.get_wrapper()
 
-        self.model.fit(data['train_x'], data['train_y'])
+        model.fit(data['train_x'], data['train_y'])
         losses = {}
         for split_name in ['valid', 'test']:
             split_y = self.dataset.loc[split_column == split_name].iloc[:, label_i]

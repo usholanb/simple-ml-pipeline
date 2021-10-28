@@ -4,13 +4,13 @@ includes:
 
 
 model:
-  name: dense_net
+  name: dynamic_net
   tag: uan
 
 
 # must be same names as parameters of the actual optimizer
 optim:
-  lr: 0.001
+  lr: 0.0001
   weight_decay: 0.0001
   momentum: 0.9
   nesterov: True

@@ -3,7 +3,7 @@ from modules.wrappers.base_wrappers.sklearn_wrapper import SKLearnWrapper
 from utils.registry import registry
 
 
-@registry.register_model('rfc')
+@registry.register_wrapper('rfc')
 class RFCWrapper(SKLearnWrapper):
 
     def get_classifier(self, hps=None):

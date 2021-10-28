@@ -2,10 +2,12 @@ from torch import nn
 from abc import ABC, abstractmethod
 
 
-class BaseSpecialModel(nn.Module):
+class BaseModel(object):
 
     @abstractmethod
     def forward(self, *args, **kwargs):
-        """ passes data through network and returns outputs """
+        """ passes inputs and produces outputs with inner model """
+
+
 
 

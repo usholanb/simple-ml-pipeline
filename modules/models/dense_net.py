@@ -1,11 +1,11 @@
 from torch import nn
 import torch.nn.functional as F
-from modules.models.base_models.base_special_model import BaseSpecialModel
+from modules.models.base_models.torch_model import BaseTorchModel
 from utils.registry import registry
 
 
-@registry.register_special_model('dense_net')
-class DenseNetModel(BaseSpecialModel):
+@registry.register_model('dense_net')
+class DenseNetModel(BaseTorchModel):
     def __init__(self, input_dim):
         super(DenseNetModel, self).__init__()
         self.layer1 = nn.Linear(input_dim, 10)
@@ -16,3 +16,6 @@ class DenseNetModel(BaseSpecialModel):
         x = F.relu(self.layer1(x))
         x = F.relu(self.layer2(x))
         return self.layer3(x)
+
+    # def parameters(self, *args, **kwargs):
+    #     return self.parameters()

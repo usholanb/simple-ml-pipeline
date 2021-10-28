@@ -5,7 +5,7 @@ import torch
 
 
 class TorchWrapper(DefaultWrapper):
-    """ Any neural net model in pytorch """
+    """ Any neural net model wrapper in pytorch """
 
     def predict(self, examples):
         return self.clf.forward(examples)

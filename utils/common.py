@@ -206,7 +206,7 @@ def add_grid_search_parameters(config: Dict) -> bool:
     from ray import tune
     grid = False
     new_search_space = {}
-    for k, v in config.get('optim').items():
+    for k, v in config.get('optim', {}).items():
         if isinstance(v, list):
             new_search_space[k] = tune.grid_search(v)
             grid = True

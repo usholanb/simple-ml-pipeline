@@ -9,36 +9,35 @@ import torch.optim as optim
 @registry.register_trainer('torch_trainer')
 class TorchTrainer(DefaultTrainer):
 
+    def prepare_train(self):
+        data = super().prepare_train()
+        torch_data = {}
+        for split_name, split in data.items():
+            t = torch.tensor(split)
+            if split_name.endswith('_y'):
+                torch_data[split_name] = t.long()
+            else:
+                torch_data[split_name] = t.float()
+        return torch_data
+
     def train(self) -> None:
         """ trains nn model with dataset """
         setup_imports()
-        split_i = self.configs.get('constants').get('FINAL_SPLIT_INDEX')
-        label_i = self.configs.get('constants').get('FINAL_LABEL_INDEX')
-        split_column = self.dataset.iloc[:, split_i]
-        data = self.prepare_train(split_i, label_i)
-
-        model_class = registry.get_model_class(
-            self.configs.get('model').get('name'))
-
-        if model_class is not None:
-            model = model_class(self.configs, self.label_types)
-        else:
-            model = registry.get_model_class('special_wrapper')\
-                (self.configs, self.label_types)
-
-        optimizer = self.get_optimizer(model)
+        data = self.prepare_train()
+        wrapper = self.get_wrapper()
+        optimizer = self.get_optimizer(wrapper)
         for i in range(self.configs.get('trainer').get('epochs', 10)):
-            model.train()
+            wrapper.train()
             optimizer.zero_grad()
-            outputs = model.forward(data['train_x'])
+            outputs = wrapper.forward(data['train_x'])
             probs = self.output_function(outputs)
             loss = self.get_loss(data['train_y'], probs)
             loss.backward()
             optimizer.step()
 
             if i % self.configs.get('trainer').get('log_valid_every', 10) == 0:
-                model.eval()
-                valid_outputs = model.forward(data['valid_x'])
+                wrapper.eval()
+                valid_outputs = wrapper.forward(data['valid_x'])
                 valid_probs = self.output_function(valid_outputs)
                 valid_loss = self.get_loss(data['valid_y'], valid_probs)
                 losses = {'train': loss.item(), 'valid': valid_loss.item()}
