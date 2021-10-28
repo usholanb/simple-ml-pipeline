@@ -19,15 +19,16 @@ class TorchTrainer(DefaultTrainer):
 
         model_class = registry.get_model_class(
             self.configs.get('model').get('name'))
+
         if model_class is not None:
             model = model_class(self.configs, self.label_types)
         else:
             model = registry.get_model_class('special_wrapper')\
                 (self.configs, self.label_types)
 
-
         optimizer = self.get_optimizer(model)
-        for i in range(10):
+        for i in range(self.configs.get('trainer').get('epochs', 10)):
+            model.train()
             optimizer.zero_grad()
             outputs = model.forward(data['train_x'])
             probs = self.output_function(outputs)
@@ -35,12 +36,12 @@ class TorchTrainer(DefaultTrainer):
             loss.backward()
             optimizer.step()
 
-            if i % 2 == 0:
+            if i % self.configs.get('trainer').get('log_valid_every', 10) == 0:
                 model.eval()
-                valid_outputs = model.forward(data['valid'])
+                valid_outputs = model.forward(data['valid_x'])
                 valid_probs = self.output_function(valid_outputs)
                 valid_loss = self.get_loss(data['valid_y'], valid_probs)
-                losses = {'valid': valid_loss.item()}
+                losses = {'train': loss.item(), 'valid': valid_loss.item()}
                 if inside_tune():
                     if 'valid' in losses:
                         tune.report(valid_loss=losses['valid'])
@@ -50,10 +51,10 @@ class TorchTrainer(DefaultTrainer):
                     print(losses)
 
     def output_function(self, outputs):
-        return torch.nn.LogSoftmax(dim=1)(outputs).argmax(axis=1)
+        return torch.nn.LogSoftmax(dim=1)(outputs)
 
     def get_optimizer(self, model):
-        return optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
+        return optim.SGD(model.parameters(), **self.configs.get('optim'))
 
     def get_loss(self, y_true, y_pred):
-        return torch.nn.NLLLoss()(y_true, y_pred)
+        return torch.nn.NLLLoss()(y_pred, y_true)

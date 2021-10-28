@@ -7,7 +7,17 @@ model:
   name: dense_net
   tag: uan
 
+
+# must be same names as parameters of the actual optimizer
 optim:
+  lr: [0.001, 0.0001]
+  weight_decay: 0.0001
+  momentum: [0.9, 0.1]
+  nesterov: True
+
+
+# this inputs will go to your specific model __init__
+special_inputs:
   input_dim: 4
 
   
@@ -20,6 +30,9 @@ trainer:
     save:
       - best
       - all
+    epochs: 100
+    log_valid_every: 20
+
 
 dataset:
   input_path: processed_data/toy_dataset_output.csv

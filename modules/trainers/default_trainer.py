@@ -20,7 +20,7 @@ class DefaultTrainer(BaseTrainer):
 
         data = {}
         for split in ['train', 'valid', 'test']:
-            data[f'{split}_y'] = torch.tensor(dataset.loc[split_column == split].iloc[:, label_i].values).float()
+            data[f'{split}_y'] = torch.tensor(dataset.loc[split_column == split].iloc[:, label_i].values).long()
             data[f'{split}_x'] = torch.tensor(dataset.loc[split_column == split].iloc[:, 2:].values).float()
         return data
 

@@ -212,7 +212,7 @@ def add_grid_search_parameters(config: Dict) -> bool:
             grid = True
         else:
             new_search_space[k] = v
-    config['optim']['search_space'] = new_search_space
+    config['optim'] = new_search_space
     return grid
 
 

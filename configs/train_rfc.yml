@@ -7,7 +7,8 @@ model:
   name: rfc
   tag: uan
 
-optim:
+# inputs go to __init__ of the model (sklearn RFC model in this case)
+special_inputs:
   n_estimators: 10
   max_depth: 2
 

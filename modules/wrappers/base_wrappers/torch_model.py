@@ -16,3 +16,7 @@ class TorchWrapper(DefaultWrapper):
 
     def train(self):
         self.clf.train()
+
+    def eval(self):
+        self.clf.eval()
+
