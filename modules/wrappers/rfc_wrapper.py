@@ -16,7 +16,7 @@ class RFCWrapper(SKLearnWrapper):
                                     doesnt have this function"""
         return self.clf.predict(examples)
 
-    def predict_proba(self, examples):
+    def predict_proba(self, examples) -> np.ndarray:
         """ makes prediction on pandas examples of dim N X M
                  where N is number of examples and M number of features """
         if self._features_list:

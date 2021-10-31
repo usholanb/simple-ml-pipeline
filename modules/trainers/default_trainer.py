@@ -1,5 +1,7 @@
 from modules.trainers.base_trainer import BaseTrainer
+from typing import Dict, AnyStr
 
+from modules.wrappers.base_wrappers.base_wrapper import BaseWrapper
 from utils.common import pickle_obj
 from utils.constants import CLASSIFIERS_DIR
 from utils.registry import registry
@@ -15,7 +17,7 @@ class DefaultTrainer(BaseTrainer):
         self.split_column = dataset.iloc[:, self.split_i]
         self.wrapper = None
 
-    def prepare_train(self):
+    def prepare_train(self) -> Dict:
         """ splits data to train, test, valid and returns numpy array """
         data = {}
         f_list = self.configs.get('features_list')
@@ -29,7 +31,7 @@ class DefaultTrainer(BaseTrainer):
                 data[f'{split}_x'] = self.dataset.loc[self.split_column == split].iloc[:, 2:].values
         return data
 
-    def get_wrapper(self):
+    def get_wrapper(self) -> BaseWrapper:
         wrapper_class = registry.get_wrapper_class(
             self.configs.get('model').get('name'))
 
@@ -41,9 +43,9 @@ class DefaultTrainer(BaseTrainer):
         self.wrapper = wrapper
         return wrapper
 
-    def model_path(self):
+    def model_path(self) -> AnyStr:
         return f'{CLASSIFIERS_DIR}/{self.wrapper.name}.pkl'
 
-    def save(self):
+    def save(self) -> None:
         if self.configs.get('trainer').get('save'):
             pickle_obj(self.wrapper, self.model_path())

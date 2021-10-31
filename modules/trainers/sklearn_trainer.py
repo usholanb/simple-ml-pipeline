@@ -31,7 +31,7 @@ class SKLearnTrainer(DefaultTrainer):
         else:
             print(losses)
 
-    def get_loss(self, y_true, y_pred):
+    def get_loss(self, y_true, y_pred) -> float:
         if len(y_pred.shape) == 1:
             y_pred_2d = np.zeros((len(y_pred), len(self.label_types)))
             y_pred_2d[np.arange((len(y_pred))), y_pred] = 1

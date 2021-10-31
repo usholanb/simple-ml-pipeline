@@ -25,7 +25,7 @@ class DefaultDataset(BaseDataset):
             data[other_set] = all_data.loc[train_end:, :]
         return data
 
-    def collect(self):
+    def collect(self) -> None:
         input_path = self.configs.get('dataset').get('input_path')
         if isinstance(input_path, str):
             data = self.read_source(input_path)
@@ -42,7 +42,7 @@ class DefaultDataset(BaseDataset):
             data.iloc[:, label_i] = data.iloc[:, label_i].astype('int32')
         self.data = data
 
-    def concat_dataset(self, data):
+    def concat_dataset(self, data: Dict) -> pd.DataFrame:
         for split_name, split in data.items():
             split.insert(loc=self.configs.get('constants').get('FINAL_SPLIT_INDEX'), column='split', value=split_name)
         return pd.concat(data.values(), ignore_index=True)

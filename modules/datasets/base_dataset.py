@@ -10,10 +10,9 @@ class BaseDataset(ABC):
     @abstractmethod
     def __init__(self, configs):
         """ self.data must be set """
-        self.data = None
 
     @abstractmethod
-    def collect(self):
+    def collect(self) -> None:
         """ constructs final dataset and sets to self.data """
 
     @abstractmethod
@@ -21,7 +20,7 @@ class BaseDataset(ABC):
         """ reads any source to pandas """
 
     @abstractmethod
-    def split(self, all_data):
+    def split(self, all_data) -> Dict:
         """ splits the data according split_ratio in config file """
 
     @abstractmethod
@@ -37,7 +36,7 @@ class BaseDataset(ABC):
         """ Saves the final dataset locally or externally """
 
     @abstractmethod
-    def reset_label_index(self, data, index):
+    def reset_label_index(self, data: Dict, label_index: (AnyStr, int)) -> Dict:
         """ Selects label and sets it to 1st column """
 
     @abstractmethod

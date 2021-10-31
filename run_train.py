@@ -18,7 +18,7 @@ def train_one(configs, dataset):
     trainer.save()
 
 
-def train(configs: Dict):
+def train(configs: Dict) -> None:
     dataset = pd.read_csv(configs.get('dataset').get('input_path'))
     grid = add_grid_search_parameters(configs)
     sync_config = tune.SyncConfig(sync_to_driver=False)

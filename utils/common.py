@@ -59,7 +59,7 @@ def load_config(path: AnyStr, previous_includes: List = None):
     return config, duplicates_warning, duplicates_error
 
 
-def build_config(args):
+def build_config(args) -> Dict:
     config, duplicates_warning, duplicates_error = load_config(args.config_yml)
     if len(duplicates_warning) > 0:
         logging.warning(
@@ -75,7 +75,7 @@ def build_config(args):
 
 
 # Copied from https://github.com/facebookresearch/mmf/blob/master/mmf/utils/env.py#L89.
-def setup_imports():
+def setup_imports() -> None:
     from utils.registry import registry
 
     # First, check if imports are already setup
@@ -180,12 +180,12 @@ def merge_dicts(dict1: Dict, dict2: Dict):
     return return_dict, duplicates
 
 
-def create_folder(folder_path):
+def create_folder(folder_path: AnyStr) -> None:
     if not os.path.exists(folder_path):
         os.makedirs(folder_path)
 
 
-def setup_directories():
+def setup_directories() -> None:
     for folder_path in dir(sys.modules['utils.constants']):
         if folder_path.endswith('_DIR'):
             create_folder(getattr(sys.modules['utils.constants'], folder_path))
@@ -216,6 +216,6 @@ def add_grid_search_parameters(config: Dict) -> bool:
     return grid
 
 
-def inside_tune():
+def inside_tune() -> bool:
     return ray.tune.is_session_enabled()
 

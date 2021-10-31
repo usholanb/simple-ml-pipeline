@@ -1,3 +1,4 @@
+import numpy as np
 from torch import nn
 from modules.wrappers.base_wrappers.default_wrapper import DefaultWrapper
 from typing import Dict, List
@@ -11,7 +12,7 @@ class TorchWrapper(DefaultWrapper):
         super().__init__(configs, label_types)
         self.output_function = self.get_output_function()
 
-    def predict_proba(self, examples):
+    def predict_proba(self, examples) -> np.ndarray:
         if self._features_list:
             examples = examples[self._features_list]
         else:
@@ -29,13 +30,13 @@ class TorchWrapper(DefaultWrapper):
     def forward(self, examples):
         return self.clf.forward(examples)
 
-    def train(self):
+    def train(self) -> None:
         self.clf.train()
 
-    def eval(self):
+    def eval(self) -> None:
         self.clf.eval()
 
-    def get_output_function(self):
+    def get_output_function(self) -> torch.nn.Module:
         """ member field, activation function defined in __init__ """
         f = self.config.get('model').get('activation_function',
                                          {'name': 'LogSoftmax', 'dim': 1})

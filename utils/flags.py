@@ -1,16 +1,16 @@
 import argparse
 from abc import ABC, abstractmethod
-
+from typing import AnyStr
 from utils.constants import CONFIGS_DIR
 
 
 class Flags:
-    def __init__(self, description):
-        self._parser = self.get_parser()
+    def __init__(self, description: AnyStr):
+        self._parser = self.get_parser(description)
         self.add_core_args()
 
     @property
-    def parser(self):
+    def parser(self) -> argparse.ArgumentParser:
         return self._parser
 
     @staticmethod
@@ -27,7 +27,7 @@ class Flags:
 
 class PreprocessingFlag(Flags):
 
-    def add_core_args(self):
+    def add_core_args(self) -> None:
         self._parser.add_argument_group("Core Arguments")
         self._parser.add_argument(
             "--config-yml",
@@ -38,17 +38,17 @@ class PreprocessingFlag(Flags):
 
 class TrainFlags(Flags):
 
-    def add_core_args(self):
+    def add_core_args(self) -> None:
         self._parser.add_argument_group("Core Arguments")
         self._parser.add_argument(
             "--config-yml",
-            default=f'{CONFIGS_DIR}/train_special_model.yml',
+            default=f'{CONFIGS_DIR}/train_rfc.yml',
             help="path to config file starting from project home path",
         )
 
 class PredictionFlags(Flags):
 
-    def add_core_args(self):
+    def add_core_args(self) -> None:
         self._parser.add_argument_group("Core Arguments")
         self._parser.add_argument(
             "--config-yml",

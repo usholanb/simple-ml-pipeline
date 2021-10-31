@@ -1,4 +1,3 @@
-import torch
 from utils.common import unpickle_obj
 from utils.constants import CLASSIFIERS_DIR, PREDICTIONS_DIR, PROCESSED_DATA_DIR
 from copy import deepcopy
@@ -12,10 +11,10 @@ class Predictor:
         self.configs = configs
         self.dataset = dataset
 
-    def predict(self):
-        self.get_probs()
+    def predict(self) -> None:
+        self.save_probs()
 
-    def get_probs(self):
+    def save_probs(self) -> None:
         output_dataset = deepcopy(self.dataset)
         for tag, model_name in self.configs.get('models').items():
             model_name_tag = f'{model_name}_{tag}'

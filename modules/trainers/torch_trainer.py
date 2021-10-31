@@ -53,8 +53,8 @@ class TorchTrainer(DefaultTrainer):
     # def output_function(self, outputs):
     #     return torch.nn.LogSoftmax(dim=1)(outputs)
 
-    def get_optimizer(self, model):
+    def get_optimizer(self, model) -> torch.optim.Optimizer:
         return optim.SGD(model.parameters(), **self.configs.get('optim'))
 
-    def get_loss(self, y_true, y_pred):
+    def get_loss(self, y_true, y_pred) -> float:
         return torch.nn.NLLLoss()(y_pred, y_true)

@@ -1,10 +1,12 @@
+import numpy as np
+
 from modules.wrappers.base_wrappers.default_wrapper import DefaultWrapper
 
 
 class SKLearnWrapper(DefaultWrapper):
     """ Any neural net model in pytorch """
 
-    def predict_proba(self, examples):
+    def predict_proba(self, examples) -> np.ndarray:
         """ makes prediction on pandas examples of dim N X M
                  where N is number of examples and M number of features """
         if self._features_list:
@@ -21,7 +23,7 @@ class SKLearnWrapper(DefaultWrapper):
                 )
             )
 
-    def fit(self, inputs, targets):
+    def fit(self, inputs, targets) -> None:
         self.clf.fit(inputs, targets)
 
     def forward(self, examples):
