@@ -1,4 +1,4 @@
-from modules.trainers.base_trainers.default_trainer import DefaultTrainer
+from modules.trainers.default_trainer import DefaultTrainer
 from utils.common import inside_tune, setup_imports
 from utils.registry import registry
 import torch

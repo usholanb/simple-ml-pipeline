@@ -15,7 +15,7 @@ special_inputs:
   
 trainer:
     name: sklearn_trainer
-    tag: 'uan'
+    tag: uan2
     resources_per_trial:
       cpu: 2
       gpu: 0

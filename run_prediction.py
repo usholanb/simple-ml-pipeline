@@ -1,5 +1,5 @@
 from modules.helpers.predictor import Predictor
-from utils.flags import train_flags
+from utils.flags import train_flags, prediction_flags
 from dependency_injector.wiring import Provide, inject
 from utils.common import build_config, setup_imports, setup_directories
 from utils.registry import registry
@@ -17,7 +17,7 @@ def predict(configs):
 if __name__ == '__main__':
     # setup_logging()
     setup_directories()
-    parser = train_flags.parser
+    parser = prediction_flags.parser
     args = parser.parse_args()
     configs = build_config(args)
     predict(configs)

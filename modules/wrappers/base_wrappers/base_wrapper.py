@@ -11,7 +11,7 @@ class BaseWrapper(ABC):
         """ returns a model object created with external library """
 
     @abstractmethod
-    def predict(self, examples):
+    def predict_proba(self, examples):
         """ makes PROBABILITIES prediction on examples of dim N X M where N is number of
           examples and M number of features """
 

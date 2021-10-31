@@ -1,6 +1,7 @@
 import torch
 from utils.common import unpickle_obj
-from utils.constants import CLASSIFIERS_DIR
+from utils.constants import CLASSIFIERS_DIR, PREDICTIONS_DIR, PROCESSED_DATA_DIR
+from copy import deepcopy
 
 
 class Predictor:
@@ -12,6 +13,20 @@ class Predictor:
         self.dataset = dataset
 
     def predict(self):
-        wrapper = unpickle_obj(f'{CLASSIFIERS_DIR}/dynamic_net_uan_lr_0.0001_momentum_0.9_nesterov_True_weight_decay_0.0001.pkl')
-        print(wrapper.predict(self.dataset.iloc[[0], 2:]))
+        self.get_probs()
+
+    def get_probs(self):
+        output_dataset = deepcopy(self.dataset)
+        for tag, model_name in self.configs.get('models').items():
+            model_name_tag = f'{model_name}_{tag}'
+            model_path = f'{CLASSIFIERS_DIR}/{model_name_tag}.pkl'
+            wrapper = unpickle_obj(model_path)
+            probs = wrapper.predict_proba(self.dataset)
+            for label_index, label in enumerate(wrapper.label_types):
+                output_dataset[f'{model_name_tag}_{label_index}'] = probs[:, label_index]
+        for split_name in output_dataset['split'].unique():
+            split = output_dataset.loc[output_dataset['split'] == split_name]
+            dataset_path = self.configs.get('dataset').get('input_path')
+            dataset_name = dataset_path.split('_output.csv')[0].split('/')[1]
+            split.to_csv(f'{PREDICTIONS_DIR}/{dataset_name}_{split_name}.csv')
 

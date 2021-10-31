@@ -1,12 +1,14 @@
 includes:
   - configs/constant_configs.yml
 
+dataset:
+  input_path: processed_data/toy_dataset_output.csv
+  type: csv
 
 
-model:
-  name: dynamic_net
-  tag: uan
-
+models:
+  uan: dynamic_net
+  uan2: rfc
 
 # must be same names as parameters of the actual optimizer
 optim:

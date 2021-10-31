@@ -9,6 +9,7 @@ CONFIGS_DIR = f'{PROJECT_DIR}/configs'
 TRAIN_RESULTS_DIR = f'{PROJECT_DIR}/train_results'
 CLASSIFIERS_DIR = f'{PROJECT_DIR}/classifiers'
 PREDICTIONS_DIR = f'{PROJECT_DIR}/predictions'
+PROCESSED_DATA_DIR = f'{PROJECT_DIR}/processed_data'
 
 
 

@@ -11,15 +11,20 @@ class TorchWrapper(DefaultWrapper):
         super().__init__(configs, label_types)
         self.output_function = self.get_output_function()
 
-    def predict(self, examples):
+    def predict_proba(self, examples):
+        if self._features_list:
+            examples = examples[self._features_list]
+        else:
+            examples = examples.loc[:, 2:]
+        examples = examples.values.astype(float)
         if len(examples.shape) == 1:
-            examples = examples.reshape(1, -1)
+            examples = examples.reshape((1, -1))
         return torch.nn.Softmax(dim=1)\
             (
                 self.clf.forward(torch.FloatTensor(
-                    examples[self.config.get('features_list')].values.astype(float)
+                    examples
                 ))
-            )
+            ).detach().numpy()
 
     def forward(self, examples):
         return self.clf.forward(examples)

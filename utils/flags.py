@@ -42,10 +42,21 @@ class TrainFlags(Flags):
         self._parser.add_argument_group("Core Arguments")
         self._parser.add_argument(
             "--config-yml",
-            default=f'{CONFIGS_DIR}/train_rfc.yml',
+            default=f'{CONFIGS_DIR}/train_special_model.yml',
+            help="path to config file starting from project home path",
+        )
+
+class PredictionFlags(Flags):
+
+    def add_core_args(self):
+        self._parser.add_argument_group("Core Arguments")
+        self._parser.add_argument(
+            "--config-yml",
+            default=f'{CONFIGS_DIR}/prediction.yml',
             help="path to config file starting from project home path",
         )
 
 
 preprocessing_flags = PreprocessingFlag('dataset creation config file')
-train_flags = TrainFlags('dataset creation config file')
+train_flags = TrainFlags('trainer creation config file')
+prediction_flags = PredictionFlags('prediction config file')
