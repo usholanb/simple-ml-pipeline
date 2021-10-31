@@ -12,7 +12,14 @@ class TorchWrapper(DefaultWrapper):
         self.output_function = self.get_output_function()
 
     def predict(self, examples):
-        return torch.nn.Softmax(dim=1)(self.clf.forward(examples))
+        if len(examples.shape) == 1:
+            examples = examples.reshape(1, -1)
+        return torch.nn.Softmax(dim=1)\
+            (
+                self.clf.forward(torch.FloatTensor(
+                    examples[self.config.get('features_list')].values.astype(float)
+                ))
+            )
 
     def forward(self, examples):
         return self.clf.forward(examples)

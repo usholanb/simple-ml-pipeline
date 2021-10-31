@@ -8,11 +8,15 @@ class DefaultWrapper(BaseWrapper):
         self.config = configs
         self.label_types = label_types
         self.clf = self.get_classifier(configs.get('special_inputs', {}))
+        self._features_list = []
 
     @property
     def name(self):
         m_configs = self.config.get("model")
         hps = '_'.join([f'{k}_{v}' for k, v in sorted(self.config.get('optim').items())])
         return f'{m_configs.get("name")}_{m_configs.get("tag")}_{hps}'
+
+
+
 
 

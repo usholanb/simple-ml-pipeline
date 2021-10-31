@@ -20,6 +20,7 @@ optim:
 # this inputs will go to your specific model __init__
 special_inputs:
   lr: 0.001
+  input_dim: 3
 
   
 trainer:
@@ -38,3 +39,8 @@ dataset:
   type: csv
 
 
+features_list:
+  - sepal width (cm)
+#  - petal length (cm)
+  - petal width (cm)
+  - sepal length (cm)

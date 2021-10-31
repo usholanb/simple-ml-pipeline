@@ -1,5 +1,5 @@
-from modules.trainers.default_trainer import DefaultTrainer
-from utils.common import inside_tune, setup_imports, pickle_obj
+from modules.trainers.base_trainers.default_trainer import DefaultTrainer
+from utils.common import inside_tune, setup_imports
 from utils.registry import registry
 import torch
 from ray import tune
@@ -23,6 +23,7 @@ class TorchTrainer(DefaultTrainer):
     def train(self) -> None:
         """ trains nn model with dataset """
         setup_imports()
+
         data = self.prepare_train()
         wrapper = self.get_wrapper()
         optimizer = self.get_optimizer(wrapper)

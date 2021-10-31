@@ -26,3 +26,8 @@ dataset:
   type: csv
 
 
+#features_list:
+#  - sepal width (cm)
+#    #  - petal length (cm)
+#    - petal width (cm)
+#    - sepal length (cm)

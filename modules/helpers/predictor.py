@@ -13,6 +13,5 @@ class Predictor:
 
     def predict(self):
         wrapper = unpickle_obj(f'{CLASSIFIERS_DIR}/dynamic_net_uan_lr_0.0001_momentum_0.9_nesterov_True_weight_decay_0.0001.pkl')
-        y, x = self.dataset.iloc[0, 0], torch.FloatTensor(self.dataset.iloc[0, 2:].values.astype(float)).reshape((1, -1))
-        print(wrapper.predict(x))
+        print(wrapper.predict(self.dataset.iloc[[0], 2:]))
 

@@ -1,9 +1,4 @@
-import torch
-
-from modules.trainers.base_trainer import BaseTrainer
-import sklearn
-from typing import AnyStr
-import numpy as np
+from modules.trainers.base_trainers.base_trainer import BaseTrainer
 
 from utils.common import pickle_obj
 from utils.constants import CLASSIFIERS_DIR

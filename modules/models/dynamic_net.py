@@ -21,9 +21,9 @@ class LocalModel(nn.Module):
 
 @registry.register_model('dynamic_net')
 class DynamicNet(BaseTorchModel):
-    def __init__(self, lr):
+    def __init__(self, lr, input_dim):
         super().__init__()
-        self.models = [LocalModel(input_dim=4)]
+        self.models = [LocalModel(input_dim=input_dim)]
         self.boost_rate = nn.Parameter(torch.tensor(lr, requires_grad=True, device=self.device))
 
     def add(self, model):

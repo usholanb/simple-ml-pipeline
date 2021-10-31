@@ -1,5 +1,5 @@
 from ray import tune
-from modules.trainers.default_trainer import DefaultTrainer
+from modules.trainers.base_trainers.default_trainer import DefaultTrainer
 from utils.common import setup_imports, inside_tune
 from utils.registry import registry
 import sklearn

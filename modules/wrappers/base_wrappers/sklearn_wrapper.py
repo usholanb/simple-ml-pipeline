@@ -5,9 +5,13 @@ class SKLearnWrapper(DefaultWrapper):
     """ Any neural net model in pytorch """
 
     def predict(self, examples):
-        """ makes prediction on examples of dim N X M where N is number of
-          examples and M number of features """
-        return self.clf.predict(examples)
+        """ makes prediction on pandas examples of dim N X M
+                 where N is number of examples and M number of features """
+        return (
+                self.clf.predict(
+                    examples[self.config.get('features_list')].values.astype(float)
+                )
+            )
 
     def fit(self, inputs, targets):
         self.clf.fit(inputs, targets)
