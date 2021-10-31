@@ -23,9 +23,15 @@ class DefaultTrainer(BaseTrainer):
     def prepare_train(self):
         """ splits data to train, test, valid and returns numpy array """
         data = {}
+        f_list = self.configs.get('features_list')
+        if not f_list:
+            print('features_list not specified')
         for split in ['train', 'valid', 'test']:
             data[f'{split}_y'] = self.dataset.loc[self.split_column == split].iloc[:, self.label_i].values
-            data[f'{split}_x'] = self.dataset.loc[self.split_column == split].iloc[:, 2:].values
+            if f_list:
+                data[f'{split}_x'] = self.dataset.loc[self.split_column == split][f_list].values
+            else:
+                data[f'{split}_x'] = self.dataset.loc[self.split_column == split].iloc[:, 2:].values
         return data
 
     def get_wrapper(self):
