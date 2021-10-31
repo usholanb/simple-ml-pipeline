@@ -11,3 +11,7 @@ class BaseTrainer(ABC):
     def get_loss(self, y_true, y_pred):
         """ returns some loss func """
         return
+
+    @abstractmethod
+    def save(self):
+        """ saves model """

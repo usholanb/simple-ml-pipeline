@@ -19,9 +19,7 @@ trainer:
     resources_per_trial:
       cpu: 2
       gpu: 0
-    save:
-      - best
-      - all
+    save: 1
 
 dataset:
   input_path: processed_data/toy_dataset_output.csv

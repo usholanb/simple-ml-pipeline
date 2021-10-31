@@ -191,12 +191,12 @@ def setup_directories():
             create_folder(getattr(sys.modules['utils.constants'], folder_path))
 
 
-def pickle_model(obj, path: AnyStr) -> None:
+def pickle_obj(obj, path: AnyStr) -> None:
     with open(path, 'wb') as f_in:
         pickle.dump(obj, f_in)
 
 
-def unpickle_model(path: AnyStr):
+def unpickle_obj(path: AnyStr):
     with open(path, 'rb') as f_out:
         obj = pickle.load(f_out)
     return obj

@@ -7,11 +7,14 @@ import torch
 class TorchWrapper(DefaultWrapper):
     """ Any neural net model wrapper in pytorch """
 
+    def __init__(self, configs: Dict, label_types: List):
+        super().__init__(configs, label_types)
+        self.output_function = self.get_output_function()
+
     def predict(self, examples):
-        return self.clf.forward(examples)
+        return torch.nn.Softmax(dim=1)(self.clf.forward(examples))
 
     def forward(self, examples):
-
         return self.clf.forward(examples)
 
     def train(self):
@@ -20,3 +23,8 @@ class TorchWrapper(DefaultWrapper):
     def eval(self):
         self.clf.eval()
 
+    def get_output_function(self):
+        """ member field, activation function defined in __init__ """
+        f = self.config.get('model').get('activation_function',
+                                         {'name': 'LogSoftmax', 'dim': 1})
+        return getattr(torch.nn, f.get('name'))(dim=f.get('dim'))

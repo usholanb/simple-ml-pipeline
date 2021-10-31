@@ -10,7 +10,7 @@ class SKLearnWrapper(DefaultWrapper):
         return self.clf.predict(examples)
 
     def fit(self, inputs, targets):
-        self.clf.fit(inputs.to_numpy(), targets.to_numpy())
+        self.clf.fit(inputs, targets)
 
     def forward(self, examples):
         """ outputs probs, rewrite if your sklearn model

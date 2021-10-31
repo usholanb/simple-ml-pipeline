@@ -6,6 +6,7 @@ includes:
 model:
   name: dynamic_net
   tag: uan
+  activation: LogSoftmax
 
 
 # must be same names as parameters of the actual optimizer
@@ -18,7 +19,7 @@ optim:
 
 # this inputs will go to your specific model __init__
 special_inputs:
-  input_dim: 4
+  lr: 0.001
 
   
 trainer:
@@ -27,9 +28,7 @@ trainer:
     resources_per_trial:
       cpu: 2
       gpu: 0
-    save:
-      - best
-      - all
+    save: 1
     epochs: 100
     log_valid_every: 20
 

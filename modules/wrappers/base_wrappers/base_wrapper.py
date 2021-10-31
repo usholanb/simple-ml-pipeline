@@ -12,7 +12,7 @@ class BaseWrapper(ABC):
 
     @abstractmethod
     def predict(self, examples):
-        """ makes prediction on examples of dim N X M where N is number of
+        """ makes PROBABILITIES prediction on examples of dim N X M where N is number of
           examples and M number of features """
 
     @abstractmethod

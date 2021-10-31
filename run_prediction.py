@@ -1,17 +1,3 @@
-"""
-
-
-
-        for split_name in ['test', 'valid']:
-            split = dataset.loc[dataset[split_column] == split_name].iloc[:, 1:-1]
-            pred = model.predict(split)
-            target = dataset.loc[dataset[split_column] == split_name].iloc[:, 0]
-
-
-
-"""
-
-
 from modules.helpers.predictor import Predictor
 from utils.flags import train_flags
 from dependency_injector.wiring import Provide, inject
@@ -20,7 +6,6 @@ from utils.registry import registry
 import pandas as pd
 
 
-@inject
 def predict(configs):
     """ Prepares Dataset """
     setup_imports()

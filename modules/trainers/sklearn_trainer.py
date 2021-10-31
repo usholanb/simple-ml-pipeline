@@ -13,20 +13,16 @@ class SKLearnTrainer(DefaultTrainer):
         """ trains sklearn model with dataset """
         setup_imports()
         data = self.prepare_train()
-
-        model = self.get_wrapper()
-
-        model.fit(data['train_x'], data['train_y'])
+        wrapper = self.get_wrapper()
+        wrapper.fit(data['train_x'], data['train_y'])
         losses = {}
         for split_name in ['valid', 'test']:
-            split_y = self.dataset.loc[split_column == split_name].iloc[:, label_i]
-            if len(split_y) == 0:
-                continue
-            split_x = self.dataset.loc[split_column == split_name].iloc[:, 2:]
-            probs = self.model.forward(split_x)
-            loss = self.get_loss(split_y.to_numpy(), probs)
-            losses[split_name] = loss
-
+            if f'{split_name}_y' in data:
+                split_y = data[f'{split_name}_y']
+                split_x = data[f'{split_name}_x']
+                probs = wrapper.forward(split_x)
+                loss = self.get_loss(split_y, probs)
+                losses[split_name] = loss
         if inside_tune():
             if 'valid' in losses:
                 tune.report(valid_loss=losses['valid'])

@@ -4,13 +4,13 @@ includes:
 
 
 model:
-  name: dense_net
+  name: dynamic_net
   tag: uan
 
 
 # must be same names as parameters of the actual optimizer
 optim:
-  lr: 0.001
+  lr: 0.0001
   weight_decay: 0.0001
   momentum: 0.9
   nesterov: True
@@ -18,7 +18,7 @@ optim:
 
 # this inputs will go to your specific model __init__
 special_inputs:
-  input_dim: 4
+  lr: 0.001
 
   
 trainer:
@@ -27,7 +27,6 @@ trainer:
     resources_per_trial:
       cpu: 2
       gpu: 0
-
     save: 1
     epochs: 100
     log_valid_every: 20

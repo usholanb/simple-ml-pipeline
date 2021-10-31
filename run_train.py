@@ -15,6 +15,7 @@ def train_one(configs, dataset):
         configs.get('trainer').get('name')
     )(configs, dataset)
     trainer.train()
+    trainer.save()
 
 
 def train(configs: Dict):

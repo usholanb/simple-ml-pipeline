@@ -5,6 +5,8 @@ import sklearn
 from typing import AnyStr
 import numpy as np
 
+from utils.common import pickle_obj
+from utils.constants import CLASSIFIERS_DIR
 from utils.registry import registry
 
 
@@ -16,6 +18,7 @@ class DefaultTrainer(BaseTrainer):
         self.split_i = self.configs.get('constants').get('FINAL_SPLIT_INDEX')
         self.label_i = self.configs.get('constants').get('FINAL_LABEL_INDEX')
         self.split_column = dataset.iloc[:, self.split_i]
+        self.wrapper = None
 
     def prepare_train(self):
         """ splits data to train, test, valid and returns numpy array """
@@ -34,4 +37,12 @@ class DefaultTrainer(BaseTrainer):
         else:
             wrapper = registry.get_wrapper_class('special_wrapper')\
                 (self.configs, self.label_types)
+        self.wrapper = wrapper
         return wrapper
+
+    def model_path(self):
+        return f'{CLASSIFIERS_DIR}/{self.wrapper.name}.pkl'
+
+    def save(self):
+        if self.configs.get('trainer').get('save'):
+            pickle_obj(self.wrapper, self.model_path())

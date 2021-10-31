@@ -1,5 +1,5 @@
 from modules.trainers.default_trainer import DefaultTrainer
-from utils.common import inside_tune, setup_imports
+from utils.common import inside_tune, setup_imports, pickle_obj
 from utils.registry import registry
 import torch
 from ray import tune
@@ -30,7 +30,7 @@ class TorchTrainer(DefaultTrainer):
             wrapper.train()
             optimizer.zero_grad()
             outputs = wrapper.forward(data['train_x'])
-            probs = self.output_function(outputs)
+            probs = self.wrapper.output_function(outputs)
             loss = self.get_loss(data['train_y'], probs)
             loss.backward()
             optimizer.step()
@@ -38,7 +38,7 @@ class TorchTrainer(DefaultTrainer):
             if i % self.configs.get('trainer').get('log_valid_every', 10) == 0:
                 wrapper.eval()
                 valid_outputs = wrapper.forward(data['valid_x'])
-                valid_probs = self.output_function(valid_outputs)
+                valid_probs = self.wrapper.output_function(valid_outputs)
                 valid_loss = self.get_loss(data['valid_y'], valid_probs)
                 losses = {'train': loss.item(), 'valid': valid_loss.item()}
                 if inside_tune():
@@ -49,8 +49,8 @@ class TorchTrainer(DefaultTrainer):
                 else:
                     print(losses)
 
-    def output_function(self, outputs):
-        return torch.nn.LogSoftmax(dim=1)(outputs)
+    # def output_function(self, outputs):
+    #     return torch.nn.LogSoftmax(dim=1)(outputs)
 
     def get_optimizer(self, model):
         return optim.SGD(model.parameters(), **self.configs.get('optim'))
