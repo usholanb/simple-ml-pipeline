@@ -27,6 +27,7 @@ class Registry:
         "logger_name_mapping": {},
         "trainer_name_mapping": {},
         "model_name_mapping": {},
+        "transformer_name_mapping": {},
         "state": {},
     }
 
@@ -51,17 +52,18 @@ class Registry:
 
     @classmethod
     def register_wrapper(cls, name):
-        r"""Register a model to registry with key 'name'
-        Args:
-            name: Key with which the model will be registered.
-        Usage::
-            @registry.register_wrapper("cgcnn")
-            class CGCNN():
-                ...
-        """
 
         def wrap(func):
             cls.mapping["wrapper_name_mapping"][name] = func
+            return func
+
+        return wrap
+
+    @classmethod
+    def register_transformer(cls, name):
+
+        def wrap(func):
+            cls.mapping["transformer_name_mapping"][name] = func
             return func
 
         return wrap
@@ -150,6 +152,10 @@ class Registry:
     @classmethod
     def get_wrapper_class(cls, name):
         return cls.mapping["wrapper_name_mapping"].get(name, None)
+
+    @classmethod
+    def get_transformer_class(cls, name):
+        return cls.mapping["transformer_name_mapping"].get(name, None)
 
     @classmethod
     def get_model_class(cls, name):

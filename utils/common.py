@@ -96,6 +96,8 @@ def setup_imports() -> None:
     model_pattern = os.path.join(model_folder, "*.py")
     wrapper_folder = os.path.join(MODULES_DIR, "wrappers")
     wrapper_pattern = os.path.join(wrapper_folder, "*.py")
+    transformer_folder = os.path.join(MODULES_DIR, "transformers")
+    transformer_pattern = os.path.join(transformer_folder, "*.py")
 
     # importlib.import_module("utils.common.logger")
 
@@ -104,10 +106,11 @@ def setup_imports() -> None:
         + glob.glob(model_pattern, recursive=True)
         + glob.glob(trainer_pattern, recursive=True)
         + glob.glob(wrapper_pattern, recursive=True)
+        + glob.glob(transformer_pattern, recursive=True)
     )
 
     for f in files:
-        for key in ["/trainers", "/datasets", "/models", "/wrappers"]:
+        for key in ["/trainers", "/datasets", "/models", "/wrappers", "/transformers"]:
             if f.find(key) != -1:
                 splits = f.split(os.sep)
                 file_name = splits[-1]

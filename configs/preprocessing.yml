@@ -19,3 +19,13 @@ dataset:
     train: 0.8
     valid: 0.1
     test: 0.1
+
+
+
+#Pick Transformers(defined in modules/transformers/) or create your own
+#defined: norm,
+features_list:
+  sepal width (cm): [norm]
+  petal length (cm): norm
+  petal width (cm): norm
+  sepal length (cm): norm

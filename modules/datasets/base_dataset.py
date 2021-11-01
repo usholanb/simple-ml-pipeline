@@ -43,5 +43,9 @@ class BaseDataset(ABC):
     def concat_dataset(self, data):
         """ concats splits (train, test and eval) and sets column """
 
+    @abstractmethod
+    def apply_transformers(self, data):
+        """ applys all transformers defined in config """
+
 
         

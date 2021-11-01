@@ -2,7 +2,6 @@ includes:
   - configs/constant_configs.yml
 
 
-
 model:
   name: dynamic_net
   tag: uan

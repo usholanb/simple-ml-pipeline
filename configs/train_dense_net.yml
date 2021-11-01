@@ -10,7 +10,7 @@ model:
 
 # must be same names as parameters of the actual optimizer
 optim:
-  lr: [0.001, 0.1]
+  lr: 0.001
   weight_decay: 0.0001
   momentum: 0.9
   nesterov: True
@@ -19,8 +19,8 @@ evaluate_test: 1 # use best model version on test
 
 
 # this inputs will go to your specific model __init__
-#special_inputs:
-
+special_inputs:
+  lr: [0.001, 0.1]
 
 
 trainer:
