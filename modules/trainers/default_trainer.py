@@ -1,6 +1,7 @@
+from ray import tune
 from modules.trainers.base_trainer import BaseTrainer
 from typing import Dict, AnyStr
-
+from utils.common import inside_tune
 from modules.wrappers.base_wrappers.base_wrapper import BaseWrapper
 from utils.common import pickle_obj
 from utils.constants import CLASSIFIERS_DIR
@@ -49,3 +50,9 @@ class DefaultTrainer(BaseTrainer):
     def save(self) -> None:
         if self.configs.get('trainer').get('save'):
             pickle_obj(self.wrapper, self.model_path())
+
+    def log_metrics(self, losses):
+        if inside_tune():
+            tune.report(valid_loss=losses['valid'])
+        else:
+            print(losses)

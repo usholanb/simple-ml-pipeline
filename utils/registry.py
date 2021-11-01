@@ -28,6 +28,7 @@ class Registry:
         "trainer_name_mapping": {},
         "model_name_mapping": {},
         "transformer_name_mapping": {},
+        "metric_name_mapping": {},
         "state": {},
     }
 
@@ -64,6 +65,15 @@ class Registry:
 
         def wrap(func):
             cls.mapping["transformer_name_mapping"][name] = func
+            return func
+
+        return wrap
+
+    @classmethod
+    def register_metric(cls, name):
+
+        def wrap(func):
+            cls.mapping["metric_name_mapping"][name] = func
             return func
 
         return wrap
@@ -156,6 +166,10 @@ class Registry:
     @classmethod
     def get_transformer_class(cls, name):
         return cls.mapping["transformer_name_mapping"].get(name, None)
+
+    @classmethod
+    def get_metric_class(cls, name):
+        return cls.mapping["metric_name_mapping"].get(name, None)
 
     @classmethod
     def get_model_class(cls, name):

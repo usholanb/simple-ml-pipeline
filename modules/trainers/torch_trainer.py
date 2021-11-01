@@ -1,3 +1,4 @@
+import numpy as np
 from torch.utils.data import DataLoader
 
 from modules.trainers.default_trainer import DefaultTrainer
@@ -37,7 +38,6 @@ class TorchTrainer(DefaultTrainer):
         for i in range(self.configs.get('trainer').get('epochs', 10)):
             wrapper.train()
             optimizer.zero_grad()
-            # for batch in train_loader:
             outputs = wrapper.forward(data['train_x'])
             probs = self.wrapper.output_function(outputs)
             loss = self.get_loss(data['train_y'], probs)
@@ -45,27 +45,34 @@ class TorchTrainer(DefaultTrainer):
             optimizer.step()
 
             if i % self.configs.get('trainer').get('log_valid_every', 10) == 0:
-                if torch.no_grad():
+                with torch.no_grad():
                     wrapper.eval()
-                    # for valid_batch
                     valid_outputs = wrapper.forward(data['valid_x'])
-                    valid_probs = self.wrapper.output_function(valid_outputs)
-                    valid_loss = self.get_loss(data['valid_y'], valid_probs)
+                    metrics = self.get_split_metrics(data['valid_y'], valid_outputs)
+                    self.log_metrics(metrics)
+        print(self.get_metrics(data))
 
-                    losses = {'train': loss.item(), 'valid': valid_loss.item()}
-                    if inside_tune():
-                        if 'valid' in losses:
-                            tune.report(valid_loss=losses['valid'])
-                        if 'test' in losses:
-                            tune.report(test_loss=losses['test'])
-                    else:
-                        print(losses)
+    def get_metrics(self, data):
+        s_metrics = {}
+        for split_name in ['train', 'valid', 'test']:
+            outputs = self.wrapper.forward(data[f'{split_name}_x'])
+            s_metrics[split_name] = self.get_split_metrics(data[f'{split_name}_y'], outputs)
+        return s_metrics
 
-    # def output_function(self, outputs):
-    #     return torch.nn.LogSoftmax(dim=1)(outputs)
+    def get_split_metrics(self, y_true, y_outputs):
+        setup_imports()
+        metrics = {}
+        for metric_name in ['accuracy']:
+            metric = registry.get_metric_class(metric_name)()
+            metrics[metric_name] = metric.compute_metric(y_true, y_outputs)
+        return metrics
+
+    def output_function(self, outputs):
+        return torch.nn.LogSoftmax(dim=1)(outputs)
 
     def get_optimizer(self, model) -> torch.optim.Optimizer:
         return optim.SGD(model.parameters(), **self.configs.get('optim'))
 
     def get_loss(self, y_true, y_pred) -> float:
+
         return torch.nn.NLLLoss()(y_pred, y_true)

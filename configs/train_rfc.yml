@@ -22,6 +22,9 @@ trainer:
         cpu: 2
         gpu: 0
 
+    metrics: accuracy
+    grid_metrics: valid_accuracy
+
 dataset:
   input_path: processed_data/toy_dataset_output.csv
   type: csv
