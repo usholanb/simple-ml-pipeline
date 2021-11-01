@@ -202,17 +202,25 @@ def unpickle_obj(path: AnyStr):
     return obj
 
 
-def add_grid_search_parameters(config: Dict) -> bool:
+def add_grid_search_parameters(configs: Dict) -> bool:
     from ray import tune
+    global grid
     grid = False
-    new_search_space = {}
-    for k, v in config.get('optim', {}).items():
-        if isinstance(v, list):
-            new_search_space[k] = tune.grid_search(v)
-            grid = True
-        else:
-            new_search_space[k] = v
-    config['optim'] = new_search_space
+
+    def grid_on_par(par: Dict) -> Dict:
+        new_par = {}
+        global grid
+        for k, v in par.items():
+            if isinstance(v, list):
+                new_par[k] = tune.grid_search(v)
+                grid = True
+            else:
+                new_par[k] = v
+        return new_par
+
+    for p in ['optim', 'special_inputs']:
+        param = configs.get(p, {})
+        configs[p] = grid_on_par(param)
     return grid
 
 

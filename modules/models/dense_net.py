@@ -6,9 +6,10 @@ from utils.registry import registry
 
 @registry.register_model('dense_net')
 class DenseNetModel(BaseTorchModel):
-    def __init__(self, input_dim):
+    def __init__(self, special_inputs):
         super(DenseNetModel, self).__init__()
-        self.layer1 = nn.Linear(input_dim, 10)
+        self.__dict__.update(special_inputs)
+        self.layer1 = nn.Linear(self.input_dim, 10)
         self.layer2 = nn.Linear(10, 10)
         self.layer3 = nn.Linear(10, 3)
 

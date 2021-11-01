@@ -9,7 +9,8 @@ from torch.functional import F
 class LocalModel(nn.Module):
     def __init__(self, input_dim):
         super().__init__()
-        self.layer1 = nn.Linear(input_dim, 10)
+        self.input_dim = input_dim
+        self.layer1 = nn.Linear(self.input_dim, 10)
         self.layer2 = nn.Linear(10, 10)
         self.layer3 = nn.Linear(10, 3)
 
@@ -21,9 +22,10 @@ class LocalModel(nn.Module):
 
 @registry.register_model('dynamic_net')
 class DynamicNet(BaseTorchModel):
-    def __init__(self, lr, input_dim):
+    def __init__(self, lr, special_inputs):
         super().__init__()
-        self.models = [LocalModel(input_dim=input_dim)]
+        self.__dict__.update(special_inputs)
+        self.models = [LocalModel(self.input_dim)]
         self.boost_rate = nn.Parameter(torch.tensor(lr, requires_grad=True, device=self.device))
 
     def add(self, model):

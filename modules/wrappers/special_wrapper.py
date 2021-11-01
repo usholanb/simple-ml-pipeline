@@ -8,7 +8,7 @@ class SpecialWrapper(TorchWrapper):
     def get_classifier(self, inputs: Dict):
         return registry.get_model_class(
             self.config.get('model').get('name')
-        )(**inputs)
+        )(inputs)
 
     def parameters(self):
         return self.clf.parameters()

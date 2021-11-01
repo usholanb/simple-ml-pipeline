@@ -9,25 +9,26 @@ model:
 
 # inputs go to __init__ of the model (sklearn RFC model in this case)
 special_inputs:
-  n_estimators: 10
+  n_estimators: [10, 15]
   max_depth: 2
 
   
 trainer:
     name: sklearn_trainer
     tag: uan2
-    resources_per_trial:
-      cpu: 2
-      gpu: 0
     save: 1
+    tune:
+      resources_per_trial:
+        cpu: 2
+        gpu: 0
 
 dataset:
   input_path: processed_data/toy_dataset_output.csv
   type: csv
 
 
-#features_list:
-#  - sepal width (cm)
-#    #  - petal length (cm)
-#    - petal width (cm)
-#    - sepal length (cm)
+features_list:
+  - sepal width (cm)
+  - petal length (cm)
+  - petal width (cm)
+  - sepal length (cm)

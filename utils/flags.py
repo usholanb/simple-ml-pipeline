@@ -46,6 +46,7 @@ class TrainFlags(Flags):
             help="path to config file starting from project home path",
         )
 
+
 class PredictionFlags(Flags):
 
     def add_core_args(self) -> None:

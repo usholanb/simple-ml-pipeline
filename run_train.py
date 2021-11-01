@@ -28,8 +28,8 @@ def train(configs: Dict) -> None:
             tune.with_parameters(train_one, dataset=dataset),
             config=configs,
             local_dir=TRAIN_RESULTS_DIR,
-            resources_per_trial=configs.get('trainer').get('resources_per_trial'),
             sync_config=sync_config,
+            **configs.get('trainer').get('tune'),
 
         )
         best_configs = analysis.get_best_config(metric="valid_loss", mode="min")

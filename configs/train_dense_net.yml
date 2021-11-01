@@ -10,27 +10,30 @@ model:
 
 # must be same names as parameters of the actual optimizer
 optim:
-  lr: 0.001
+  lr: [0.001, 0.1]
   weight_decay: 0.0001
   momentum: 0.9
   nesterov: True
 
+evaluate_test: 1 # use best model version on test
+
 
 # this inputs will go to your specific model __init__
-special_inputs:
-  input_dim: 4
+#special_inputs:
 
-  
+
+
 trainer:
     name: torch_trainer
     tag: 'uan'
-    resources_per_trial:
-      cpu: 2
-      gpu: 0
-
     save: 1
     epochs: 100
     log_valid_every: 20
+    tune:
+      resources_per_trial:
+        cpu: 2
+        gpu: 0
+
 
 
 dataset:

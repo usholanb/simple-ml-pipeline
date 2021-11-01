@@ -20,18 +20,19 @@ optim:
 # this inputs will go to your specific model __init__
 special_inputs:
   lr: 0.001
-  input_dim: 3
+#  input_dim: 3
 
   
 trainer:
     name: torch_trainer
     tag: 'uan'
-    resources_per_trial:
-      cpu: 2
-      gpu: 0
     save: 1
     epochs: 100
     log_valid_every: 20
+    tune:
+      resources_per_trial:
+        cpu: 2
+        gpu: 0
 
 
 dataset:
