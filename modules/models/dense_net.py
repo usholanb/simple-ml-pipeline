@@ -11,7 +11,7 @@ class DenseNetModel(BaseTorchModel):
         self.__dict__.update(special_inputs)
         self.layer1 = nn.Linear(self.input_dim, 10)
         self.layer2 = nn.Linear(10, 10)
-        self.layer3 = nn.Linear(10, 3)
+        self.layer3 = nn.Linear(10, len(self.label_types))
 
     def forward(self, x):
         x = F.relu(self.layer1(x))

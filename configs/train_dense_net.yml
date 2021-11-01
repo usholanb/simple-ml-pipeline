@@ -19,8 +19,8 @@ evaluate_test: 1 # use best model version on test
 
 
 # this inputs will go to your specific model __init__
-special_inputs:
-  lr: [0.001, 0.1]
+#special_inputs:
+
 
 
 trainer:
@@ -40,4 +40,10 @@ dataset:
   input_path: processed_data/toy_dataset_output.csv
   type: csv
 
+
+features_list:
+  - sepal width (cm)
+#  - petal length (cm)
+  - petal width (cm)
+  - sepal length (cm)
 

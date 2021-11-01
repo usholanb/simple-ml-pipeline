@@ -37,7 +37,6 @@ class TorchTrainer(DefaultTrainer):
         for i in range(self.configs.get('trainer').get('epochs', 10)):
             wrapper.train()
             optimizer.zero_grad()
-
             # for batch in train_loader:
             outputs = wrapper.forward(data['train_x'])
             probs = self.wrapper.output_function(outputs)
@@ -46,20 +45,21 @@ class TorchTrainer(DefaultTrainer):
             optimizer.step()
 
             if i % self.configs.get('trainer').get('log_valid_every', 10) == 0:
-                wrapper.eval()
-                # for valid_batch
-                valid_outputs = wrapper.forward(data['valid_x'])
-                valid_probs = self.wrapper.output_function(valid_outputs)
-                valid_loss = self.get_loss(data['valid_y'], valid_probs)
+                if torch.no_grad():
+                    wrapper.eval()
+                    # for valid_batch
+                    valid_outputs = wrapper.forward(data['valid_x'])
+                    valid_probs = self.wrapper.output_function(valid_outputs)
+                    valid_loss = self.get_loss(data['valid_y'], valid_probs)
 
-                losses = {'train': loss.item(), 'valid': valid_loss.item()}
-                if inside_tune():
-                    if 'valid' in losses:
-                        tune.report(valid_loss=losses['valid'])
-                    if 'test' in losses:
-                        tune.report(test_loss=losses['test'])
-                else:
-                    print(losses)
+                    losses = {'train': loss.item(), 'valid': valid_loss.item()}
+                    if inside_tune():
+                        if 'valid' in losses:
+                            tune.report(valid_loss=losses['valid'])
+                        if 'test' in losses:
+                            tune.report(test_loss=losses['test'])
+                    else:
+                        print(losses)
 
     # def output_function(self, outputs):
     #     return torch.nn.LogSoftmax(dim=1)(outputs)

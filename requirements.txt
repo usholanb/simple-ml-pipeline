@@ -1,2 +1,3 @@
 pip install -U ray
-pip3 install tabulate
+pip install tabulate
+pip install scikit-learn
