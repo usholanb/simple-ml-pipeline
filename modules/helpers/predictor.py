@@ -21,8 +21,8 @@ class Predictor:
             model_path = f'{CLASSIFIERS_DIR}/{model_name_tag}.pkl'
             wrapper = unpickle_obj(model_path)
             probs = wrapper.predict_proba(self.dataset)
-            for label_index, label in enumerate(wrapper.label_types):
-                output_dataset[f'{model_name_tag}_{label_index}'] = probs[:, label_index]
+            for label, label_index in wrapper.label_types.items():
+                output_dataset[f'{model_name_tag}_{label}'] = probs[:, label_index]
         for split_name in output_dataset['split'].unique():
             split = output_dataset.loc[output_dataset['split'] == split_name]
             dataset_path = self.configs.get('dataset').get('input_path')

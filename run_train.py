@@ -32,7 +32,8 @@ def train(configs: Dict) -> None:
             **configs.get('trainer').get('tune'),
 
         )
-        best_configs = analysis.get_best_config(metric="valid_loss", mode="min")
+        best_configs = analysis.get_best_config(metric="valid_accuracy", mode="max")
+
         print("Best configs: ", best_configs.get('optim'))
     else:
         train_one(configs, dataset)

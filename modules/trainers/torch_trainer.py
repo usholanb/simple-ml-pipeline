@@ -6,7 +6,7 @@ from modules.wrappers.base_wrappers.torch_wrapper import TorchWrapper
 from utils.common import inside_tune, setup_imports
 from utils.registry import registry
 import torch
-from ray import tune
+from pprint import pprint
 import torch.optim as optim
 
 
@@ -49,23 +49,10 @@ class TorchTrainer(DefaultTrainer):
                     wrapper.eval()
                     valid_outputs = wrapper.forward(data['valid_x'])
                     metrics = self.get_split_metrics(data['valid_y'], valid_outputs)
-                    self.log_metrics(metrics)
-        print(self.get_metrics(data))
+                    self.log_metrics(metrics, split_name='valid')
+        pprint(self.get_metrics(data))
 
-    def get_metrics(self, data):
-        s_metrics = {}
-        for split_name in ['train', 'valid', 'test']:
-            outputs = self.wrapper.forward(data[f'{split_name}_x'])
-            s_metrics[split_name] = self.get_split_metrics(data[f'{split_name}_y'], outputs)
-        return s_metrics
 
-    def get_split_metrics(self, y_true, y_outputs):
-        setup_imports()
-        metrics = {}
-        for metric_name in ['accuracy']:
-            metric = registry.get_metric_class(metric_name)()
-            metrics[metric_name] = metric.compute_metric(y_true, y_outputs)
-        return metrics
 
     def output_function(self, outputs):
         return torch.nn.LogSoftmax(dim=1)(outputs)

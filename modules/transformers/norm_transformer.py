@@ -5,6 +5,7 @@ from utils.registry import registry
 
 @registry.register_transformer('norm')
 class Norm(DefaultTransformer):
-    def set_transformer(self):
-        return lambda x: x / np.linalg.norm(x)
 
+    def apply(self, vector: np.ndarray) -> np.ndarray:
+        """ applys a transformer on 1D or 2D array vector """
+        return vector / np.linalg.norm(vector)

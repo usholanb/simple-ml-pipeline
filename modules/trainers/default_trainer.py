@@ -1,7 +1,8 @@
+import numpy as np
 from ray import tune
 from modules.trainers.base_trainer import BaseTrainer
 from typing import Dict, AnyStr
-from utils.common import inside_tune
+from utils.common import inside_tune, setup_imports
 from modules.wrappers.base_wrappers.base_wrapper import BaseWrapper
 from utils.common import pickle_obj
 from utils.constants import CLASSIFIERS_DIR
@@ -12,9 +13,12 @@ class DefaultTrainer(BaseTrainer):
     def __init__(self, configs, dataset):
         self.configs = configs
         self.dataset = dataset
-        self.label_types = sorted(dataset.iloc[:, self.configs.get('constants').get('FINAL_LABEL_INDEX')].unique())
         self.split_i = self.configs.get('constants').get('FINAL_SPLIT_INDEX')
         self.label_i = self.configs.get('constants').get('FINAL_LABEL_INDEX')
+        self.label_types = {v: index for index, v in enumerate(sorted(dataset.iloc[:, self.label_i].unique()))}
+        self.dataset.iloc[:, self.label_i] = np.array(
+            [self.label_types[y] for y in self.dataset.iloc[:, self.label_i].tolist()]
+        )
         self.split_column = dataset.iloc[:, self.split_i]
         self.wrapper = None
 
@@ -51,8 +55,27 @@ class DefaultTrainer(BaseTrainer):
         if self.configs.get('trainer').get('save'):
             pickle_obj(self.wrapper, self.model_path())
 
-    def log_metrics(self, losses):
+    def log_metrics(self, results, split_name=''):
+        if split_name:
+            split_name = f'{split_name}_'
+            results = dict([(f'{split_name}{k}', v) for k, v in results.items()])
         if inside_tune():
-            tune.report(valid_loss=losses['valid'])
+            tune.report(**results)
         else:
-            print(losses)
+            to_print = '_'.join([f'{k}: {v}' for k, v in results.items()])
+            print(to_print)
+
+    def get_metrics(self, data):
+        s_metrics = {}
+        for split_name in ['train', 'valid', 'test']:
+            outputs = self.wrapper.forward(data[f'{split_name}_x'])
+            s_metrics[split_name] = self.get_split_metrics(data[f'{split_name}_y'], outputs)
+        return s_metrics
+
+    def get_split_metrics(self, y_true, y_outputs):
+        setup_imports()
+        metrics = {}
+        for metric_name in ['accuracy']:
+            metric = registry.get_metric_class(metric_name)()
+            metrics[metric_name] = metric.compute_metric(y_true, y_outputs)
+        return metrics

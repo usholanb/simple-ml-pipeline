@@ -234,3 +234,10 @@ def add_grid_search_parameters(configs: Dict) -> bool:
 def inside_tune() -> bool:
     return ray.tune.is_session_enabled()
 
+
+class Singleton(type):
+    _instances = {}
+    def __call__(cls, *args, **kwargs):
+        if cls not in cls._instances:
+            cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
+        return cls._instances[cls]

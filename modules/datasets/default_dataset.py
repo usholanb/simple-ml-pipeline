@@ -44,58 +44,30 @@ class DefaultDataset(BaseDataset):
             'test': test_df,
         }
 
-
-        #
-        # data = {}
-        # for split_name, i_path in input_paths.items():
-        #     split = self.read_source(i_path)
-        #     data[split_name] = self.apply_transformers(split)
-        #
-        #
-        # name_splits = [(name, s) for name, s in data.items()]
-        # data = pd.concat([e[1] for e in name_splits])
-        # s_to_ratio = {name: len(v) / len(data) for (name, v) in name_splits}
-        # if 'valid' not in s_to_ratio and 'test' not in s_to_ratio:
-        #     # if one file then ratio as in config
-        #     ratio = self.configs.get('dataset').get('split_ratio')
-        # else:
-        #
-        #
-        #
-        # if self.configs.get('dataset').get('split_ratio').get('final', False):
-        #
-        #
-        # final_data = {}
-        # split_ratio = self.configs.get('dataset').get('split_ratio')
-        # train_ratio = split_ratio['train']
-        # train_end = int(train_ratio * len(data))
-        # final_data['train'] = data.loc[:train_end - 1, :]
-        # if 'valid' in split_ratio and 'test' in split_ratio:
-        #     eval_ratio = split_ratio['valid']
-        #     eval_end = train_end + int(eval_ratio * len(data))
-        #     final_data['valid'] = data.loc[train_end: eval_end - 1, :]
-        #     final_data['test'] = data.loc[eval_end:, :]
-        # else:
-        #     other_set = 'test' if 'test' in split_ratio else 'eval'
-        #     final_data[other_set] = data.loc[train_end:, :]
-        # return final_data
-
     def apply_transformers(self, data: pd.DataFrame) -> pd.DataFrame:
         setup_imports()
         transformers = {}
+        processed_data = pd.DataFrame()
         for feature, t_name_list in self.configs.get('features_list', {}).items():
             t_name_list = t_name_list if isinstance(t_name_list, list) else [t_name_list]
-            processed_vector = data[feature].values
+            feature_to_process = data[feature].values
             for t_name in t_name_list:
                 if t_name not in transformers:
                     t_obj = registry.get_transformer_class(t_name)()
                     transformers[t_name] = t_obj
                 else:
                     t_obj = transformers[t_name]
-                processed_vector = t_obj.apply(processed_vector)
+                feature_to_process = t_obj.apply(feature_to_process)
+            if len(feature_to_process.shape) == 1:
+                processed_data[feature] = feature_to_process
+            elif len(feature_to_process.shape) == 2:
+                for i in range(feature_to_process.shape[1]):
+                    processed_data[f'{feature}_{i + 1}'] = feature_to_process[:, i]
+            else:
+                raise ValueError('feature after transformation has 0 or'
+                                 ' 3+ dimensions. Must be 1 or 2')
 
-            data[feature] = processed_vector
-        return data
+        return processed_data
 
     def collect(self) -> None:
         input_paths = self.configs.get('dataset').get('input_path')
@@ -111,7 +83,7 @@ class DefaultDataset(BaseDataset):
         label_i = self.configs.get('constants').get('FINAL_LABEL_INDEX')
         if isinstance(data.iloc[0, label_i], float):
             data.iloc[:, label_i] = data.iloc[:, label_i].astype('int32')
-        self.data = data
+        self.data = self.apply_transformers(data)
 
     def concat_dataset(self, data: Dict) -> pd.DataFrame:
         for split_name, split in data.items():

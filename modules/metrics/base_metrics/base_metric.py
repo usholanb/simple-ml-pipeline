@@ -2,9 +2,11 @@ from abc import ABC, abstractmethod
 import numpy as np
 import torch
 
+from utils.common import Singleton
+
 
 class BaseMetric(ABC):
-    """ computes metrcis """
+    """ computes metrics """
 
     @abstractmethod
     def compute_metric(self, y_true, y_outputs) -> float:
@@ -17,3 +19,5 @@ class BaseMetric(ABC):
     @abstractmethod
     def compute_metric_torch(self, y_true: torch.Tensor, y_outputs: torch.Tensor) -> float:
         """ computes certain metric for torch tensor input """
+
+

@@ -7,15 +7,7 @@ class BaseTransformer(ABC):
 
     @abstractmethod
     def apply(self, vector: np.ndarray) -> np.ndarray:
-        """ runs a transformer """
+        """ applys a transformer on 1D or 2D array vector """
 
-    @abstractmethod
-    def set_transformer(self) -> None:
-        """ sets _transformer """
-
-    @property
-    @abstractmethod
-    def transformer(self) -> None:
-        """ a function that processes a feature """
 
 

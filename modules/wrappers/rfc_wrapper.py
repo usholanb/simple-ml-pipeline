@@ -12,9 +12,12 @@ class RFCWrapper(SKLearnWrapper):
         return RandomForestClassifier(**hps)
 
     def forward(self, examples):
-        """ outputs probs, rewrite if your sklearn model
-                                    doesnt have this function"""
-        return self.clf.predict(examples)
+        """ random forest can only make predictions, but this function
+                must return probs format, so converting to 2D"""
+        pred = self.clf.predict(examples)
+        result = np.zeros((len(examples), len(self.label_types)))
+        result[np.arange(len(examples)), pred] = 1
+        return result
 
     def predict_proba(self, examples) -> np.ndarray:
         """ makes prediction on pandas examples of dim N X M
