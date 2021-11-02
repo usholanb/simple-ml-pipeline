@@ -16,7 +16,7 @@ class TorchWrapper(DefaultWrapper):
         if self._features_list:
             examples = examples[self._features_list]
         else:
-            examples = examples.loc[:, 2:]
+            examples = examples.loc[:, len(self.configs.get('static_columns')):]
         examples = examples.values.astype(float)
         if len(examples.shape) == 1:
             examples = examples.reshape((1, -1))
@@ -38,6 +38,6 @@ class TorchWrapper(DefaultWrapper):
 
     def get_output_function(self) -> torch.nn.Module:
         """ member field, activation function defined in __init__ """
-        f = self.config.get('model').get('activation_function',
-                                         {'name': 'LogSoftmax', 'dim': 1})
+        f = self.configs.get('model').get('activation_function',
+                                          {'name': 'LogSoftmax', 'dim': 1})
         return getattr(torch.nn, f.get('name'))(dim=f.get('dim'))

@@ -6,12 +6,13 @@ from utils.registry import registry
 import pandas as pd
 
 
-def predict(configs):
+def prediction(configs):
     """ Prepares Dataset """
     setup_imports()
     dataset = pd.read_csv(configs.get('dataset').get('input_path'))
     predictor = Predictor(configs, dataset)
-    predictor.predict()
+    output_dataset = predictor.predict()
+    predictor.save_probs(output_dataset)
 
 
 if __name__ == '__main__':
@@ -20,4 +21,4 @@ if __name__ == '__main__':
     parser = prediction_flags.parser
     args = parser.parse_args()
     configs = build_config(args)
-    predict(configs)
+    prediction(configs)

@@ -3,7 +3,7 @@ includes:
 
 model:
   name: rfc
-  tag: uan
+  tag: uan2
 
 # inputs go to __init__ of the model (sklearn RFC model in this case)
 special_inputs:
@@ -13,7 +13,6 @@ special_inputs:
   
 trainer:
     name: sklearn_trainer
-    tag: uan2
     save: 1
     tune:
       resources_per_trial:

@@ -1,6 +1,5 @@
 from abc import ABC, abstractmethod
 from typing import Dict, AnyStr
-from modules.helpers.saver import Saver
 from dependency_injector.wiring import Provide, inject
 
 
@@ -32,7 +31,7 @@ class BaseDataset(ABC):
         return self.configs.get('dataset').get('name')
 
     @abstractmethod
-    def save(self, saver: Saver) -> None:
+    def save(self) -> None:
         """ Saves the final dataset locally or externally """
 
     @abstractmethod

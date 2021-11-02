@@ -8,12 +8,17 @@ from modules.wrappers.base_wrappers.torch_wrapper import TorchWrapper
 from utils.common import inside_tune, setup_imports
 from utils.registry import registry
 import torch
-from pprint import pprint
+import pandas as pd
 import torch.optim as optim
+from typing import Dict
 
 
 @registry.register_trainer('torch_trainer')
 class TorchTrainer(DefaultTrainer):
+
+    def __init__(self, configs: Dict, dataset: pd.DataFrame):
+        super().__init__(configs, dataset)
+        self.criterion = self.get_loss()
 
     def prepare_train(self):
         data = super().prepare_train()
@@ -42,7 +47,7 @@ class TorchTrainer(DefaultTrainer):
             optimizer.zero_grad()
             outputs = self.wrapper.forward(data['train_x'])
             probs = self.wrapper.output_function(outputs)
-            loss = self.get_loss(data['train_y'], probs)
+            loss = self.criterion(probs, data['train_y'])
             loss.backward()
             optimizer.step()
 
@@ -67,6 +72,7 @@ class TorchTrainer(DefaultTrainer):
         optim_func = getattr(optim, optim_name)
         return optim_func(model.parameters(), **self.configs.get('optim'))
 
-    def get_loss(self, y_true, y_pred) -> float:
-
-        return torch.nn.NLLLoss()(y_pred, y_true)
+    def get_loss(self) -> torch.nn.Module:
+        loss_name = self.configs.get('trainer').get('loss', 'NLLLoss')
+        criterion = getattr(torch.nn, loss_name)()
+        return criterion

@@ -14,7 +14,7 @@ class RFCWrapper(SKLearnWrapper):
     def forward(self, examples):
         """ random forest can only make predictions, but this function
                 must return probs format, so converting to 2D"""
-        pred = self.clf.predict(examples)
+        pred = self.clf.prediction(examples).astype(int)
         result = np.zeros((len(examples), len(self.label_types)))
         result[np.arange(len(examples)), pred] = 1
         return result
@@ -25,10 +25,10 @@ class RFCWrapper(SKLearnWrapper):
         if self._features_list:
             examples = examples[self._features_list]
         else:
-            examples = examples.iloc[:, 2:]
+            examples = examples.iloc[:, len(self.configs.get('static_columns')):]
         examples = examples.values.astype(float)
         if len(examples.shape) == 1:
             examples = examples.reshape((1, -1))
         probs = np.zeros((len(examples), (len(self.label_types))))
-        probs[np.arange(len(examples)), self.clf.predict(examples)] = 1
+        probs[np.arange(len(examples)), self.clf.predict(examples).astype(int)] = 1
         return probs

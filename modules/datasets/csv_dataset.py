@@ -1,9 +1,8 @@
-from modules.containers.di_containers import SaverContainer
 from modules.datasets.default_dataset import DefaultDataset
-from modules.helpers.saver import Saver
+from modules.helpers.csv_saver import CSVSaver
 from utils.registry import registry
 import pandas as pd
-from typing import Dict, AnyStr, List
+from typing import Dict, AnyStr
 
 
 @registry.register_dataset('csv_dataset')
@@ -17,8 +16,8 @@ class CSVDataset(DefaultDataset):
             df = df.drop(columns=[df.columns[0]])
         return df
 
-    def save(self, saver: Saver) -> None:
-        saver.save(self.data, self.configs)
+    def save(self) -> None:
+        CSVSaver(self.configs).save(self.data, self.configs)
 
     def reset_label_index(self, data: Dict, label_index: (AnyStr, int)) -> Dict:
         for split_name, split in data.items():

@@ -8,9 +8,5 @@ class BaseTrainer(ABC):
         """ trains the model with dataset """
 
     @abstractmethod
-    def get_loss(self, y_true, y_pred) -> float:
-        """ returns some loss func """
-
-    @abstractmethod
     def save(self) -> None:
         """ saves model """

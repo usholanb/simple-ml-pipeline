@@ -7,7 +7,7 @@ from utils.registry import registry
 class SpecialWrapper(TorchWrapper):
     def get_classifier(self, inputs: Dict):
         return registry.get_model_class(
-            self.config.get('model').get('name')
+            self.configs.get('model').get('name')
         )(inputs)
 
     def parameters(self):

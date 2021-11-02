@@ -12,7 +12,7 @@ class SKLearnWrapper(DefaultWrapper):
         if self._features_list:
             examples = examples[self._features_list]
         else:
-            examples = examples.iloc[:, 2:]
+            examples = examples.iloc[:, len(self.configs.get('static_columns')):]
         examples = examples.values.astype(float)
         if len(examples.shape) == 1:
             examples = examples.reshape((1, -1))

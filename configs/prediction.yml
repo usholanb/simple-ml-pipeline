@@ -7,20 +7,8 @@ dataset:
 
 
 models:
-  uan: dynamic_net
+  uan: dense_net
   uan2: rfc
-
-# must be same names as parameters of the actual optimizer
-optim:
-  lr: 0.0001
-  weight_decay: 0.0001
-  momentum: 0.9
-  nesterov: True
-
-
-# this inputs will go to your specific model __init__
-special_inputs:
-  lr: 0.001
 
   
 trainer:

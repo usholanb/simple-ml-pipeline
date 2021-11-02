@@ -28,11 +28,14 @@ class DefaultTrainer(BaseTrainer):
             print('features_list not specified')
         f_list = DefaultTrainer.figure_feature_list(features_list, self.dataset.columns)
         for split in ['train', 'valid', 'test']:
-            data[f'{split}_y'] = self.dataset.loc[self.split_column == split].iloc[:, self.label_i].values
+            data[f'{split}_y'] = \
+                self.dataset.loc[self.split_column == split].iloc[:, self.label_i].values
             if features_list:
-                data[f'{split}_x'] = self.dataset.loc[self.split_column == split][f_list].values
+                data[f'{split}_x'] = \
+                    self.dataset.loc[self.split_column == split][f_list].values
             else:
-                data[f'{split}_x'] = self.dataset.loc[self.split_column == split].iloc[:, len(self.configs.get('static_columns')):].values
+                data[f'{split}_x'] = \
+                    self.dataset.loc[self.split_column == split].iloc[:, len(self.configs.get('static_columns')):].values
         self.configs['features_list'] = f_list
         return data
 
