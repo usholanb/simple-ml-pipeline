@@ -20,7 +20,7 @@ trainer:
         cpu: 2
         gpu: 0
 
-    metrics: accuracy
+    metrics: [accuracy, precision]
     grid_metrics: valid_accuracy
 
 dataset:

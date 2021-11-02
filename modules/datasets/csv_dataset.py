@@ -17,9 +17,6 @@ class CSVDataset(DefaultDataset):
             df = df.drop(columns=[df.columns[0]])
         return df
 
-    def shuffle(self, data: pd.DataFrame) -> pd.DataFrame:
-        return data.sample(frac=1).reset_index(drop=True)
-
     def save(self, saver: Saver) -> None:
         saver.save(self.data, self.configs)
 

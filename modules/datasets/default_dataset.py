@@ -1,4 +1,4 @@
-from typing import Dict, Tuple
+from typing import Dict, Tuple, AnyStr
 import pandas as pd
 from modules.datasets.base_dataset import BaseDataset
 from utils.common import setup_imports
@@ -14,7 +14,7 @@ class DefaultDataset(BaseDataset):
     def split_df(self, ratio: float, df: pd.DataFrame)  \
             -> Tuple[pd.DataFrame, pd.DataFrame]:
         first_index = int(len(df) * ratio)
-        return df.loc[:first_index - 1, :], df.loc[first_index:, :]
+        return df.iloc[:first_index, :], df.iloc[first_index:, :]
 
     def split(self, input_paths: Dict) -> Dict:
         r = self.configs.get('dataset').get('split_ratio')
@@ -23,12 +23,12 @@ class DefaultDataset(BaseDataset):
             "if only 1 file is input, it must be train, " \
             "if multiple given, at least one of them must be train"
         if 'valid' not in input_paths and 'test' not in input_paths:
-            data = self.read_source(input_paths['train'])
+            data = self.shuffle(self.read_source(input_paths['train']))
             train_df, valid_df = self.split_df(train, data)
             valid_df, test_df = self.split_df(valid / (valid + test), valid_df)
         elif 'valid' not in input_paths:
             train = train / (train + valid)
-            train_df = self.read_source(input_paths['train'])
+            train_df = self.shuffle(self.read_source(input_paths['train']))
             test_df = self.read_source(input_paths['test'])
             train_df, valid_df = self.split_df(train, train_df)
         elif 'test' not in input_paths:
@@ -36,6 +36,7 @@ class DefaultDataset(BaseDataset):
             train_df = self.read_source(input_paths['train'])
             valid_df = self.read_source(input_paths['valid'])
             train_df, test_df = self.split_df(train, train_df)
+            train_df = self.shuffle(train_df)
         else:
             raise RuntimeError('at least train set file must exist')
         return {
@@ -76,16 +77,18 @@ class DefaultDataset(BaseDataset):
         if isinstance(input_paths, str):
             input_paths = {'train': input_paths}
         data = self.split(input_paths)
-
         assert 'train' in input_paths, 'one of the splits must be "train"'
-        if self.configs.get('dataset').get('shuffle', True):
-            data['train'] = self.shuffle(data['train'])
         data = self.reset_label_index(data, self.configs.get('dataset').get('label'))
         data = self.concat_dataset(data)
         label_i = self.configs.get('constants').get('FINAL_LABEL_INDEX')
         if isinstance(data.iloc[0, label_i], float):
             data.iloc[:, label_i] = data.iloc[:, label_i].astype('int32')
         self.data = self.apply_transformers(data)
+
+    def shuffle(self, data: pd.DataFrame) -> pd.DataFrame:
+        if self.configs.get('dataset').get('shuffle', True):
+            data = data.sample(frac=1).reset_index(drop=True)
+        return data
 
     def concat_dataset(self, data: Dict) -> pd.DataFrame:
         for split_name, split in data.items():

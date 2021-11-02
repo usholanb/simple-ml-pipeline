@@ -33,6 +33,7 @@ trainer:
         gpu: 0
     metrics:
       - accuracy
+      - precision
 
 
 

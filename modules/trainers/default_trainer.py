@@ -64,15 +64,16 @@ class DefaultTrainer(BaseTrainer):
         if inside_tune():
             tune.report(**results)
         else:
-            to_print = '_'.join([f'{k}: {v}' for k, v in results.items()])
+            to_print = '  '.join([f'{k}: {v}' for k, v in results.items()])
             print(to_print)
 
-    def get_metrics(self, data):
-        s_metrics = {}
+    def print_metrics(self, data):
+
         for split_name in ['train', 'valid', 'test']:
             outputs = self.wrapper.forward(data[f'{split_name}_x'])
-            s_metrics[split_name] = self.get_split_metrics(data[f'{split_name}_y'], outputs)
-        return s_metrics
+            s_metrics = self.get_split_metrics(data[f'{split_name}_y'], outputs)
+            s_metrics = "\n".join([f"{k}:{v}" for k, v in s_metrics.items()])
+            print(f'{split_name}:\n{s_metrics}\n')
 
     def get_split_metrics(self, y_true, y_outputs):
         setup_imports()

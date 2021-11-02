@@ -20,7 +20,7 @@ class SKLearnTrainer(DefaultTrainer):
         probs = wrapper.forward(split_x)
         metrics = self.get_split_metrics(split_y, probs)
         self.log_metrics(metrics, split_name='valid')
-        print(self.get_metrics(data))
+        self.print_metrics(data)
 
     def get_loss(self, y_true: np.ndarray, y_pred: np.ndarray) -> float:
         if len(y_pred.shape) == 1:

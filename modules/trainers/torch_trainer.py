@@ -55,7 +55,7 @@ class TorchTrainer(DefaultTrainer):
                     self.log_metrics(valid_metrics, split_name='valid')
 
         with torch.no_grad():
-            pprint(self.get_metrics(data))
+            self.print_metrics(data)
 
     def output_function(self, outputs):
         return torch.nn.LogSoftmax(dim=1)(outputs)

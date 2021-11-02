@@ -6,10 +6,10 @@ includes:
 
 dataset:
   name: csv_dataset
-  input_path:
-    train: data/toy_dataset.csv
-    test: data/toy_dataset2.csv
-#  input_path: data/toy_dataset.csv
+#  input_path:
+#    train: data/toy_dataset.csv
+#    test: data/toy_dataset2.csv
+  input_path: data/toy_dataset.csv
   output_path: processed_data/toy_dataset_output.csv
   # index or name of the labels column in the input data
   label: target
