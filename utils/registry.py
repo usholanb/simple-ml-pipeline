@@ -33,6 +33,14 @@ class Registry:
     }
 
     @classmethod
+    def add_this_to(cls, func, name, mapping_name):
+        if name not in cls.mapping[mapping_name]:
+            cls.mapping[mapping_name][name] = func
+        else:
+            raise KeyError(f'function {name} already defined in {mapping_name}')
+
+
+    @classmethod
     def register_dataset(cls, name):
         r"""Register a dataset to registry with key 'name'
         Args:
@@ -46,7 +54,7 @@ class Registry:
         """
 
         def wrap(func):
-            cls.mapping["dataset_name_mapping"][name] = func
+            cls.add_this_to(func, name, 'dataset_name_mapping')
             return func
 
         return wrap
@@ -55,7 +63,7 @@ class Registry:
     def register_wrapper(cls, name):
 
         def wrap(func):
-            cls.mapping["wrapper_name_mapping"][name] = func
+            cls.add_this_to(func, name, 'wrapper_name_mapping')
             return func
 
         return wrap
@@ -64,7 +72,7 @@ class Registry:
     def register_transformer(cls, name):
 
         def wrap(func):
-            cls.mapping["transformer_name_mapping"][name] = func
+            cls.add_this_to(func, name, 'transformer_name_mapping')
             return func
 
         return wrap
@@ -73,7 +81,7 @@ class Registry:
     def register_metric(cls, name):
 
         def wrap(func):
-            cls.mapping["metric_name_mapping"][name] = func
+            cls.add_this_to(func, name, 'metric_name_mapping')
             return func
 
         return wrap
@@ -90,7 +98,7 @@ class Registry:
         """
 
         def wrap(func):
-            cls.mapping["model_name_mapping"][name] = func
+            cls.add_this_to(func, name, 'model_name_mapping')
             return func
 
         return wrap
@@ -113,7 +121,7 @@ class Registry:
             assert issubclass(
                 func, Logger
             ), "All loggers must inherit Logger class"
-            cls.mapping["logger_name_mapping"][name] = func
+            cls.add_this_to(func, name, 'logger_name_mapping')
             return func
 
         return wrap
@@ -131,7 +139,7 @@ class Registry:
         """
 
         def wrap(func):
-            cls.mapping["trainer_name_mapping"][name] = func
+            cls.add_this_to(func, name, 'trainer_name_mapping')
             return func
 
         return wrap

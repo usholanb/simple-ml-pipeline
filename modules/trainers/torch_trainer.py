@@ -15,6 +15,8 @@ class TorchTrainer(DefaultTrainer):
 
     def prepare_train(self):
         data = super().prepare_train()
+        self.configs['special_inputs'].update({'input_dim': data['train_x'].shape[1]})
+        self.configs['special_inputs'].update({'label_types': self.label_types})
         torch_data = {}
         for split_name, split in data.items():
             t = torch.tensor(split)

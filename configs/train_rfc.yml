@@ -1,8 +1,6 @@
 includes:
   - configs/constant_configs.yml
 
-
-
 model:
   name: rfc
   tag: uan
