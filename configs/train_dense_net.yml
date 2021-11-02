@@ -23,7 +23,8 @@ evaluate_test: 1 # use best model version on test
 
 trainer:
     name: torch_trainer
-    tag: 'uan'
+    tag: uan
+    optim: Adam
     save: 1
     epochs: 100
     log_valid_every: 10

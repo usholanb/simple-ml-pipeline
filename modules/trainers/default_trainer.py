@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 from ray import tune
 from modules.trainers.base_trainer import BaseTrainer
 from typing import Dict, AnyStr
@@ -10,15 +11,12 @@ from utils.registry import registry
 
 
 class DefaultTrainer(BaseTrainer):
-    def __init__(self, configs, dataset):
+    def __init__(self, configs: Dict, dataset: pd.DataFrame):
         self.configs = configs
         self.dataset = dataset
-        self.split_i = self.configs.get('constants').get('FINAL_SPLIT_INDEX')
-        self.label_i = self.configs.get('constants').get('FINAL_LABEL_INDEX')
-        self.label_types = {v: index for index, v in enumerate(sorted(dataset.iloc[:, self.label_i].unique()))}
-        self.dataset.iloc[:, self.label_i] = np.array(
-            [self.label_types[y] for y in self.dataset.iloc[:, self.label_i].tolist()]
-        )
+        self.split_i = self.configs.get('static_columns').get('FINAL_SPLIT_INDEX')
+        self.label_i = self.configs.get('static_columns').get('FINAL_LABEL_INDEX')
+        self.label_types = {v: index for index, v in enumerate(sorted(self.dataset.iloc[:, self.label_i].unique()))}
         self.split_column = dataset.iloc[:, self.split_i]
         self.wrapper = None
 
@@ -34,7 +32,7 @@ class DefaultTrainer(BaseTrainer):
             if features_list:
                 data[f'{split}_x'] = self.dataset.loc[self.split_column == split][f_list].values
             else:
-                data[f'{split}_x'] = self.dataset.loc[self.split_column == split].iloc[:, 2:].values
+                data[f'{split}_x'] = self.dataset.loc[self.split_column == split].iloc[:, len(self.configs.get('static_columns')):].values
         self.configs['features_list'] = f_list
         return data
 
@@ -64,7 +62,7 @@ class DefaultTrainer(BaseTrainer):
         if inside_tune():
             tune.report(**results)
         else:
-            to_print = '  '.join([f'{k}: {v}' for k, v in results.items()])
+            to_print = '  '.join([f'{k}: {"{:10.4f}".format(v)}' for k, v in results.items()])
             print(to_print)
 
     def print_metrics(self, data):

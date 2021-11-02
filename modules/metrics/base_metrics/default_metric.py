@@ -18,7 +18,7 @@ class DefaultMetric(BaseMetric):
         else:
             raise TypeError('y_true at this point can be only torch '
                             'tensor or numpy array')
-        return "{:10.4f}".format(result)
+        return result
 
 
 

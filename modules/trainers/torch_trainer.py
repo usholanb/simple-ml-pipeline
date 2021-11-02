@@ -1,3 +1,5 @@
+from typing import Callable
+
 import numpy as np
 from torch.utils.data import DataLoader
 
@@ -57,11 +59,13 @@ class TorchTrainer(DefaultTrainer):
         with torch.no_grad():
             self.print_metrics(data)
 
-    def output_function(self, outputs):
+    def output_function(self, outputs: torch.Tensor) -> Callable:
         return torch.nn.LogSoftmax(dim=1)(outputs)
 
     def get_optimizer(self, model) -> torch.optim.Optimizer:
-        return optim.Adam(model.parameters(), **self.configs.get('optim'))
+        optim_name = self.configs.get('trainer').get('optim', 'Adam')
+        optim_func = getattr(optim, optim_name)
+        return optim_func(model.parameters(), **self.configs.get('optim'))
 
     def get_loss(self, y_true, y_pred) -> float:
 

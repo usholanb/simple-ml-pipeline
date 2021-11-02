@@ -49,8 +49,8 @@ class DefaultDataset(BaseDataset):
         setup_imports()
         transformers = {}
         processed_data = pd.DataFrame()
-        target_split = data[['target', 'split']]
-        processed_data[['target', 'split']] = target_split
+        target_split = data[['target_index', 'target', 'split']]
+        processed_data[['target_index', 'target', 'split']] = target_split
         for feature, t_name_list in self.configs.get('features_list', {}).items():
             t_name_list = t_name_list if isinstance(t_name_list, list) else [t_name_list]
             feature_to_process = data[feature].values
@@ -80,7 +80,7 @@ class DefaultDataset(BaseDataset):
         assert 'train' in input_paths, 'one of the splits must be "train"'
         data = self.reset_label_index(data, self.configs.get('dataset').get('label'))
         data = self.concat_dataset(data)
-        label_i = self.configs.get('constants').get('FINAL_LABEL_INDEX')
+        label_i = self.configs.get('static_columns').get('FINAL_LABEL_INDEX')
         if isinstance(data.iloc[0, label_i], float):
             data.iloc[:, label_i] = data.iloc[:, label_i].astype('int32')
         self.data = self.apply_transformers(data)
@@ -91,7 +91,15 @@ class DefaultDataset(BaseDataset):
         return data
 
     def concat_dataset(self, data: Dict) -> pd.DataFrame:
+        label_index = self.configs.get('static_columns').get('FINAL_LABEL_NAME_INDEX')
+        label_types = enumerate(sorted(pd.concat([s.iloc[:, label_index] for s in data.values()]).unique()))
+        label_types = dict([(v, k) for (k, v) in label_types])
         for split_name, split in data.items():
-            split.insert(loc=self.configs.get('constants').get('FINAL_SPLIT_INDEX'), column='split', value=split_name)
+            split.insert(loc=self.configs.get('static_columns')
+                         .get('FINAL_SPLIT_INDEX'), column='split', value=split_name)
+            labels = split.iloc[:, label_index].tolist()
+            labels_idx = [label_types[l] for l in labels]
+            split.insert(loc=self.configs.get('static_columns')
+                         .get('FINAL_LABEL_INDEX'), column='target_index', value=labels_idx)
         return pd.concat(data.values(), ignore_index=True)
 

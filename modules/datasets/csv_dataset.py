@@ -25,7 +25,7 @@ class CSVDataset(DefaultDataset):
             columns = split.columns.tolist()
             if isinstance(label_index, str):
                 label_index = columns.index(label_index)
-            label_i = self.configs.get('constants').get('FINAL_LABEL_INDEX')
+            label_i = self.configs.get('static_columns').get('FINAL_LABEL_NAME_INDEX')
             column_for_label = columns[label_i]
             columns[label_i] = columns[label_index]
             columns[label_index] = column_for_label

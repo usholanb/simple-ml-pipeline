@@ -24,7 +24,8 @@ special_inputs:
   
 trainer:
     name: torch_trainer
-    tag: 'uan'
+    tag: uan
+    optim: Adam
     save: 1
     epochs: 100
     log_valid_every: 20
@@ -32,7 +33,9 @@ trainer:
       resources_per_trial:
         cpu: 2
         gpu: 0
-
+    metrics:
+      - accuracy
+      - precision
 
 dataset:
   input_path: processed_data/toy_dataset_output.csv
