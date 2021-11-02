@@ -23,9 +23,9 @@ dataset:
 
 
 #Pick Transformers(defined in modules/transformers/) or create your own
-#defined: norm,
+#defined: norm, ohe
 features_list:
-  sepal width (cm): [ohe, norm]
-#  petal length (cm): norm
-#  petal width (cm): norm
-#  sepal length (cm): norm
+  sepal width (cm): [norm]
+  petal length (cm): norm
+  petal width (cm): norm
+  sepal length (cm): norm

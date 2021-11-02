@@ -48,6 +48,8 @@ class DefaultDataset(BaseDataset):
         setup_imports()
         transformers = {}
         processed_data = pd.DataFrame()
+        target_split = data[['target', 'split']]
+        processed_data[['target', 'split']] = target_split
         for feature, t_name_list in self.configs.get('features_list', {}).items():
             t_name_list = t_name_list if isinstance(t_name_list, list) else [t_name_list]
             feature_to_process = data[feature].values

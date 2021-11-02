@@ -13,7 +13,6 @@ class DefaultWrapper(BaseWrapper):
     @property
     def name(self) -> AnyStr:
         m_configs = self.config.get("model")
-        # hps = '_'.join([f'{k}_{v}' for k, v in sorted(self.config.get('optim').items())])
         return f'{m_configs.get("name")}_{m_configs.get("tag")}'
 
 

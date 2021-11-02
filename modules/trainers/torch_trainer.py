@@ -31,34 +31,35 @@ class TorchTrainer(DefaultTrainer):
         data = self.prepare_train()
         if 'special_inputs' not in self.configs:
             self.configs['special_inputs'] = {}
-        self.configs['special_inputs'].update({'input_dim': data['train_x'].shape[1]})
-        self.configs['special_inputs'].update({'label_types': self.label_types})
-        wrapper = self.get_wrapper()
-        optimizer = self.get_optimizer(wrapper)
+        self.get_wrapper()
+        optimizer = self.get_optimizer(self.wrapper)
         for i in range(self.configs.get('trainer').get('epochs', 10)):
-            wrapper.train()
+            self.wrapper.train()
             optimizer.zero_grad()
-            outputs = wrapper.forward(data['train_x'])
+            outputs = self.wrapper.forward(data['train_x'])
             probs = self.wrapper.output_function(outputs)
             loss = self.get_loss(data['train_y'], probs)
             loss.backward()
             optimizer.step()
 
-            if i % self.configs.get('trainer').get('log_valid_every', 10) == 0:
+            train_metrics = self.get_split_metrics(data['train_y'], outputs)
+            self.log_metrics(train_metrics, split_name='train')
+
+            if (i + 1) % self.configs.get('trainer').get('log_valid_every', 10) == 0:
                 with torch.no_grad():
-                    wrapper.eval()
-                    valid_outputs = wrapper.forward(data['valid_x'])
-                    metrics = self.get_split_metrics(data['valid_y'], valid_outputs)
-                    self.log_metrics(metrics, split_name='valid')
-        pprint(self.get_metrics(data))
+                    self.wrapper.eval()
+                    valid_outputs = self.wrapper.forward(data['valid_x'])
+                    valid_metrics = self.get_split_metrics(data['valid_y'], valid_outputs)
+                    self.log_metrics(valid_metrics, split_name='valid')
 
-
+        with torch.no_grad():
+            pprint(self.get_metrics(data))
 
     def output_function(self, outputs):
         return torch.nn.LogSoftmax(dim=1)(outputs)
 
     def get_optimizer(self, model) -> torch.optim.Optimizer:
-        return optim.SGD(model.parameters(), **self.configs.get('optim'))
+        return optim.Adam(model.parameters(), **self.configs.get('optim'))
 
     def get_loss(self, y_true, y_pred) -> float:
 

@@ -25,15 +25,21 @@ class DefaultTrainer(BaseTrainer):
     def prepare_train(self) -> Dict:
         """ splits data to train, test, valid and returns numpy array """
         data = {}
-        f_list = self.configs.get('features_list')
-        if not f_list:
+        features_list = self.configs.get('features_list')
+        if not features_list:
             print('features_list not specified')
+        f_list = DefaultTrainer.figure_feature_list(features_list, self.dataset.columns)
         for split in ['train', 'valid', 'test']:
             data[f'{split}_y'] = self.dataset.loc[self.split_column == split].iloc[:, self.label_i].values
-            if f_list:
+            if features_list:
                 data[f'{split}_x'] = self.dataset.loc[self.split_column == split][f_list].values
             else:
                 data[f'{split}_x'] = self.dataset.loc[self.split_column == split].iloc[:, 2:].values
+
+        self.configs['special_inputs'].update({'input_dim': data['train_x'].shape[1]})
+        self.configs['special_inputs'].update({'label_types': self.label_types})
+        self.configs['features_list'] = f_list
+
         return data
 
     def get_wrapper(self) -> BaseWrapper:
@@ -75,7 +81,18 @@ class DefaultTrainer(BaseTrainer):
     def get_split_metrics(self, y_true, y_outputs):
         setup_imports()
         metrics = {}
-        for metric_name in ['accuracy']:
+        for metric_name in self.configs.get('trainer').get('metrics'):
             metric = registry.get_metric_class(metric_name)()
             metrics[metric_name] = metric.compute_metric(y_true, y_outputs)
         return metrics
+
+    @staticmethod
+    def figure_feature_list(f_list, available_features):
+        final_list = []
+        for available_feature in available_features:
+            for feature in f_list:
+                if feature == available_feature \
+                        or '_'.join(available_feature.split('_')[:-1]) == feature:
+                    final_list.append(available_feature)
+        return final_list
+
