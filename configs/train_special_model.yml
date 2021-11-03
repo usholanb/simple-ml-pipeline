@@ -5,12 +5,11 @@ includes:
 model:
   name: dynamic_net
   tag: uan
-  activation: LogSoftmax
 
 
 # must be same names as parameters of the actual optimizer
 optim:
-  lr: [0.01, 0.001]
+  lr: 0.01
   weight_decay: 0.0001
 #  momentum: 0.9
 #  nesterov: True
@@ -26,10 +25,10 @@ trainer:
     name: torch_trainer
     tag: uan
     optim: Adam
-    loss: MSELoss
+    loss: NLLLoss
     save: 1
-    epochs: 10
-    log_valid_every: 2
+    epochs: 100
+    log_valid_every: 10
     tune:
       resources_per_trial:
         cpu: 2

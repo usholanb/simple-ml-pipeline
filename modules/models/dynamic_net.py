@@ -56,7 +56,6 @@ class DynamicNet(BaseTorchModel):
             return None
         middle_feat_cum = None
         prediction = None
-        # with torch.no_grad():
         for m in self.models:
             if middle_feat_cum is None:
                 middle_feat_cum, prediction = m(x, middle_feat_cum)

@@ -16,6 +16,16 @@ class DefaultWrapper(BaseWrapper):
         m_configs = self.configs.get("model")
         return f'{m_configs.get("name")}_{m_configs.get("tag")}'
 
+    def filter_features(self, examples):
+        if self._features_list:
+            examples = examples[self._features_list]
+        else:
+            examples = examples.iloc[:, len(self.configs.get('static_columns')):]
+        examples = examples.values.astype(float)
+        if len(examples.shape) == 1:
+            examples = examples.reshape((1, -1))
+        return examples
+
 
 
 

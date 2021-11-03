@@ -7,16 +7,12 @@ dataset:
 
 
 models:
-  uan: dense_net
+  uan: dynamic_net
   uan2: rfc
 
   
 trainer:
     name: torch_trainer
-    tag: 'uan'
-    resources_per_trial:
-      cpu: 2
-      gpu: 0
     save: 1
     epochs: 100
     log_valid_every: 20

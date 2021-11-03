@@ -15,19 +15,10 @@ class TorchWrapper(DefaultWrapper):
     def predict_proba(self, examples) -> np.ndarray:
         """ returns probabilities, is used in prediction.
             Uses only certain features that were used during training """
-        if self._features_list:
-            examples = examples[self._features_list]
-        else:
-            examples = examples.loc[:, len(self.configs.get('static_columns')):]
-        examples = examples.values.astype(float)
-        if len(examples.shape) == 1:
-            examples = examples.reshape((1, -1))
-        return torch.nn.Softmax(dim=1)\
-            (
-                self.clf.forward(torch.FloatTensor(
+        examples = self.filter_features(examples)
+        return self.clf.forward(torch.FloatTensor(
                     examples
-                ))
-            ).detach().numpy()
+                )).detach().numpy()
 
     def forward(self, examples):
         """ returns outputs, not probs, is used in train """

@@ -15,7 +15,7 @@ class SKLearnTrainer(DefaultTrainer):
         data = self.prepare_train()
         wrapper = self.get_wrapper()
         wrapper.fit(data['train_x'], data['train_y'])
-        valid_outputs = wrapper.forward(data['train_x'])
+        valid_outputs = wrapper.forward(data['valid_x'])
         train_outputs = wrapper.forward(data['train_x'])
 
         valid_metrics = self.metrics_to_log_dict(data['valid_y'], valid_outputs, 'valid')

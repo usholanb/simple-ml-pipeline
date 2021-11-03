@@ -1,5 +1,4 @@
 import numpy as np
-
 from modules.wrappers.base_wrappers.default_wrapper import DefaultWrapper
 
 
@@ -14,19 +13,9 @@ class SKLearnWrapper(DefaultWrapper):
     def predict_proba(self, examples) -> np.ndarray:
         """ makes prediction on pandas examples of dim N X M
                  where N is number of examples and M number of features """
-        if self._features_list:
-            examples = examples[self._features_list]
-        else:
-            examples = examples.iloc[:, len(self.configs.get('static_columns')):]
-        examples = examples.values.astype(float)
-        if len(examples.shape) == 1:
-            examples = examples.reshape((1, -1))
+        examples = self.filter_features(examples)
 
-        return (
-                self.clf.predict_proba(
-                    examples
-                )
-            )
+        return self.clf.predict_proba(examples)
 
     def fit(self, inputs, targets) -> None:
         self.clf.fit(inputs, targets)

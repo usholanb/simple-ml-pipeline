@@ -33,6 +33,7 @@ def train(configs: Dict) -> None:
             local_dir=TRAIN_RESULTS_DIR,
             sync_config=sync_config,
             **configs_copy.get('trainer').get('tune'),
+            name='my_exp',
 
         )
         best_configs = analysis.get_best_config(

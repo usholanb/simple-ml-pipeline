@@ -51,8 +51,7 @@ class TorchTrainer(DefaultTrainer):
             self.wrapper.train()
             optimizer.zero_grad()
             train_outputs = self.wrapper.forward(data['train_x'])
-            probs = self.wrapper.output_function(train_outputs)
-            loss = self.criterion(probs, data['train_y'])
+            loss = self.criterion(train_outputs, data['train_y'])
             loss.backward()
             optimizer.step()
 
@@ -66,9 +65,6 @@ class TorchTrainer(DefaultTrainer):
 
         with torch.no_grad():
             self.print_metrics(data)
-
-    def output_function(self, outputs: torch.Tensor) -> Callable:
-        return torch.nn.LogSoftmax(dim=1)(outputs)
 
     def get_optimizer(self, model) -> torch.optim.Optimizer:
         optim_name = self.configs.get('trainer').get('optim', 'Adam')
