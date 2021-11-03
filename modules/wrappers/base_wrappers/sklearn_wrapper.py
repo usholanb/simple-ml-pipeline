@@ -14,7 +14,6 @@ class SKLearnWrapper(DefaultWrapper):
         """ makes prediction on pandas examples of dim N X M
                  where N is number of examples and M number of features """
         examples = self.filter_features(examples)
-
         return self.clf.predict_proba(examples)
 
     def fit(self, inputs, targets) -> None:

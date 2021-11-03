@@ -27,6 +27,7 @@ class DynamicNet(BaseTorchModel):
         self.__dict__.update(special_inputs)
         self.models = [LocalModel(self.input_dim)]
         self.boost_rate = nn.Parameter(torch.tensor(self.lr, requires_grad=True, device=self.device))
+        self.prediction_function = nn.Softmax(dim=1)
 
     def add(self, model):
         self.models.append(model)
@@ -64,30 +65,8 @@ class DynamicNet(BaseTorchModel):
                 prediction += pred
         return self.boost_rate * prediction
 
-    # def forward_grad(self, x):
-    #     if len(self.models) == 0:
-    #         return None
-    #     # at least one model
-    #     middle_feat_cum = None
-    #     prediction = None
-    #     for m in self.models:
-    #         if middle_feat_cum is None:
-    #             middle_feat_cum, prediction = m(x, middle_feat_cum)
-    #         else:
-    #             middle_feat_cum, pred = m(x, middle_feat_cum)
-    #             prediction += pred
-    #     return middle_feat_cum, self.boost_rate * prediction
-
-    # @classmethod
-    # def from_file(cls, path, builder):
-    #     d = torch.load(path)
-    #     net = DynamicNet()
-    #     net.boost_rate = d['boost_rate']
-    #     for stage, m in enumerate(d['models']):
-    #         submod = builder(stage)
-    #         submod.load_state_dict(m)
-    #         net.add(submod)
-    #     return net
-
+    def predict(self, x):
+        x = self.forward(x)
+        return self.prediction_function(x)
 
 

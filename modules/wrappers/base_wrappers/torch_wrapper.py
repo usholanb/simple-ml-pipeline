@@ -16,7 +16,7 @@ class TorchWrapper(DefaultWrapper):
         """ returns probabilities, is used in prediction.
             Uses only certain features that were used during training """
         examples = self.filter_features(examples)
-        return self.clf.forward(torch.FloatTensor(
+        return self.clf.predict(torch.FloatTensor(
                     examples
                 )).detach().numpy()
 

@@ -13,11 +13,12 @@ class DenseNetModel(BaseTorchModel):
         self.layer2 = nn.Linear(10, 10)
         self.layer3 = nn.Linear(10, len(self.label_types))
         self.output_function = nn.LogSoftmax(dim=1)
+        self.prediction_function = nn.Softmax(dim=1)
 
     def forward(self, x):
         x = F.relu(self.layer1(x))
         x = F.relu(self.layer2(x))
         return self.output_function(self.layer3(x))
 
-    # def parameters(self, *args, **kwargs):
-    #     return self.parameters()
+    def predict(self, x):
+        return self.prediction_function(self.forward(x))

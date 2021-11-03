@@ -20,11 +20,5 @@ class RFCWrapper(SKLearnWrapper):
     def predict_proba(self, examples) -> np.ndarray:
         """ makes prediction on pandas examples of dim N X M
                  where N is number of examples and M number of features """
-        if self._features_list:
-            examples = examples[self._features_list]
-        else:
-            examples = examples.iloc[:, len(self.configs.get('static_columns')):]
-        examples = examples.values.astype(float)
-        if len(examples.shape) == 1:
-            examples = examples.reshape((1, -1))
-        return self.forward(examples)
+        examples = self.filter_features(examples)
+        return self.predict(examples)

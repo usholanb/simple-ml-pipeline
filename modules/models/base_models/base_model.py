@@ -8,6 +8,10 @@ class BaseModel(object):
     def forward(self, *args, **kwargs):
         """ passes inputs and produces outputs with inner model """
 
+    @abstractmethod
+    def predict(self, examples):
+        """ outputs final predictions for prediction step """
+
 
 
 
