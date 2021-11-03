@@ -1,5 +1,5 @@
 from torch import nn
-
+import torch
 from modules.losses.base_losses.base_loss import BaseLoss
 from utils.registry import registry
 

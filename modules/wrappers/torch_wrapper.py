@@ -4,14 +4,21 @@ from torch import nn
 from modules.wrappers.base_wrappers.default_wrapper import DefaultWrapper
 from typing import Dict, List
 import torch
+from utils.registry import registry
 
 
+@registry.register_wrapper('torch_wrapper')
 class TorchWrapper(DefaultWrapper):
     """ Any neural net model wrapper in pytorch """
 
     def __init__(self, configs: Dict, label_types: List):
         super().__init__(configs, label_types)
         self.output_function = self.get_output_function()
+
+    def get_classifier(self, inputs: Dict):
+        return registry.get_model_class(
+            self.configs.get('model').get('name')
+        )(inputs)
 
     def predict_proba(self, examples: pd.DataFrame) -> np.ndarray:
         """ returns probabilities, is used in prediction step.
@@ -41,3 +48,6 @@ class TorchWrapper(DefaultWrapper):
         f = self.configs.get('model').get('activation_function',
                                           {'name': 'LogSoftmax', 'dim': 1})
         return getattr(torch.nn, f.get('name'))(dim=f.get('dim'))
+
+    def parameters(self):
+        return self.clf.parameters()

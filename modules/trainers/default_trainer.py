@@ -47,7 +47,7 @@ class DefaultTrainer(BaseTrainer):
         if wrapper_class is not None:
             wrapper = wrapper_class(self.configs, self.label_types)
         else:
-            wrapper = registry.get_wrapper_class('special_wrapper')\
+            wrapper = registry.get_wrapper_class('torch_wrapper')\
                 (self.configs, self.label_types)
         self.wrapper = wrapper
         return wrapper
