@@ -50,21 +50,21 @@ class TorchTrainer(DefaultTrainer):
         for i in range(self.configs.get('trainer').get('epochs', 10)):
             self.wrapper.train()
             optimizer.zero_grad()
-            outputs = self.wrapper.forward(data['train_x'])
-            probs = self.wrapper.output_function(outputs)
+            train_outputs = self.wrapper.forward(data['train_x'])
+            probs = self.wrapper.output_function(train_outputs)
             loss = self.criterion(probs, data['train_y'])
             loss.backward()
             optimizer.step()
-
-            train_metrics = self.get_split_metrics(data['train_y'], outputs)
-            self.log_metrics(train_metrics, split_name='train')
 
             if (i + 1) % self.configs.get('trainer').get('log_valid_every', 10) == 0:
                 with torch.no_grad():
                     self.wrapper.eval()
                     valid_outputs = self.wrapper.forward(data['valid_x'])
                     valid_metrics = self.get_split_metrics(data['valid_y'], valid_outputs)
-                    self.log_metrics(valid_metrics, split_name='valid')
+                    valid_metrics = dict([(f'valid_{k}', v) for k, v in valid_metrics.items()])
+                    train_metrics = self.get_split_metrics(data['train_y'], train_outputs)
+                    train_metrics = dict([(f'train_{k}', v) for k, v in train_metrics.items()])
+                    self.log_metrics({**valid_metrics, **train_metrics})
 
         with torch.no_grad():
             self.print_metrics(data)
@@ -81,3 +81,4 @@ class TorchTrainer(DefaultTrainer):
         loss_name = self.configs.get('trainer').get('loss', 'NLLLoss')
         criterion = getattr(torch.nn, loss_name)()
         return criterion
+

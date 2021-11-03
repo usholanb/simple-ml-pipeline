@@ -10,10 +10,10 @@ model:
 
 # must be same names as parameters of the actual optimizer
 optim:
-  lr: 0.0001
+  lr: [0.01, 0.001]
   weight_decay: 0.0001
-  momentum: 0.9
-  nesterov: True
+#  momentum: 0.9
+#  nesterov: True
 
 
 # this inputs will go to your specific model __init__
@@ -26,16 +26,18 @@ trainer:
     name: torch_trainer
     tag: uan
     optim: Adam
+    loss: MSELoss
     save: 1
-    epochs: 100
-    log_valid_every: 20
+    epochs: 10
+    log_valid_every: 2
     tune:
       resources_per_trial:
         cpu: 2
         gpu: 0
-    metrics:
-      - accuracy
-      - precision
+    metrics: [precision, accuracy]
+    grid_metric:
+      name: valid_precision
+      mode: max
 
 dataset:
   input_path: processed_data/toy_dataset_output.csv

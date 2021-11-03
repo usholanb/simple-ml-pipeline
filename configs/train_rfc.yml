@@ -20,7 +20,11 @@ trainer:
         gpu: 0
 
     metrics: [accuracy, precision]
-    grid_metrics: valid_accuracy
+
+    grid_metric:
+      name: valid_precision
+      mode: max
+
 
 dataset:
   input_path: processed_data/toy_dataset_output.csv

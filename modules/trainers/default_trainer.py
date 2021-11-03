@@ -55,13 +55,9 @@ class DefaultTrainer(BaseTrainer):
         return f'{CLASSIFIERS_DIR}/{self.wrapper.name}.pkl'
 
     def save(self) -> None:
-        if self.configs.get('trainer').get('save'):
-            pickle_obj(self.wrapper, self.model_path())
+        pickle_obj(self.wrapper, self.model_path())
 
-    def log_metrics(self, results, split_name=''):
-        if split_name:
-            split_name = f'{split_name}_'
-            results = dict([(f'{split_name}{k}', v) for k, v in results.items()])
+    def log_metrics(self, results):
         if inside_tune():
             tune.report(**results)
         else:
