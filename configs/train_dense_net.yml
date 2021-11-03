@@ -10,7 +10,7 @@ model:
 
 # must be same names as parameters of the actual optimizer
 optim:
-  lr: 0.001
+  lr: 0.01
   weight_decay: 0.00001
 
 evaluate_test: 1 # use best model version on test
@@ -25,6 +25,7 @@ trainer:
     name: torch_trainer
     tag: uan
     optim: Adam
+    loss: MSELoss
     save: 1
     epochs: 100
     log_valid_every: 10

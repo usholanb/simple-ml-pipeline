@@ -4,6 +4,7 @@ import numpy as np
 from torch.utils.data import DataLoader
 
 from modules.trainers.default_trainer import DefaultTrainer
+from modules.transformers.ohe import Ohe
 from modules.wrappers.base_wrappers.torch_wrapper import TorchWrapper
 from utils.common import inside_tune, setup_imports
 from utils.registry import registry
@@ -25,18 +26,22 @@ class TorchTrainer(DefaultTrainer):
         self.configs['special_inputs'].update({'input_dim': data['train_x'].shape[1]})
         self.configs['special_inputs'].update({'label_types': self.label_types})
         torch_data = {}
+        ohe = Ohe()
         for split_name, split in data.items():
-            t = torch.tensor(split)
+
             if split_name.endswith('_y'):
-                torch_data[split_name] = t.long()
+                if self.criterion.__class__ in [torch.nn.MSELoss]:
+                    torch_data[split_name] = torch.tensor(ohe.apply(split)).float()
+
             else:
+                t = torch.tensor(split)
                 torch_data[split_name] = t.float()
+
         return torch_data
 
     def train(self) -> None:
         """ trains nn model with dataset """
         setup_imports()
-
         data = self.prepare_train()
         if 'special_inputs' not in self.configs:
             self.configs['special_inputs'] = {}
