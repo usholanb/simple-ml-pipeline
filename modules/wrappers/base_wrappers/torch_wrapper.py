@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 from torch import nn
 from modules.wrappers.base_wrappers.default_wrapper import DefaultWrapper
 from typing import Dict, List
@@ -12,15 +13,20 @@ class TorchWrapper(DefaultWrapper):
         super().__init__(configs, label_types)
         self.output_function = self.get_output_function()
 
-    def predict_proba(self, examples) -> np.ndarray:
-        """ returns probabilities, is used in prediction.
+    def predict_proba(self, examples: pd.DataFrame) -> np.ndarray:
+        """ returns probabilities, is used in prediction step.
             Uses only certain features that were used during training """
+
         examples = self.filter_features(examples)
         return self.clf.predict(torch.FloatTensor(
                     examples
                 )).detach().numpy()
 
-    def forward(self, examples):
+    def predict(self, examples: torch.FloatTensor) -> torch.Tensor:
+        """ returned to metrics or predict_proba in prediction step """
+        return self.clf.predict(examples)
+
+    def forward(self, examples: torch.FloatTensor):
         """ returns outputs, not probs, is used in train """
         return self.clf.forward(examples)
 

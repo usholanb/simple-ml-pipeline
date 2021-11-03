@@ -26,13 +26,9 @@ class TorchTrainer(DefaultTrainer):
         self.configs['special_inputs'].update({'input_dim': data['train_x'].shape[1]})
         self.configs['special_inputs'].update({'label_types': self.label_types})
         torch_data = {}
-        ohe = Ohe()
         for split_name, split in data.items():
-
             if split_name.endswith('_y'):
-                if self.criterion.__class__ in [torch.nn.MSELoss]:
-                    torch_data[split_name] = torch.tensor(ohe.apply(split)).float()
-
+                torch_data[split_name] = torch.tensor(split).long()
             else:
                 t = torch.tensor(split)
                 torch_data[split_name] = t.float()
@@ -58,9 +54,12 @@ class TorchTrainer(DefaultTrainer):
             if (i + 1) % self.configs.get('trainer').get('log_valid_every', 10) == 0:
                 with torch.no_grad():
                     self.wrapper.eval()
-                    valid_outputs = self.wrapper.forward(data['valid_x'])
-                    valid_metrics = self.metrics_to_log_dict(data['valid_y'], valid_outputs, 'valid')
-                    train_metrics = self.metrics_to_log_dict(data['train_y'], train_outputs, 'train')
+                    valid_preds = self.wrapper.predict(data['valid_x'])
+                    train_preds = self.wrapper.predict(data['train_x'])
+                    valid_metrics = self.metrics_to_log_dict(
+                        data['valid_y'], valid_preds, 'valid')
+                    train_metrics = self.metrics_to_log_dict(
+                        data['train_y'], train_preds, 'train')
                     self.log_metrics({**valid_metrics, **train_metrics})
 
         with torch.no_grad():
@@ -72,7 +71,12 @@ class TorchTrainer(DefaultTrainer):
         return optim_func(model.parameters(), **self.configs.get('optim'))
 
     def get_loss(self) -> torch.nn.Module:
+
         loss_name = self.configs.get('trainer').get('loss', 'NLLLoss')
-        criterion = getattr(torch.nn, loss_name)()
+        if hasattr(torch.nn, loss_name):
+            criterion = getattr(torch.nn, loss_name)()
+        else:
+            setup_imports()
+            criterion = registry.get_loss_class(self.configs.get('trainer').get('loss'))()
         return criterion
 

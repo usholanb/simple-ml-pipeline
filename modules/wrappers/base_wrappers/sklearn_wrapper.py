@@ -1,4 +1,6 @@
 import numpy as np
+import pandas as pd
+
 from modules.wrappers.base_wrappers.default_wrapper import DefaultWrapper
 
 
@@ -10,11 +12,17 @@ class SKLearnWrapper(DefaultWrapper):
         result[np.arange(len(examples)), pred] = 1
         return result
 
-    def predict_proba(self, examples) -> np.ndarray:
+    def predict_proba(self, examples: pd.DataFrame) -> np.ndarray:
+        """ filters in needed features and makes prediction  """
+        examples = self.filter_features(examples)
+        return self.clf.predict(examples)
+
+    def predict(self, examples: np.ndarray) -> np.ndarray:
         """ makes prediction on pandas examples of dim N X M
                  where N is number of examples and M number of features """
-        examples = self.filter_features(examples)
-        return self.clf.predict_proba(examples)
+        result = np.zeros((len(examples), len(self.label_types)))
+        result[np.arange(len(examples)), self.clf.predict(examples).astype(int)] = 1
+        return result
 
     def fit(self, inputs, targets) -> None:
         self.clf.fit(inputs, targets)

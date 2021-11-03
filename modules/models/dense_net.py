@@ -1,3 +1,4 @@
+from typing import Dict
 from torch import nn
 import torch.nn.functional as F
 from modules.models.base_models.torch_model import BaseTorchModel
@@ -15,10 +16,18 @@ class DenseNetModel(BaseTorchModel):
         self.output_function = nn.LogSoftmax(dim=1)
         self.prediction_function = nn.Softmax(dim=1)
 
-    def forward(self, x):
+    def forward(self, x) -> Dict:
+        """
+        passes inputs through the model
+        returns: dict that is feed to right to loss and must contain 'outputs'
+        example:
+            {'outputs': something, ...}
+        """
         x = F.relu(self.layer1(x))
         x = F.relu(self.layer2(x))
-        return self.output_function(self.layer3(x))
+        outputs = self.output_function(self.layer3(x))
+        return outputs
 
     def predict(self, x):
-        return self.prediction_function(self.forward(x))
+        x = self.forward(x)
+        return x

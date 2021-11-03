@@ -20,3 +20,7 @@ class BaseWrapper(ABC):
     @abstractmethod
     def forward(self, examples):
         """ outputs forward """
+
+    @abstractmethod
+    def predict(self, examples):
+        """ returned to metrics or predict_proba in prediction step """

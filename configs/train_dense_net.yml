@@ -25,7 +25,7 @@ trainer:
   name: torch_trainer
   tag: uan
   optim: Adam
-  loss: MSELoss
+  loss: NLLLoss
   save: 1
   epochs: 100
   log_valid_every: 10

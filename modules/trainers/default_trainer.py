@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import torch
 from ray import tune
 from modules.trainers.base_trainer import BaseTrainer
 from typing import Dict, AnyStr, List
@@ -64,15 +65,15 @@ class DefaultTrainer(BaseTrainer):
             to_print = '  '.join([f'{k}: {"{:10.4f}".format(v)}' for k, v in results.items()])
             print(to_print)
 
-    def print_metrics(self, data) -> None:
+    def print_metrics(self, data: Dict) -> None:
+        with torch.no_grad():
+            for split_name in ['train', 'valid', 'test']:
+                outputs = self.wrapper.predict(data[f'{split_name}_x'])
+                s_metrics = self.get_split_metrics(data[f'{split_name}_y'], outputs)
+                s_metrics = "\n".join([f"{k}:{v}" for k, v in s_metrics.items()])
+                print(f'{split_name}:\n{s_metrics}\n')
 
-        for split_name in ['train', 'valid', 'test']:
-            outputs = self.wrapper.forward(data[f'{split_name}_x'])
-            s_metrics = self.get_split_metrics(data[f'{split_name}_y'], outputs)
-            s_metrics = "\n".join([f"{k}:{v}" for k, v in s_metrics.items()])
-            print(f'{split_name}:\n{s_metrics}\n')
-
-    def metrics_to_log_dict(self, y_true, y_outputs, split_name) -> Dict:
+    def metrics_to_log_dict(self, y_true, y_outputs, split_name: AnyStr) -> Dict:
         metrics = self.get_split_metrics(y_true, y_outputs)
         return dict([(f'{split_name}_{k}', v) for k, v in metrics.items()])
 

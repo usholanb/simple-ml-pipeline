@@ -29,6 +29,7 @@ class Registry:
         "model_name_mapping": {},
         "transformer_name_mapping": {},
         "metric_name_mapping": {},
+        "loss_name_mapping": {},
         "state": {},
     }
 
@@ -38,7 +39,6 @@ class Registry:
             cls.mapping[mapping_name][name] = func
         else:
             raise KeyError(f'function {name} already defined in {mapping_name}')
-
 
     @classmethod
     def register_dataset(cls, name):
@@ -99,6 +99,19 @@ class Registry:
 
         def wrap(func):
             cls.add_this_to(func, name, 'model_name_mapping')
+            return func
+
+        return wrap
+
+    @classmethod
+    def register_loss(cls, name):
+        r"""Register a model to registry with key 'name'
+        Args:
+            name: Key with which the model will be registered.
+        Usage::
+        """
+        def wrap(func):
+            cls.add_this_to(func, name, 'loss_name_mapping')
             return func
 
         return wrap
@@ -182,6 +195,10 @@ class Registry:
     @classmethod
     def get_model_class(cls, name):
         return cls.mapping["model_name_mapping"].get(name, None)
+
+    @classmethod
+    def get_loss_class(cls, name):
+        return cls.mapping["loss_name_mapping"].get(name, None)
 
     @classmethod
     def get_logger_class(cls, name):

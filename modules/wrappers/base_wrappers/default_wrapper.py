@@ -1,4 +1,8 @@
 from typing import Dict, List, AnyStr
+
+import numpy as np
+import pandas as pd
+
 from modules.wrappers.base_wrappers.base_wrapper import BaseWrapper
 
 
@@ -16,7 +20,8 @@ class DefaultWrapper(BaseWrapper):
         m_configs = self.configs.get("model")
         return f'{m_configs.get("name")}_{m_configs.get("tag")}'
 
-    def filter_features(self, examples):
+    def filter_features(self, examples: pd.DataFrame) -> np.ndarray:
+        """ picks certain features and converts to numpy"""
         if self._features_list:
             examples = examples[self._features_list]
         else:

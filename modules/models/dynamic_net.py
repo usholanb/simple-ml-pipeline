@@ -1,4 +1,6 @@
 from enum import Enum
+from typing import Dict
+
 import torch
 import torch.nn as nn
 from modules.models.base_models.torch_model import BaseTorchModel
@@ -53,6 +55,11 @@ class DynamicNet(BaseTorchModel):
             m.train(True)
 
     def forward(self, x):
+        """
+        passes inputs through the model
+        returns: anything, customizable
+        NOTE: whatever is returned is going to be supplied to your loss function
+        """
         if len(self.models) == 0:
             return None
         middle_feat_cum = None
@@ -63,10 +70,13 @@ class DynamicNet(BaseTorchModel):
             else:
                 middle_feat_cum, pred = m(x, middle_feat_cum)
                 prediction += pred
-        return self.boost_rate * prediction
+        some_dummy_number = 77777
+        return self.boost_rate * prediction, some_dummy_number
 
     def predict(self, x):
-        x = self.forward(x)
-        return self.prediction_function(x)
+        x, some_dummy_number = self.forward(x)
+        return x
+
+
 
 

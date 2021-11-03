@@ -22,3 +22,4 @@ class RFCWrapper(SKLearnWrapper):
                  where N is number of examples and M number of features """
         examples = self.filter_features(examples)
         return self.predict(examples)
+
