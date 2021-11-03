@@ -13,6 +13,8 @@ class TorchWrapper(DefaultWrapper):
         self.output_function = self.get_output_function()
 
     def predict_proba(self, examples) -> np.ndarray:
+        """ returns probabilities, is used in prediction.
+            Uses only certain features that were used during training """
         if self._features_list:
             examples = examples[self._features_list]
         else:
@@ -28,6 +30,7 @@ class TorchWrapper(DefaultWrapper):
             ).detach().numpy()
 
     def forward(self, examples):
+        """ returns outputs, not probs, is used in train """
         return self.clf.forward(examples)
 
     def train(self) -> None:

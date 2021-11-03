@@ -15,11 +15,13 @@ class SKLearnTrainer(DefaultTrainer):
         data = self.prepare_train()
         wrapper = self.get_wrapper()
         wrapper.fit(data['train_x'], data['train_y'])
-        split_y = data[f'valid_y']
-        split_x = data[f'valid_x']
-        probs = wrapper.forward(split_x)
-        metrics = self.get_split_metrics(split_y, probs)
-        self.log_metrics(metrics, split_name='valid')
+        valid_outputs = wrapper.forward(data['train_x'])
+        train_outputs = wrapper.forward(data['train_x'])
+
+        valid_metrics = self.metrics_to_log_dict(data['valid_y'], valid_outputs, 'valid')
+        train_metrics = self.metrics_to_log_dict(data['train_y'], train_outputs, 'train')
+
+        self.log_metrics({**valid_metrics, **train_metrics})
         self.print_metrics(data)
 
     def get_loss(self, y_true: np.ndarray, y_pred: np.ndarray) -> float:

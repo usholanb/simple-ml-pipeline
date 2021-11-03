@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 from ray import tune
 from modules.trainers.base_trainer import BaseTrainer
-from typing import Dict, AnyStr
+from typing import Dict, AnyStr, List
 from utils.common import inside_tune, setup_imports
 from modules.wrappers.base_wrappers.base_wrapper import BaseWrapper
 from utils.common import pickle_obj
@@ -57,14 +57,14 @@ class DefaultTrainer(BaseTrainer):
     def save(self) -> None:
         pickle_obj(self.wrapper, self.model_path())
 
-    def log_metrics(self, results):
+    def log_metrics(self, results) -> None:
         if inside_tune():
             tune.report(**results)
         else:
             to_print = '  '.join([f'{k}: {"{:10.4f}".format(v)}' for k, v in results.items()])
             print(to_print)
 
-    def print_metrics(self, data):
+    def print_metrics(self, data) -> None:
 
         for split_name in ['train', 'valid', 'test']:
             outputs = self.wrapper.forward(data[f'{split_name}_x'])
@@ -72,7 +72,11 @@ class DefaultTrainer(BaseTrainer):
             s_metrics = "\n".join([f"{k}:{v}" for k, v in s_metrics.items()])
             print(f'{split_name}:\n{s_metrics}\n')
 
-    def get_split_metrics(self, y_true, y_outputs):
+    def metrics_to_log_dict(self, y_true, y_outputs, split_name) -> Dict:
+        metrics = self.get_split_metrics(y_true, y_outputs)
+        return dict([(f'{split_name}_{k}', v) for k, v in metrics.items()])
+
+    def get_split_metrics(self, y_true, y_outputs) -> Dict:
         setup_imports()
         metrics = self.configs.get('trainer').get('metrics')
         metrics = metrics if isinstance(metrics, list) else [metrics]
@@ -83,7 +87,7 @@ class DefaultTrainer(BaseTrainer):
         return results
 
     @staticmethod
-    def figure_feature_list(f_list, available_features):
+    def figure_feature_list(f_list, available_features) -> List:
         final_list = []
         for available_feature in available_features:
             for feature in f_list:

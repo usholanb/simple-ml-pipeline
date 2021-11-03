@@ -1,3 +1,4 @@
+from typing import Dict
 from modules.helpers.predictor import Predictor
 from utils.flags import train_flags, prediction_flags
 from dependency_injector.wiring import Provide, inject
@@ -6,7 +7,7 @@ from utils.registry import registry
 import pandas as pd
 
 
-def prediction(configs):
+def prediction(configs: Dict):
     """ Prepares Dataset """
     setup_imports()
     dataset = pd.read_csv(configs.get('dataset').get('input_path'))

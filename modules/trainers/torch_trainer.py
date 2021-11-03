@@ -21,7 +21,7 @@ class TorchTrainer(DefaultTrainer):
         super().__init__(configs, dataset)
         self.criterion = self.get_loss()
 
-    def prepare_train(self):
+    def prepare_train(self) -> Dict:
         data = super().prepare_train()
         self.configs['special_inputs'].update({'input_dim': data['train_x'].shape[1]})
         self.configs['special_inputs'].update({'label_types': self.label_types})
@@ -60,10 +60,8 @@ class TorchTrainer(DefaultTrainer):
                 with torch.no_grad():
                     self.wrapper.eval()
                     valid_outputs = self.wrapper.forward(data['valid_x'])
-                    valid_metrics = self.get_split_metrics(data['valid_y'], valid_outputs)
-                    valid_metrics = dict([(f'valid_{k}', v) for k, v in valid_metrics.items()])
-                    train_metrics = self.get_split_metrics(data['train_y'], train_outputs)
-                    train_metrics = dict([(f'train_{k}', v) for k, v in train_metrics.items()])
+                    valid_metrics = self.metrics_to_log_dict(data['valid_y'], valid_outputs, 'valid')
+                    train_metrics = self.metrics_to_log_dict(data['train_y'], train_outputs, 'train')
                     self.log_metrics({**valid_metrics, **train_metrics})
 
         with torch.no_grad():

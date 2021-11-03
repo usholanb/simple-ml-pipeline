@@ -10,7 +10,7 @@ from functools import partial
 from typing import Dict
 
 
-def train_one(configs, dataset, save=False):
+def train_one(configs: Dict, dataset: pd.DataFrame, save: bool = False) -> None:
     """ Prepares Dataset """
     setup_imports()
     trainer = registry.get_trainer_class(
@@ -39,7 +39,9 @@ def train(configs: Dict) -> None:
             metric=configs.get('trainer').get('grid_metric').get('name'),
             mode=configs.get('trainer').get('grid_metric').get('mode')
         )
-        print("Best configs: ", best_configs.get('optim'))
+
+        print("Best configs: ", {**best_configs.get('optim'),
+                                 **best_configs.get('special_inputs')})
         configs = best_configs
 
     train_one(configs, dataset, save=configs.get('trainer').get('save'))

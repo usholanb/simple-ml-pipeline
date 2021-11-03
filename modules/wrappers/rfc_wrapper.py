@@ -14,10 +14,8 @@ class RFCWrapper(SKLearnWrapper):
     def forward(self, examples):
         """ random forest can only make predictions, but this function
                 must return probs format, so converting to 2D"""
-        pred = self.clf.prediction(examples).astype(int)
-        result = np.zeros((len(examples), len(self.label_types)))
-        result[np.arange(len(examples)), pred] = 1
-        return result
+        pred = self.clf.predict(examples).astype(int)
+        return self.pred_to_probs(examples, pred)
 
     def predict_proba(self, examples) -> np.ndarray:
         """ makes prediction on pandas examples of dim N X M
@@ -29,6 +27,4 @@ class RFCWrapper(SKLearnWrapper):
         examples = examples.values.astype(float)
         if len(examples.shape) == 1:
             examples = examples.reshape((1, -1))
-        probs = np.zeros((len(examples), (len(self.label_types))))
-        probs[np.arange(len(examples)), self.clf.predict(examples).astype(int)] = 1
-        return probs
+        return self.forward(examples)
