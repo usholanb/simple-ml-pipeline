@@ -1,6 +1,8 @@
 from typing import Dict, Tuple, AnyStr
 import pandas as pd
-from modules.datasets.base_dataset import BaseDataset
+from modules.datasets.base_datasets.base_dataset import BaseDataset
+from modules.helpers.csv_saver import CSVSaver
+from modules.helpers.labels_processor import LabelsProcessor
 from utils.common import setup_imports
 from utils.registry import registry
 
@@ -45,15 +47,13 @@ class DefaultDataset(BaseDataset):
             'test': test_df,
         }
 
-    def apply_transformers(self, data: pd.DataFrame) -> pd.DataFrame:
+    def apply_transformers(self, data_x: pd.DataFrame) -> pd.DataFrame:
         setup_imports()
         transformers = {}
         processed_data = pd.DataFrame()
-        target_split = data[['target_index', 'target', 'split']]
-        processed_data[['target_index', 'target', 'split']] = target_split
         for feature, t_name_list in self.configs.get('features_list', {}).items():
             t_name_list = t_name_list if isinstance(t_name_list, list) else [t_name_list]
-            feature_to_process = data[feature].values
+            feature_to_process = data_x[feature].values
             for t_name in t_name_list:
                 if t_name not in transformers:
                     t_obj = registry.get_transformer_class(t_name)()
@@ -77,13 +77,11 @@ class DefaultDataset(BaseDataset):
         if isinstance(input_paths, str):
             input_paths = {'train': input_paths}
         data = self.split(input_paths)
-        assert 'train' in input_paths, 'one of the splits must be "train"'
-        data = self.reset_label_index(data, self.configs.get('dataset').get('label'))
         data = self.concat_dataset(data)
-        label_i = self.configs.get('static_columns').get('FINAL_LABEL_INDEX')
-        if isinstance(data.iloc[0, label_i], float):
-            data.iloc[:, label_i] = data.iloc[:, label_i].astype('int32')
-        self.data = self.apply_transformers(data)
+        label_processor = LabelsProcessor(self.configs)
+        data_x, data_y = label_processor.process_labels(data)
+        data_x = self.apply_transformers(data_x)
+        self.data = pd.concat([data_y, data_x], axis=1)
 
     def shuffle(self, data: pd.DataFrame) -> pd.DataFrame:
         if self.configs.get('dataset').get('shuffle', True):
@@ -91,15 +89,14 @@ class DefaultDataset(BaseDataset):
         return data
 
     def concat_dataset(self, data: Dict) -> pd.DataFrame:
-        label_index = self.configs.get('static_columns').get('FINAL_LABEL_NAME_INDEX')
-        label_types = enumerate(sorted(pd.concat([s.iloc[:, label_index] for s in data.values()]).unique()))
-        label_types = dict([(v, k) for (k, v) in label_types])
         for split_name, split in data.items():
             split.insert(loc=self.configs.get('static_columns')
                          .get('FINAL_SPLIT_INDEX'), column='split', value=split_name)
-            labels = split.iloc[:, label_index].tolist()
-            labels_idx = [label_types[l] for l in labels]
-            split.insert(loc=self.configs.get('static_columns')
-                         .get('FINAL_LABEL_INDEX'), column='target_index', value=labels_idx)
         return pd.concat(data.values(), ignore_index=True)
+
+    def save(self) -> None:
+        CSVSaver(self.configs).save(self.data, self.configs)
+
+
+
 

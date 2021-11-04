@@ -5,7 +5,7 @@ from modules.models.base_models.torch_model import BaseTorchModel
 from utils.registry import registry
 
 
-@registry.register_model('dense_net')
+@registry.register_model('dense_net_regression')
 class DenseNetModel(BaseTorchModel):
     def __init__(self, special_inputs):
         super(DenseNetModel, self).__init__()
@@ -13,8 +13,6 @@ class DenseNetModel(BaseTorchModel):
         self.layer1 = nn.Linear(self.input_dim, 10)
         self.layer2 = nn.Linear(10, 10)
         self.layer3 = nn.Linear(10, len(self.label_types))
-        self.output_function = nn.LogSoftmax(dim=1)
-        self.prediction_function = nn.Softmax(dim=1)
 
     def forward(self, x) -> Dict:
         """
@@ -25,9 +23,9 @@ class DenseNetModel(BaseTorchModel):
         """
         x = F.relu(self.layer1(x))
         x = F.relu(self.layer2(x))
-        outputs = self.output_function(self.layer3(x))
+        outputs = self.layer3(x).flatten()
         return outputs
 
     def predict(self, x):
         x = self.forward(x)
-        return self.prediction_function(x)
+        return x

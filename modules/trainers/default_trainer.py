@@ -16,8 +16,11 @@ class DefaultTrainer(BaseTrainer):
         self.configs = configs
         self.dataset = dataset
         self.split_i = self.configs.get('static_columns').get('FINAL_SPLIT_INDEX')
-        self.label_i = self.configs.get('static_columns').get('FINAL_LABEL_INDEX')
-        self.label_types = {v: index for index, v in enumerate(sorted(self.dataset.iloc[:, self.label_i].unique()))}
+        self.label_index_i = self.configs.get('static_columns').get('FINAL_LABEL_INDEX')
+        self.label_i = self.configs.get('static_columns').get('FINAL_LABEL_NAME_INDEX')
+        self.label_name = self.dataset.columns[self.configs.get('static_columns').get('FINAL_LABEL_INDEX')]
+        self.classification = True
+        self.label_types = self.set_label_types()
         self.split_column = dataset.iloc[:, self.split_i]
         self.wrapper = None
 
@@ -30,7 +33,7 @@ class DefaultTrainer(BaseTrainer):
         f_list = DefaultTrainer.figure_feature_list(features_list, self.dataset.columns)
         for split in ['train', 'valid', 'test']:
             data[f'{split}_y'] = \
-                self.dataset.loc[self.split_column == split].iloc[:, self.label_i].values
+                self.dataset.loc[self.split_column == split].iloc[:, self.label_index_i].values
             if features_list:
                 data[f'{split}_x'] = \
                     self.dataset.loc[self.split_column == split][f_list].values
@@ -79,7 +82,7 @@ class DefaultTrainer(BaseTrainer):
 
     def get_split_metrics(self, y_true, y_outputs) -> Dict:
         setup_imports()
-        metrics = self.configs.get('trainer').get('metrics')
+        metrics = self.configs.get('trainer').get('metrics', [])
         metrics = metrics if isinstance(metrics, list) else [metrics]
         results = {}
         for metric_name in metrics:
@@ -97,3 +100,15 @@ class DefaultTrainer(BaseTrainer):
                     final_list.append(available_feature)
         return final_list
 
+    def set_label_types(self):
+        labels = np.zeros(len(self.dataset))
+        np.mod(self.dataset.iloc[:, self.label_index_i], 1, out=labels)
+        mask = (labels == 0)
+        if mask.all():
+            label_types = {v: index for index, v in
+                                enumerate(sorted(self.dataset.iloc[:, self.label_index_i].unique()))}
+            self.classification = True
+        else:
+            label_types = {self.label_name: self.dataset.columns[self.label_index_i]}
+            self.classification = False
+        return label_types

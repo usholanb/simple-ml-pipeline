@@ -40,7 +40,6 @@ trainer:
 
 dataset:
   input_path: processed_data/toy_dataset_output.csv
-  type: csv
 
 
 features_list:

@@ -12,7 +12,7 @@ def preprocessing(configs: Dict) -> None:
     setup_imports()
     dataset = registry.get_dataset_class(configs.get('dataset').get('name'))(configs)
     dataset.collect()
-    dataset.save(saver=SaverContainer.csv_saver(configs))
+    dataset.save()
     print(f'{dataset.name} is ready')
 
 

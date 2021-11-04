@@ -4,7 +4,7 @@ includes:
 
 
 model:
-  name: dense_net
+  name: dense_net_regression
   tag: uan
 
 
@@ -25,7 +25,7 @@ trainer:
   name: torch_trainer
   tag: uan
   optim: Adam
-  loss: NLLLoss
+  loss: MSELoss
   save: 1
   epochs: 100
   log_valid_every: 10
@@ -33,24 +33,20 @@ trainer:
     resources_per_trial:
       cpu: 2
       gpu: 0
-  metrics:
-    - accuracy
-    - precision
+#  metrics:
+#    - mse_loss
 
   grid_metric:
-    name: valid_precision
+    name: mse_loss
     mode: max
 
 
 
 
 dataset:
-  input_path: processed_data/toy_dataset_output.csv
+  input_path: processed_data/regression_output.csv
 
 
 features_list:
-  - sepal width (cm)
-  - petal length (cm)
-  - petal width (cm)
-  - sepal length (cm)
+  - SAT
 

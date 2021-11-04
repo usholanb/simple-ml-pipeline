@@ -15,11 +15,10 @@ class BaseModel(object):
             {'outputs': something, ...}
         """
 
-
     @abstractmethod
     def predict(self, examples):
         """
-        Used during train step
+        Used during train step - the output will be the input to metrics
 
         returns:
             probabilities of type (torch.FloatTensor, numpy.ndarray)

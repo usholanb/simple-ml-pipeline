@@ -21,7 +21,12 @@ class TorchTrainer(DefaultTrainer):
         torch_data = {}
         for split_name, split in data.items():
             if split_name.endswith('_y'):
-                torch_data[split_name] = torch.tensor(split).long()
+                split = torch.tensor(split)
+                if self.classification:
+                    split = split.long()
+                else:
+                    split = split.float()
+                torch_data[split_name] = split
             else:
                 t = torch.tensor(split)
                 torch_data[split_name] = t.float()

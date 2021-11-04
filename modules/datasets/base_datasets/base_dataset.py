@@ -35,10 +35,6 @@ class BaseDataset(ABC):
         """ Saves the final dataset locally or externally """
 
     @abstractmethod
-    def reset_label_index(self, data: Dict, label_index: (AnyStr, int)) -> Dict:
-        """ Selects label and sets it to 1st column """
-
-    @abstractmethod
     def concat_dataset(self, data):
         """ concats splits (train, test and eval) and sets column """
 
