@@ -25,6 +25,7 @@ class SKLearnTrainer(DefaultTrainer):
         valid_metrics = self.metrics_to_log_dict(data['valid_y'], valid_pred, 'valid')
         train_metrics = self.metrics_to_log_dict(data['train_y'], train_pred, 'train')
 
+
         self.log_metrics({**valid_metrics, **train_metrics})
         self.print_metrics(data)
 
