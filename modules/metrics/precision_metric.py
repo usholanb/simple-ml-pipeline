@@ -14,7 +14,7 @@ class PrecisionMetric(DefaultMetric):
         """ y_true: 1D, y_outputs: 1D or 2D """
         import warnings
         warnings.filterwarnings('ignore')
-        y_pred = y_outputs.argmax(axis=1)
+        y_pred = y_outputs if len(y_outputs.shape) == 1 else y_outputs.argmax(axis=1)
         precision = precision_score(y_true, y_pred, average='macro')
         return precision
 

@@ -27,7 +27,7 @@ class DefaultTrainer(BaseTrainer):
     def prepare_train(self) -> Dict:
         """ splits data to train, test, valid and returns numpy array """
         data = {}
-        features_list = self.configs.get('features_list')
+        features_list = self.configs.get('features_list', [])
         if not features_list:
             print('features_list not specified')
         f_list = DefaultTrainer.figure_feature_list(features_list, self.dataset.columns)

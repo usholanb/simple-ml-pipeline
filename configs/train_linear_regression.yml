@@ -2,13 +2,12 @@ includes:
   - configs/constant_configs.yml
 
 model:
-  name: rfc
-  tag: uan2
+  name: linear_regression
+  tag: uan
 
 # inputs go to __init__ of the model (sklearn RFC model in this case)
 special_inputs:
-  n_estimators: 10
-  max_depth: 2
+  normalize: [true, false]
 
   
 trainer:
@@ -19,19 +18,16 @@ trainer:
         cpu: 2
         gpu: 0
 
-    metrics: [accuracy, precision]
+    metrics: mse
 
     grid_metric:
-      name: valid_precision
-      mode: max
+      name: mse
+      mode: min
 
 
 dataset:
-  input_path: processed_data/toy_dataset_output.csv
-
+  input_path: processed_data/regression_output.csv
 
 features_list:
-  - sepal width (cm)
-  - petal length (cm)
-  - petal width (cm)
-  - sepal length (cm)
+  - SAT
+

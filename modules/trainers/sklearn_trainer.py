@@ -1,13 +1,16 @@
-from ray import tune
+import sklearn
+import numpy as np
 from modules.trainers.default_trainer import DefaultTrainer
 from utils.common import setup_imports, inside_tune
 from utils.registry import registry
-import sklearn
-import numpy as np
+from modules.wrappers.base_wrappers.sklearn_classifier_wrapper import SKLearnClassifierWrapper
 
 
 @registry.register_trainer('sklearn_trainer')
 class SKLearnTrainer(DefaultTrainer):
+
+    def get_wrapper(self) -> SKLearnClassifierWrapper:
+        return super().get_wrapper()
 
     def train(self) -> None:
         """ trains sklearn model with dataset """

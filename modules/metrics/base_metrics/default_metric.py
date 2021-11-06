@@ -14,10 +14,8 @@ class DefaultMetric(BaseMetric):
             y_outputs - [N x K] N - # of examples, K - # of labels OR
                 [N x 1] if its a regression problem """
         if isinstance(y_true, np.ndarray):
-            # y_true = y_true if len(y_true.shape) == 1 else y_true.argmax(axis=1)
             result = self.compute_metric_numpy(y_true, y_outputs)
         elif isinstance(y_true, torch.Tensor):
-            # y_true = y_true if len(y_true.shape) == 1 else y_true.argmax(dim=1)
             result = self.compute_metric_torch(y_true, y_outputs)
         else:
             raise TypeError('y_true at this point can be only torch '

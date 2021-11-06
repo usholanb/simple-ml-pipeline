@@ -1,3 +1,5 @@
+from abc import abstractmethod
+
 import numpy as np
 import pandas as pd
 from torch import nn
@@ -14,6 +16,10 @@ class TorchWrapper(DefaultWrapper):
     def __init__(self, configs: Dict, label_types: List):
         super().__init__(configs, label_types)
         self.output_function = self.get_output_function()
+
+    @abstractmethod
+    def forward(self, examples):
+        """ outputs forward """
 
     def get_classifier(self, inputs: Dict):
         return registry.get_model_class(

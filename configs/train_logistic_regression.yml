@@ -2,13 +2,13 @@ includes:
   - configs/constant_configs.yml
 
 model:
-  name: rfc
-  tag: uan2
+  name: logistic_regression
+  tag: uan3
 
 # inputs go to __init__ of the model (sklearn RFC model in this case)
-special_inputs:
-  n_estimators: 10
-  max_depth: 2
+#special_inputs:
+#  n_estimators: 10
+#  max_depth: 2
 
   
 trainer:
@@ -29,9 +29,9 @@ trainer:
 dataset:
   input_path: processed_data/toy_dataset_output.csv
 
-
 features_list:
   - sepal width (cm)
   - petal length (cm)
   - petal width (cm)
   - sepal length (cm)
+

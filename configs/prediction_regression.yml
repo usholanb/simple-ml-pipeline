@@ -2,14 +2,13 @@ includes:
   - configs/constant_configs.yml
 
 dataset:
-  input_path: processed_data/toy_dataset_output.csv
+  input_path: processed_data/regression_output.csv
   type: csv
 
 
 models:
-  uan: dynamic_net
+  uan: dynamic_net_regression
   uan2: rfc
-  uan3: logistic_regression
 
   
 trainer:
@@ -17,10 +16,5 @@ trainer:
     save: 1
     epochs: 100
     log_valid_every: 20
-
-
-dataset:
-  input_path: processed_data/toy_dataset_output.csv
-  type: csv
 
 
