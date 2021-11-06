@@ -11,8 +11,7 @@ from sklearn.metrics import precision_score
 class PrecisionMetric(DefaultMetric):
 
     def compute_metric_numpy(self, y_true: np.array, y_outputs: np.array) -> float:
-        """ computes certain metric for numpy input, y_true - 1D,
-            y_outputs - [N x K] N - # of examples, K - # of labels """
+        """ y_true: 1D, y_outputs: 1D or 2D """
         import warnings
         warnings.filterwarnings('ignore')
         y_pred = y_outputs.argmax(axis=1)
@@ -20,7 +19,7 @@ class PrecisionMetric(DefaultMetric):
         return precision
 
     def compute_metric_torch(self, y_true: torch.Tensor, y_outputs: torch.Tensor) -> float:
-        """ computes certain metric for torch tensor input """
+        """ y_true: 1D, y_outputs: 1D or 2D """
         return self.compute_metric_numpy(y_true.detach().numpy(), y_outputs.detach().numpy())
 
 
