@@ -10,7 +10,7 @@ model:
 
 # must be same names as parameters of the actual optimizer
 optim:
-  lr: 0.01
+  lr: [0.01, 0.001]
   weight_decay: 0.00001
 
 evaluate_test: 1 # use best model version on test
@@ -37,8 +37,8 @@ trainer:
 #    - mse_loss
 
   grid_metric:
-    name: mse_loss
-    mode: max
+    name: train_MSELoss
+    mode: min
 
 
 

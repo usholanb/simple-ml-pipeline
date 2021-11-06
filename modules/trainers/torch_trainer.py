@@ -12,6 +12,7 @@ class TorchTrainer(DefaultTrainer):
 
     def __init__(self, configs: Dict, dataset: pd.DataFrame):
         super().__init__(configs, dataset)
+        self.loss_name = self.configs.get('trainer').get('loss', 'NLLLoss')
         self.criterion = self.get_loss()
 
     def prepare_train(self) -> Dict:
@@ -36,6 +37,7 @@ class TorchTrainer(DefaultTrainer):
     def train(self) -> None:
         """ trains nn model with dataset """
         setup_imports()
+
         data = self.prepare_train()
         if 'special_inputs' not in self.configs:
             self.configs['special_inputs'] = {}
@@ -56,12 +58,33 @@ class TorchTrainer(DefaultTrainer):
                     train_preds = self.wrapper.predict(data['train_x'])
                     valid_metrics = self.metrics_to_log_dict(
                         data['valid_y'], valid_preds, 'valid')
+                    valid_outputs = self.wrapper.forward(data['valid_x'])
+                    valid_loss = self.criterion(valid_outputs, data['valid_y'])
+                    valid_metrics.update({f'valid_{self.loss_name}': valid_loss.item()})
                     train_metrics = self.metrics_to_log_dict(
                         data['train_y'], train_preds, 'train')
+                    train_metrics.update({f'train_{self.loss_name}': loss.item()})
                     self.log_metrics({**valid_metrics, **train_metrics})
 
         with torch.no_grad():
             self.print_metrics(data)
+
+    def get_split_metrics(self, y_true, y_outputs) -> Dict:
+        with torch.no_grad():
+            result = super().get_split_metrics(y_true, y_outputs)
+        return result
+            
+    def print_metrics(self, data: Dict) -> None:
+        with torch.no_grad():
+            for split_name in ['train', 'valid', 'test']:
+                split_y_str, split_x_str = f'{split_name}_y', f'{split_name}_x'
+                split_preds = self.wrapper.predict(data[split_x_str])
+                split_outputs = self.wrapper.forward(data[split_x_str])
+                metrics = self.metrics_to_log_dict(data[split_y_str], split_preds, split_name)
+                loss = self.criterion(split_outputs, data[split_y_str])
+                metrics.update({self.loss_name: loss.item()})
+                metrics = "\n".join([f"{k}:{v}" for k, v in metrics.items()])
+                print(f'{split_name}:\n{metrics}\n')
 
     def get_optimizer(self, model) -> torch.optim.Optimizer:
         optim_name = self.configs.get('trainer').get('optim', 'Adam')
@@ -69,12 +92,11 @@ class TorchTrainer(DefaultTrainer):
         return optim_func(model.parameters(), **self.configs.get('optim'))
 
     def get_loss(self) -> torch.nn.Module:
-
-        loss_name = self.configs.get('trainer').get('loss', 'NLLLoss')
-        if hasattr(torch.nn, loss_name):
-            criterion = getattr(torch.nn, loss_name)()
+        if hasattr(torch.nn, self.loss_name):
+            criterion = getattr(torch.nn, self.loss_name)()
         else:
             setup_imports()
             criterion = registry.get_loss_class(self.configs.get('trainer').get('loss'))()
+
         return criterion
 

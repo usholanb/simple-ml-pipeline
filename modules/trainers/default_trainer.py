@@ -69,15 +69,14 @@ class DefaultTrainer(BaseTrainer):
             print(to_print)
 
     def print_metrics(self, data: Dict) -> None:
-        with torch.no_grad():
-            for split_name in ['train', 'valid', 'test']:
-                outputs = self.wrapper.predict(data[f'{split_name}_x'])
-                s_metrics = self.get_split_metrics(data[f'{split_name}_y'], outputs)
-                s_metrics = "\n".join([f"{k}:{v}" for k, v in s_metrics.items()])
-                print(f'{split_name}:\n{s_metrics}\n')
+        for split_name in ['train', 'valid', 'test']:
+            split_preds = self.wrapper.predict(data[f'{split_name}_x'])
+            s_metrics = self.get_split_metrics(data[f'{split_name}_y'], split_preds)
+            s_metrics = "\n".join([f"{k}:{v}" for k, v in s_metrics.items()])
+            print(f'{split_name}:\n{s_metrics}\n')
 
-    def metrics_to_log_dict(self, y_true, y_outputs, split_name: AnyStr) -> Dict:
-        metrics = self.get_split_metrics(y_true, y_outputs)
+    def metrics_to_log_dict(self, y_true, y_preds, split_name: AnyStr) -> Dict:
+        metrics = self.get_split_metrics(y_true, y_preds)
         return dict([(f'{split_name}_{k}', v) for k, v in metrics.items()])
 
     def get_split_metrics(self, y_true, y_outputs) -> Dict:

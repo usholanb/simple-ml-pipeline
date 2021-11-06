@@ -6,6 +6,10 @@ from utils.registry import registry
 
 @registry.register_loss('example')
 class ExampleLoss(BaseLoss):
+    """
+    you can just use NLLLoss instead, this loss is just to show
+    that you can customize your loss
+    """
     def __init__(self):
         self.loss = nn.NLLLoss()
 

@@ -49,7 +49,6 @@ def train(configs: Dict) -> None:
 
 
 if __name__ == '__main__':
-    # setup_logging()
     setup_directories()
     parser = train_flags.parser
     args = parser.parse_args()

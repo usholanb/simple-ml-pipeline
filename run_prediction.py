@@ -17,7 +17,6 @@ def prediction(configs: Dict):
 
 
 if __name__ == '__main__':
-    # setup_logging()
     setup_directories()
     parser = prediction_flags.parser
     args = parser.parse_args()
