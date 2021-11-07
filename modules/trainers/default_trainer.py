@@ -1,10 +1,10 @@
 import numpy as np
 import pandas as pd
-import torch
+import importlib
 from ray import tune
 from modules.trainers.base_trainer import BaseTrainer
 from typing import Dict, AnyStr, List
-from utils.common import inside_tune, setup_imports
+from utils.common import inside_tune, setup_imports, is_outside_library, check_label_type
 from modules.wrappers.base_wrappers.base_wrapper import BaseWrapper
 from utils.common import pickle_obj
 from utils.constants import CLASSIFIERS_DIR
@@ -19,7 +19,8 @@ class DefaultTrainer(BaseTrainer):
         self.label_index_i = self.configs.get('static_columns').get('FINAL_LABEL_INDEX')
         self.label_i = self.configs.get('static_columns').get('FINAL_LABEL_NAME_INDEX')
         self.label_name = self.dataset.columns[self.configs.get('static_columns').get('FINAL_LABEL_INDEX')]
-        self.classification = True
+        self.classification = check_label_type(self.dataset.iloc[:, self.label_index_i])
+        self.configs['trainer']['classification'] = self.classification
         self.label_types = self.set_label_types()
         self.split_column = dataset.iloc[:, self.split_i]
         self.wrapper = None
@@ -49,6 +50,9 @@ class DefaultTrainer(BaseTrainer):
 
         if wrapper_class is not None:
             wrapper = wrapper_class(self.configs, self.label_types)
+        elif is_outside_library(self.configs.get('model').get('name')):
+            wrapper = registry.get_wrapper_class('sklearn')\
+                (self.configs, self.label_types)
         else:
             wrapper = registry.get_wrapper_class('torch_wrapper')\
                 (self.configs, self.label_types)
@@ -99,15 +103,14 @@ class DefaultTrainer(BaseTrainer):
                     final_list.append(available_feature)
         return final_list
 
-    def set_label_types(self):
-        labels = np.zeros(len(self.dataset))
-        np.mod(self.dataset.iloc[:, self.label_index_i], 1, out=labels)
-        mask = (labels == 0)
-        if mask.all():
+    def set_label_types(self) -> Dict:
+        """
+        saves labels types into the trainer and passes that to wrappers
+        :return: examples {'a': 0, 'b': 1}
+        """
+        if self.classification:
             label_types = {v: index for index, v in
-                                enumerate(sorted(self.dataset.iloc[:, self.label_index_i].unique()))}
-            self.classification = True
+                           enumerate(sorted(self.dataset.iloc[:, self.label_index_i].unique()))}
         else:
             label_types = {self.label_name: self.dataset.columns[self.label_index_i]}
-            self.classification = False
         return label_types

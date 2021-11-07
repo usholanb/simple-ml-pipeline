@@ -2,12 +2,12 @@ includes:
   - configs/constant_configs.yml
 
 model:
-  name: linear_regression
-  tag: uan
+  name: sklearn.linear_model.LinearRegression
+  tag: uan2
 
 # inputs go to __init__ of the model (sklearn RFC model in this case)
 special_inputs:
-  normalize: [true, false]
+  normalize: true
 
   
 trainer:

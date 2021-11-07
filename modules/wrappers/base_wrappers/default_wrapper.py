@@ -4,6 +4,9 @@ import numpy as np
 import pandas as pd
 
 from modules.wrappers.base_wrappers.base_wrapper import BaseWrapper
+import importlib
+
+from utils.common import is_outside_library, to_snake_case
 
 
 class DefaultWrapper(BaseWrapper):
@@ -18,7 +21,10 @@ class DefaultWrapper(BaseWrapper):
     @property
     def name(self) -> AnyStr:
         m_configs = self.configs.get("model")
-        return f'{m_configs.get("name")}_{m_configs.get("tag")}'
+        name = m_configs.get("name")
+        if is_outside_library(name):
+            name = to_snake_case(name.split('.')[-1])
+        return f'{name}_{m_configs.get("tag")}'
 
     def filter_features(self, examples: pd.DataFrame) -> np.ndarray:
         """ picks certain features and converts to numpy"""

@@ -2,7 +2,7 @@ includes:
   - configs/constant_configs.yml
 
 model:
-  name: logistic_regression
+  name: sklearn.linear_model.LogisticRegression
   tag: uan3
 
 # inputs go to __init__ of the model (sklearn RFC model in this case)

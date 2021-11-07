@@ -7,8 +7,7 @@ dataset:
 
 
 models:
-  uan: dynamic_net
-  uan2: rfc
+  uan: dense_net
   uan3: logistic_regression
 
   

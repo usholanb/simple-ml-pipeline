@@ -1,6 +1,6 @@
 import logging
 import sys
-
+import importlib.util as importlib_util
 import yaml
 from typing import List, AnyStr, Dict
 from pathlib import Path
@@ -10,10 +10,12 @@ import importlib
 import glob
 from typing import AnyStr
 import pickle
+import re
 import ray
 
 
 from utils.constants import DATA_DIR, CONFIGS_DIR, PREDICTIONS_DIR, TRAIN_RESULTS_DIR, PROJECT_DIR
+import numpy as np
 
 
 def load_config(path: AnyStr, previous_includes: List = None):
@@ -246,3 +248,34 @@ class Singleton(type):
         if cls not in cls._instances:
             cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
         return cls._instances[cls]
+
+
+def is_outside_library(model_name):
+    module_name = '.'.join(model_name.split('.')[:-1])
+    return importlib_util.find_spec(module_name)
+
+
+def get_outside_library(model_name):
+    module_name = '.'.join(model_name.split('.')[:-1])
+    module = importlib.import_module(module_name)
+    class_name = model_name.split('.')[-1]
+    return getattr(module, class_name)
+
+
+
+def check_label_type(targets):
+    empty_array = np.zeros(len(targets))
+    np.mod(targets, 1, out=empty_array)
+    mask = (empty_array == 0)
+    return mask.all()
+
+
+def to_snake_case(name):
+    name = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)
+    name = re.sub('__([A-Z])', r'_\1', name)
+    name = re.sub('([a-z0-9])([A-Z])', r'\1_\2', name)
+    return name.lower()
+
+
+def to_camel_case(name):
+    return ''.join(word.title() for word in name.split('_'))
