@@ -2,7 +2,7 @@ includes:
   - configs/constant_configs.yml
 
 model:
-  name: rfc
+  name: sklearn.ensemble.RandomForestClassifier
   tag: uan2
 
 # inputs go to __init__ of the model (sklearn RFC model in this case)

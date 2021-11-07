@@ -8,6 +8,7 @@ dataset:
 
 models:
   uan: dense_net
+  uan2: random_forest_classifier
   uan3: logistic_regression
 
   

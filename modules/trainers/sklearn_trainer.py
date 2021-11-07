@@ -1,9 +1,8 @@
 import sklearn
 import numpy as np
 from modules.trainers.default_trainer import DefaultTrainer
-from utils.common import setup_imports, inside_tune
+from utils.common import setup_imports
 from utils.registry import registry
-from modules.wrappers.base_wrappers.sklearn_wrapper import SKLearnWrapper
 
 
 @registry.register_trainer('sklearn_trainer')

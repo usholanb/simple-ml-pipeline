@@ -3,7 +3,7 @@ includes:
 
 
 model:
-  name: dynamic_net
+  name: dynamic_net_regression
   tag: uan
 
 

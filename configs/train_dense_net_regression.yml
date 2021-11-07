@@ -13,8 +13,6 @@ optim:
   lr: [0.01, 0.001]
   weight_decay: 0.00001
 
-evaluate_test: 1 # use best model version on test
-
 
 # this inputs will go to your specific model __init__
 #special_inputs:
