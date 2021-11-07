@@ -7,8 +7,8 @@ dataset:
 
 
 models:
-  uan: dynamic_net_regression
-  uan2: rfc
+  uan: dense_net_regression
+  uan2: linear_regression
 
   
 trainer:

@@ -53,7 +53,7 @@ class PredictionFlags(Flags):
         self._parser.add_argument_group("Core Arguments")
         self._parser.add_argument(
             "--config-yml",
-            default=f'{CONFIGS_DIR}/prediction_regression.yml',
+            default=f'{CONFIGS_DIR}/prediction.yml',
             help="path to config file starting from project home path",
         )
 

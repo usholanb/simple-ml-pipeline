@@ -72,8 +72,8 @@ class DefaultTrainer(BaseTrainer):
         for split_name in ['train', 'valid', 'test']:
             split_preds = self.wrapper.predict(data[f'{split_name}_x'])
             s_metrics = self.get_split_metrics(data[f'{split_name}_y'], split_preds)
-            s_metrics = "\n".join([f"{k}:{v}" for k, v in s_metrics.items()])
-            print(f'{split_name}:\n{s_metrics}\n')
+            s_metrics = "\n".join([f"{split_name}_{k}: {v}" for k, v in s_metrics.items()])
+            print(f'{s_metrics}\n')
 
     def metrics_to_log_dict(self, y_true, y_preds, split_name: AnyStr) -> Dict:
         metrics = self.get_split_metrics(y_true, y_preds)

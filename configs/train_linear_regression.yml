@@ -21,7 +21,7 @@ trainer:
     metrics: mse
 
     grid_metric:
-      name: valid_min
+      name: valid_mse
       mode: min
 
 
