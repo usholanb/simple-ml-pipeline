@@ -30,6 +30,7 @@ class DynamicNet(BaseTorchModel):
         self.models = [LocalModel(self.input_dim)]
         self.boost_rate = nn.Parameter(torch.tensor(self.lr, requires_grad=True, device=self.device))
         self.prediction_function = nn.Softmax(dim=1)
+        self.output_function = nn.LogSoftmax(dim=1)
 
     def add(self, model):
         self.models.append(model)

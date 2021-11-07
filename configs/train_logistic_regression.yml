@@ -32,6 +32,6 @@ dataset:
 features_list:
   - sepal width (cm)
   - petal length (cm)
-  - petal width (cm)
-  - sepal length (cm)
+#  - petal width (cm)
+#  - sepal length (cm)
 
