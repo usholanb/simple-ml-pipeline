@@ -41,7 +41,7 @@ trainer:
 
 
 dataset:
-  input_path: processed_data/regression_output
+  input_path: processed_data/regression
 
 
 features_list:

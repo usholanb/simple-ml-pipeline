@@ -42,7 +42,7 @@ trainer:
 
 
 dataset:
-  input_path: processed_data/toy_dataset_output
+  input_path: processed_data/toy_dataset
 
 
 features_list:
