@@ -31,19 +31,44 @@ def train_one(configs: Dict, dataset: pd.DataFrame, save: bool = False) -> None:
 
 
 def train(configs: Dict) -> None:
-    dataset = CSVSaver().load(configs)
+    # dataset = CSVSaver().load(configs)
+    # grid = add_grid_search_parameters(configs)
+    # sync_config = tune.SyncConfig(sync_to_driver=False)
+    # config_copy = deepcopy(configs)
+    # m = configs.get("model")
+    # if grid:
+    #     analysis = tune.run(
+    #         tune.with_parameters(train_one, dataset=dataset),
+    #         config=configs,
+    #         local_dir=TRAIN_RESULTS_DIR,
+    #         sync_config=sync_config,
+    #         name=f'{m.get("name")}_{m.get("tag")}',
+    #         **config_copy.get('trainer').get('tune', {}),
+    #
+    #     )
+    #     best_configs = analysis.get_best_config(
+    #         metric=configs.get('trainer').get('grid_metric').get('name'),
+    #         mode=configs.get('trainer').get('grid_metric').get('mode')
+    #     )
+    #
+    #     print("Best configs: ", {**best_configs.get('optim'),
+    #                              **best_configs.get('special_inputs')})
+    #     configs = best_configs
+    #
+    # train_one(configs, dataset, save=configs.get('trainer').get('save'))
+
+    dataset = pd.read_csv(configs.get('dataset').get('input_path') + '.csv')
     grid = add_grid_search_parameters(configs)
     sync_config = tune.SyncConfig(sync_to_driver=False)
-    config_copy = deepcopy(configs)
-    m = configs.get("model")
+    configs_copy = deepcopy(configs)
     if grid:
         analysis = tune.run(
             tune.with_parameters(train_one, dataset=dataset),
-            config=configs,
+            config=configs_copy,
             local_dir=TRAIN_RESULTS_DIR,
             sync_config=sync_config,
-            name=f'{m.get("name")}_{m.get("tag")}',
-            **config_copy.get('trainer').get('tune', {}),
+            **configs_copy.get('trainer').get('tune'),
+            name='my_exp',
 
         )
         best_configs = analysis.get_best_config(
@@ -56,6 +81,8 @@ def train(configs: Dict) -> None:
         configs = best_configs
 
     train_one(configs, dataset, save=configs.get('trainer').get('save'))
+
+
 
 
 if __name__ == '__main__':
