@@ -3,18 +3,9 @@ includes:
 
 dataset:
   input_path: processed_data/regression_output.csv
-  type: csv
 
 
 models:
   uan: dense_net_regression
   uan2: linear_regression
-
-  
-trainer:
-    name: torch_trainer
-    save: 1
-    epochs: 100
-    log_valid_every: 20
-
 

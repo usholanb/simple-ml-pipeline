@@ -94,8 +94,6 @@ class DefaultDataset(BaseDataset):
                          .get('FINAL_SPLIT_INDEX'), column='split', value=split_name)
         return pd.concat(data.values(), ignore_index=True)
 
-    def save(self) -> None:
-        CSVSaver(self.configs).save(self.data, self.configs)
 
 
 

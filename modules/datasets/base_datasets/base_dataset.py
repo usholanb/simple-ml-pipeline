@@ -31,10 +31,6 @@ class BaseDataset(ABC):
         return self.configs.get('dataset').get('name')
 
     @abstractmethod
-    def save(self) -> None:
-        """ Saves the final dataset locally or externally """
-
-    @abstractmethod
     def concat_dataset(self, data):
         """ concats splits (train, test and eval) and sets column """
 

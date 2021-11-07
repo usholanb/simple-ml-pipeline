@@ -31,7 +31,7 @@ class PreprocessingFlag(Flags):
         self._parser.add_argument_group("Core Arguments")
         self._parser.add_argument(
             "--config-yml",
-            default=f'{CONFIGS_DIR}/preprocessing_gpa.yml',
+            default=f'{CONFIGS_DIR}/preprocessing.yml',
             help="path to config file starting from project home path",
         )
 
@@ -42,7 +42,7 @@ class TrainFlags(Flags):
         self._parser.add_argument_group("Core Arguments")
         self._parser.add_argument(
             "--config-yml",
-            default=f'{CONFIGS_DIR}/train_dynamic_net.yml',
+            default=f'{CONFIGS_DIR}/train_dense_net.yml',
             help="path to config file starting from project home path",
         )
 

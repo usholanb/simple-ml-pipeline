@@ -1,12 +1,21 @@
+"""
+this scripts makes one (useful for debugging) or multiple
+training of the same model with different hyper-parameters
+
+The best model can be saved
+
+All details of the training are specified in the config file
+
+"""
 from copy import deepcopy
 
-from utils.constants import TRAIN_RESULTS_DIR, CLASSIFIERS_DIR
+from modules.helpers.csv_saver import CSVSaver
+from utils.constants import TRAIN_RESULTS_DIR
 from utils.flags import train_flags
 from utils.common import build_config, setup_imports, setup_directories, add_grid_search_parameters
 from utils.registry import registry
 import pandas as pd
 from ray import tune
-from functools import partial
 from typing import Dict
 
 
@@ -22,7 +31,7 @@ def train_one(configs: Dict, dataset: pd.DataFrame, save: bool = False) -> None:
 
 
 def train(configs: Dict) -> None:
-    dataset = pd.read_csv(configs.get('dataset').get('input_path'))
+    dataset = CSVSaver().load(configs)
     grid = add_grid_search_parameters(configs)
     sync_config = tune.SyncConfig(sync_to_driver=False)
     configs_copy = deepcopy(configs)

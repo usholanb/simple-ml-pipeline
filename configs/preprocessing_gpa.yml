@@ -6,7 +6,7 @@ dataset:
   name: csv_dataset
   label_type: regression  # classification or regression
   input_path: data/regression.csv
-  output_path: processed_data/regression_output.csv
+  output_path: processed_data/regression_output
   # index or name of the labels column in the input data
   label: GPA
   shuffle: 1 # can be (0, false null) OR (anything else, which means true)

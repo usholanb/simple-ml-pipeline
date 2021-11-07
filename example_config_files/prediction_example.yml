@@ -1,0 +1,23 @@
+includes:
+  - configs/constant_configs.yml
+
+
+dataset:
+  input_path: processed_data/toy_dataset_output
+  type: csv
+
+
+# models is dict, first comes unique tag and then the name of the model
+# all outside library models are named based on their class name
+# transformed into snake case
+# Example: sklearn.linear_model.LinearRegression -> linear_regression
+# These models are applied on <dataset.input_path> and their predictions are
+# saved for model comparison
+models:
+  uan: dense_net
+  uan2: random_forest_classifier
+  uan3: logistic_regression
+
+
+
+

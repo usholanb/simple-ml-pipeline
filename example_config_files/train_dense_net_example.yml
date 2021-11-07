@@ -1,0 +1,81 @@
+includes:
+  - configs/constant_configs.yml
+
+
+
+model:
+  # name can be a registered model
+  # name can be a path to the class of outside library
+  # for example:
+  # name: sklearn.linear_model.LogisticRegression
+  name: dense_net
+  # tag must be a unique value, this way we distinguish models during
+  # the prediction step
+  tag: uan
+
+
+# must be same hps actual optimizer
+# names must be the same as the actual parameters of the optimizer
+optim:
+  lr: 0.01
+  weight_decay: 0.00001
+
+
+# this inputs will go to your specific model __init__
+# 2 Default parameters will be submitted anyway:
+#
+# label_types: dict
+# example: {'red': 0, 'black': 1, 'blue': 2}
+#
+# input_dim - int, length of feature vector
+#
+# Additional inputs can be specified here
+#special_inputs:
+
+
+
+trainer:
+  # Possible trainers:
+  # 1. torch_trainer - for all torch related models
+  # 2. sklearn_trainer - for all sklearn related models
+  name: torch_trainer
+  # optim is not needed when trainer is sklearn_trainer
+  # optim can be a torch optimizer, any optim from torch.optim
+  optim: Adam
+  # loss can be any loss from torch.nn
+  loss: NLLLoss
+  # set it to 0, null or false to not save, otherwise - saves
+  save: 1
+  epochs: 100
+  # log valid, train loss and metrics every log_valid_every epochs
+  log_valid_every: 10
+  # hps that go to ray tune.run function
+  tune:
+    resources_per_trial:
+      cpu: 2
+      gpu: 0
+  # list of registered metrics that are used during training on valid and train
+  # sets, and on all sets after the training is done
+  metrics:
+    - accuracy
+    - precision
+
+  # name of grid_metric is used to choose the best model
+  grid_metric:
+    name: valid_precision
+    mode: max
+
+
+
+
+dataset:
+  input_path: processed_data/toy_dataset_output
+
+
+# comment out features that you don't want to train on
+features_list:
+#  - sepal width (cm)
+  - petal length (cm)
+  - petal width (cm)
+  - sepal length (cm)
+

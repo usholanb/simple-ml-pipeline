@@ -1,4 +1,8 @@
-from modules.containers.di_containers import SaverContainer
+"""
+This script utilizes one of the datasets and processes the data converting
+it to gz
+"""
+from modules.helpers.csv_saver import CSVSaver
 from utils.flags import preprocessing_flags
 from dependency_injector.wiring import Provide, inject
 from utils.common import build_config, setup_imports, setup_directories
@@ -12,7 +16,7 @@ def preprocessing(configs: Dict) -> None:
     setup_imports()
     dataset = registry.get_dataset_class(configs.get('dataset').get('name'))(configs)
     dataset.collect()
-    dataset.save()
+    CSVSaver().save(dataset, configs)
     print(f'{dataset.name} is ready')
 
 

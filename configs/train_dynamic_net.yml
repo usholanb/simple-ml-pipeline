@@ -21,7 +21,6 @@ special_inputs:
   
 trainer:
     name: torch_trainer
-    tag: uan
     optim: Adam
     loss: example
     save: 1
@@ -37,7 +36,7 @@ trainer:
       mode: max
 
 dataset:
-  input_path: processed_data/toy_dataset_output.csv
+  input_path: processed_data/toy_dataset_output
 
 
 features_list:

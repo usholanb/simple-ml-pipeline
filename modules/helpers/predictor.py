@@ -33,5 +33,5 @@ class Predictor:
             split = output_dataset.loc[output_dataset['split'] == split_name]
             dataset_path = self.configs.get('dataset').get('input_path')
             dataset_name = dataset_path.split('_output.csv')[0].split('/')[1]
-            CSVSaver.save_file(f'{PREDICTIONS_DIR}/{dataset_name}_{split_name}.csv', split)
+            CSVSaver.save_file(f'{PREDICTIONS_DIR}/{dataset_name}_{split_name}', split)
 

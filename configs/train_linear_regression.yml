@@ -26,7 +26,7 @@ trainer:
 
 
 dataset:
-  input_path: processed_data/regression_output.csv
+  input_path: processed_data/regression_output
 
 features_list:
   - SAT

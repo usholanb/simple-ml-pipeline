@@ -2,25 +2,10 @@ includes:
   - configs/constant_configs.yml
 
 dataset:
-  input_path: processed_data/toy_dataset_output.csv
-  type: csv
+  input_path: processed_data/toy_dataset_output
 
 
 models:
   uan: dense_net
   uan2: random_forest_classifier
   uan3: logistic_regression
-
-  
-trainer:
-    name: torch_trainer
-    save: 1
-    epochs: 100
-    log_valid_every: 20
-
-
-dataset:
-  input_path: processed_data/toy_dataset_output.csv
-  type: csv
-
-

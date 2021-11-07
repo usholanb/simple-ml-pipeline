@@ -21,7 +21,6 @@ optim:
 
 trainer:
   name: torch_trainer
-  tag: uan
   optim: Adam
   loss: MSELoss
   save: 1
@@ -42,7 +41,7 @@ trainer:
 
 
 dataset:
-  input_path: processed_data/regression_output.csv
+  input_path: processed_data/regression_output
 
 
 features_list:

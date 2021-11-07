@@ -13,8 +13,6 @@ optim:
   lr: 0.01
   weight_decay: 0.00001
 
-evaluate_test: 1 # use best model version on test
-
 
 # this inputs will go to your specific model __init__
 #special_inputs:
@@ -23,7 +21,6 @@ evaluate_test: 1 # use best model version on test
 
 trainer:
   name: torch_trainer
-  tag: uan
   optim: Adam
   loss: NLLLoss
   save: 1
@@ -45,7 +42,7 @@ trainer:
 
 
 dataset:
-  input_path: processed_data/toy_dataset_output.csv
+  input_path: processed_data/toy_dataset_output
 
 
 features_list:
