@@ -34,15 +34,16 @@ def train(configs: Dict) -> None:
     dataset = CSVSaver().load(configs)
     grid = add_grid_search_parameters(configs)
     sync_config = tune.SyncConfig(sync_to_driver=False)
-    configs_copy = deepcopy(configs)
+    config_copy = deepcopy(configs)
+    m = configs.get("model")
     if grid:
         analysis = tune.run(
             tune.with_parameters(train_one, dataset=dataset),
-            config=configs_copy,
+            config=configs,
             local_dir=TRAIN_RESULTS_DIR,
             sync_config=sync_config,
-            **configs_copy.get('trainer').get('tune'),
-            name='my_exp',
+            name=f'{m.get("name")}_{m.get("tag")}',
+            **config_copy.get('trainer').get('tune', {}),
 
         )
         best_configs = analysis.get_best_config(

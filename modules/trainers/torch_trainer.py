@@ -43,6 +43,7 @@ class TorchTrainer(DefaultTrainer):
             self.configs['special_inputs'] = {}
         self.get_wrapper()
         optimizer = self.get_optimizer(self.wrapper)
+
         for i in range(self.configs.get('trainer').get('epochs', 10)):
             self.wrapper.train()
             optimizer.zero_grad()
@@ -54,16 +55,19 @@ class TorchTrainer(DefaultTrainer):
             if (i + 1) % self.configs.get('trainer').get('log_valid_every', 10) == 0:
                 with torch.no_grad():
                     self.wrapper.eval()
+                    valid_metrics, train_metrics = {}, {}
                     valid_preds = self.wrapper.predict(data['valid_x'])
                     train_preds = self.wrapper.predict(data['train_x'])
-                    valid_metrics = self.metrics_to_log_dict(
-                        data['valid_y'], valid_preds, 'valid')
+                    valid_metrics.update(self.metrics_to_log_dict(
+                    data['valid_y'], valid_preds, 'valid'))
+                    train_metrics.update(self.metrics_to_log_dict(
+                        data['train_y'], train_preds, 'train'))
+
                     valid_outputs = self.wrapper.forward(data['valid_x'])
                     valid_loss = self.criterion(valid_outputs, data['valid_y'])
                     valid_metrics.update({f'valid_{self.loss_name}': valid_loss.item()})
-                    train_metrics = self.metrics_to_log_dict(
-                        data['train_y'], train_preds, 'train')
                     train_metrics.update({f'train_{self.loss_name}': loss.item()})
+
                     self.log_metrics({**valid_metrics, **train_metrics})
 
         with torch.no_grad():

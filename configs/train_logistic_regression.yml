@@ -6,9 +6,8 @@ model:
   tag: uan3
 
 # inputs go to __init__ of the model (sklearn RFC model in this case)
-#special_inputs:
-#  n_estimators: 10
-#  max_depth: 2
+special_inputs:
+  tol: [0.001, 0.0001]
 
   
 trainer:

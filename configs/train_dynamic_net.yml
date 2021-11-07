@@ -9,7 +9,7 @@ model:
 
 # must be same names as parameters of the actual optimizer
 optim:
-  lr: 0.01
+  lr: [0.01, 0.001]
   weight_decay: 0.0001
 
 
@@ -26,11 +26,14 @@ trainer:
     save: 1
     epochs: 100
     log_valid_every: 10
+
     tune:
       resources_per_trial:
         cpu: 2
         gpu: 0
+
     metrics: [precision, accuracy]
+
     grid_metric:
       name: valid_precision
       mode: max
@@ -41,6 +44,6 @@ dataset:
 
 features_list:
   - sepal width (cm)
-#  - petal length (cm)
-  - petal width (cm)
-  - sepal length (cm)
+  - petal length (cm)
+#  - petal width (cm)
+#  - sepal length (cm)
