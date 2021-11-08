@@ -109,7 +109,7 @@ class DefaultTrainer(BaseTrainer):
         :return: examples {'a': 0, 'b': 1}
         """
         if self.classification:
-            label_types = {v: index for index, v in
+            label_types = {str(v): index for index, v in
                            enumerate(sorted(self.dataset.iloc[:, self.label_index_i].unique()))}
         else:
             label_types = {self.label_name: self.dataset.columns[self.label_index_i]}
