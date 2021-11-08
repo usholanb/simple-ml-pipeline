@@ -16,7 +16,7 @@ class SKLearnWrapper(DefaultWrapper):
     def predict_proba(self, examples: pd.DataFrame) -> np.ndarray:
         """ filters in needed features and makes prediction  """
         examples = self.filter_features(examples)
-        return self.clf.predict(examples)
+        return self.predict(examples)
 
     def predict(self, examples: np.ndarray) -> np.ndarray:
         """ makes prediction on pandas examples of dim N X M

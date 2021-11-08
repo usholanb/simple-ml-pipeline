@@ -1,8 +1,12 @@
 """
 This script utilizes one of the datasets and processes the data converting
 it to gz
+
+input dataset is in data/ folder or/and from remote server
+output dataset is is processed_data/ folder
 """
 from modules.helpers.csv_saver import CSVSaver
+from modules.helpers.namer import Namer
 from utils.flags import preprocessing_flags
 from dependency_injector.wiring import Provide, inject
 from utils.common import build_config, setup_imports, setup_directories
@@ -17,11 +21,10 @@ def preprocessing(configs: Dict) -> None:
     dataset = registry.get_dataset_class(configs.get('dataset').get('name'))(configs)
     dataset.collect()
     CSVSaver().save(dataset.data, configs)
-    print(f'{dataset.name} is ready')
+    print(f'{Namer.dataset_name(configs.get("dataset"))} is ready')
 
 
 if __name__ == '__main__':
-    # setup_logging()
     setup_directories()
     parser = preprocessing_flags.parser
     args = parser.parse_args()

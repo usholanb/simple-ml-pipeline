@@ -2,6 +2,8 @@ import numpy as np
 import pandas as pd
 import importlib
 from ray import tune
+
+from modules.helpers.namer import Namer
 from modules.trainers.base_trainer import BaseTrainer
 from typing import Dict, AnyStr, List
 from utils.common import inside_tune, setup_imports, is_outside_library, check_label_type
@@ -60,7 +62,7 @@ class DefaultTrainer(BaseTrainer):
         return wrapper
 
     def model_path(self) -> AnyStr:
-        return f'{CLASSIFIERS_DIR}/{self.wrapper.name}.pkl'
+        return f'{CLASSIFIERS_DIR}/{Namer.wrapper_name(self.configs.get("model"))}.pkl'
 
     def save(self) -> None:
         pickle_obj(self.wrapper, self.model_path())

@@ -26,10 +26,6 @@ class BaseDataset(ABC):
     def shuffle(self, data):
         """ shuffles data """
 
-    @property
-    def name(self) -> AnyStr:
-        return self.configs.get('dataset').get('name')
-
     @abstractmethod
     def concat_dataset(self, data):
         """ concats splits (train, test and eval) and sets column """

@@ -21,7 +21,7 @@ class Predictor:
             model_path = f'{CLASSIFIERS_DIR}/{model_name_tag}.pkl'
             wrapper = unpickle_obj(model_path)
             probs = wrapper.predict_proba(self.dataset)
-            if len(probs.shape) > 1:
+            if len(wrapper.label_types) > 1:
                 for label, label_index in wrapper.label_types.items():
                     output_dataset[f'{model_name_tag}_{label}'] = probs[:, label_index]
             else:
