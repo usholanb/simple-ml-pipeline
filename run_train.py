@@ -10,6 +10,7 @@ All details of the training are specified in the config file
 from copy import deepcopy
 
 from modules.helpers.csv_saver import CSVSaver
+from modules.helpers.namer import Namer
 from utils.constants import TRAIN_RESULTS_DIR
 from utils.flags import train_flags
 from utils.common import build_config, setup_imports, setup_directories, add_grid_search_parameters
@@ -35,14 +36,13 @@ def train(configs: Dict) -> None:
     grid = add_grid_search_parameters(configs)
     sync_config = tune.SyncConfig(sync_to_driver=False)
     config_copy = deepcopy(configs)
-    m = configs.get("model")
     if grid:
         analysis = tune.run(
             tune.with_parameters(train_one, dataset=dataset),
             config=configs,
             local_dir=TRAIN_RESULTS_DIR,
             sync_config=sync_config,
-            name=f'{m.get("name")}_{m.get("tag")}',
+            name=Namer.wrapper_name(configs.get('model')),
             **config_copy.get('trainer').get('tune', {}),
 
         )
