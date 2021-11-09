@@ -14,6 +14,8 @@ class BaseTorchModel(nn.Module, BaseModel):
         else:
             self.device = 'cpu'
 
+    def parameters(self, recurse: bool = True):
+        return self.clf.parameters(recurse=recurse)
 
 
 

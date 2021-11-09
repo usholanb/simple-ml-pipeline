@@ -19,7 +19,7 @@ class BaseDataset(ABC):
         """ reads any source to pandas """
 
     @abstractmethod
-    def split(self, all_data) -> Dict:
+    def split(self, input_paths: dict, shuffle: bool) -> Dict:
         """ splits the data according split_ratio in config file """
 
     @abstractmethod

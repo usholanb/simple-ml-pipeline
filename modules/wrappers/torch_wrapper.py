@@ -21,10 +21,10 @@ class TorchWrapper(DefaultWrapper):
     def forward(self, examples):
         """ outputs forward """
 
-    def get_classifier(self, inputs: Dict):
+    def get_classifier(self, configs):
         return registry.get_model_class(
             self.configs.get('model').get('name')
-        )(inputs)
+        )(configs)
 
     def predict_proba(self, examples: pd.DataFrame) -> np.ndarray:
         """ returns probabilities, is used in prediction step.
@@ -57,3 +57,6 @@ class TorchWrapper(DefaultWrapper):
 
     def parameters(self):
         return self.clf.parameters()
+
+    def epoch_prepare(self):
+        self.clf.epoch_prepare()

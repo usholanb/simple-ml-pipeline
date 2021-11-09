@@ -32,4 +32,10 @@ class CSVSaver:
         df.to_csv(full_path, index=False,  compression='gzip')
         print(f'saved {full_path}')
 
+    @classmethod
+    def clean_csv(cls, path):
+        open(path, "w+").close()
 
+    @classmethod
+    def append_rows(cls, df: pd.DataFrame, path: AnyStr) -> None:
+        df.to_csv(path, mode='a', compression='gzip')

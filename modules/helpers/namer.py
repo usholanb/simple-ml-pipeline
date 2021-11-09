@@ -13,5 +13,5 @@ class Namer:
         return f'{name}_{m_configs.get("tag")}'
 
     @staticmethod
-    def dataset_name(d_configs) -> AnyStr:
-        return d_configs.get('name')
+    def dataset_name(configs) -> AnyStr:
+        return configs.get("dataset").get('name')

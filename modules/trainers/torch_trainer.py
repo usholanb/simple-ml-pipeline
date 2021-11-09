@@ -1,9 +1,9 @@
 from modules.trainers.default_trainer import DefaultTrainer
+from modules.wrappers.torch_wrapper import TorchWrapper
 from utils.common import setup_imports
 from utils.registry import registry
 import torch
 import pandas as pd
-import torch.optim as optim
 from typing import Dict
 
 
@@ -41,7 +41,7 @@ class TorchTrainer(DefaultTrainer):
         data = self.prepare_train()
         if 'special_inputs' not in self.configs:
             self.configs['special_inputs'] = {}
-        self.get_wrapper()
+        self.get_wrapper(self.configs, self.label_types)
         optimizer = self.get_optimizer(self.wrapper)
 
         for i in range(self.configs.get('trainer').get('epochs', 10)):
@@ -91,6 +91,7 @@ class TorchTrainer(DefaultTrainer):
                 print(f'{split_name}:\n{metrics}\n')
 
     def get_optimizer(self, model) -> torch.optim.Optimizer:
+        import torch.optim as optim
         optim_name = self.configs.get('trainer').get('optim', 'Adam')
         optim_func = getattr(optim, optim_name)
         return optim_func(model.parameters(), **self.configs.get('optim'))
@@ -104,3 +105,7 @@ class TorchTrainer(DefaultTrainer):
 
         return criterion
 
+    def get_wrapper(self, *args, **kwargs) -> TorchWrapper:
+        self.wrapper = registry.get_wrapper_class('torch_wrapper') \
+            (*args, **kwargs)
+        return self.wrapper

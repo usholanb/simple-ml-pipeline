@@ -21,7 +21,7 @@ def preprocessing(configs: Dict) -> None:
     dataset = registry.get_dataset_class(configs.get('dataset').get('name'))(configs)
     dataset.collect()
     CSVSaver().save(dataset.data, configs)
-    print(f'{Namer.dataset_name(configs.get("dataset"))} is ready')
+    print(f'{Namer.dataset_name(configs)} is ready')
 
 
 if __name__ == '__main__':
