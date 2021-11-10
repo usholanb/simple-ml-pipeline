@@ -46,7 +46,7 @@ special_inputs:
   warmup: false
   wrmp_epochs: 50
   CE_weight: 0.01
-  batch_size: 100
+  batch_size: 64
 
   clip: 10
   n_layers: 2  # Number of recurrent layers

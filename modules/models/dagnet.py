@@ -149,6 +149,7 @@ class DAGNet (BaseTorchModel):
             g_t = goals_ohe[timestep]   # ground truth goal
 
             # refined goal must resemble real goal g_t
+            print([x.shape for x in [d_t, h[-1], goals_ohe[timestep - 1]]])
             dec_goal_t = self.dec_goal(torch.cat([d_t, h[-1], goals_ohe[timestep-1]], 1))
             g_graph = self.graph_goals(dec_goal_t, adj_out[timestep])  # graph refinement
             g_combined = self.lg_goals(torch.cat((dec_goal_t, g_graph), dim=-1))     # combination
@@ -289,15 +290,9 @@ class DAGNet (BaseTorchModel):
 
     def before_iteration(self, data):
         (obs_traj, pred_traj_gt, obs_traj_rel, pred_traj_rel_gt,
-            obs_goals, pred_goals_gt, seq_start_end) = data
-        # seq_start_end = seq_start_end.transpose(0, 1)
-
+            obs_goals_ohe, pred_goals_gt_ohe, seq_start_end) = data
         seq_len = len(obs_traj) + len(pred_traj_gt)
         assert seq_len == self.obs_len + self.pred_len
-
-        # goals one-hot encoding
-        obs_goals_ohe = to_goals_one_hot(obs_goals, self.g_dim).to(self.device)
-        pred_goals_gt_ohe = to_goals_one_hot(pred_goals_gt, self.g_dim).to(self.device)
 
         # adj matrix for current batch
         if self.adjacency_type == 0:

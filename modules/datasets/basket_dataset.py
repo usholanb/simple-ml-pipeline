@@ -75,7 +75,6 @@ class BasketDataset(Dataset):
         self.seq_start_end = seq_start_end
         self.collate = seq_collate
 
-
     def set_n_max_agents(self):
         if 'n_max_agents' not in self.configs['special_inputs']:
             self.configs['special_inputs']['n_max_agents'] = self.__max_agents__()

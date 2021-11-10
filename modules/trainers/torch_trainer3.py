@@ -63,7 +63,7 @@ class TorchTrainer3:
             self.model.eval()
             self.model.before_test_loop()
             for batch_i, batch in enumerate(self.test_loader):
-                data = self.transform(batch_i, batch)
+                data = self.transform(batch)
                 self.model.before_iteration()
                 outputs = self.model.forward(data)
                 loss_outputs = self.compute_loss(outputs)
@@ -76,7 +76,7 @@ class TorchTrainer3:
             self.model.eval()
             self.model.before_valid_loop()
             for batch_i, batch in enumerate(self.valid_loader):
-                data = self.transform(batch_i, batch)
+                data = self.transform(batch)
                 self.model.before_iteration()
                 outputs = self.model.forward(data)
                 loss_outputs = self.compute_loss(outputs)

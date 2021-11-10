@@ -22,9 +22,15 @@ class GoalsOHE(BaseTransformer):
     def apply(self, data):
         obs_traj, pred_traj_gt, obs_traj_rel, pred_traj_rel_gt, \
             obs_goals, pred_goals_gt, seq_start_end = data
+
         goals_ohe = to_goals_one_hot(
             obs_goals, self.configs.get('special_inputs').get('g_dim')
         ).to(self.device)
+
+        pred_goals_gt_ohe = to_goals_one_hot(
+            pred_goals_gt, self.configs.get('special_inputs').get('g_dim')
+        ).to(self.device)
+
         return obs_traj, pred_traj_gt, obs_traj_rel, pred_traj_rel_gt, \
-            goals_ohe, pred_goals_gt, seq_start_end
+            goals_ohe, pred_goals_gt_ohe, seq_start_end
 
