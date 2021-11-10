@@ -1,44 +1,23 @@
 from typing import List
-
 import torch
+import math
+from torch.nn import functional as F
 
-from utils.common import block_diag_irregular
+from modules.models.base_models.base_torch_model import BaseTorchModel
 from utils.registry import registry
-from .base_models.torch_model import BaseTorchModel
 import matplotlib.pyplot as plt
 import random
 import numpy as np
 import torch.nn as nn
-import torch.nn.functional as F
 from scipy.spatial import distance_matrix
-from math import ceil
 from time import time
-from datetime import timedelta
 
 
 @registry.register_model('dagnet')
 class DAGNet (BaseTorchModel):
     def __init__(self, configs):
-        super(DAGNet, self).__init__()
-
-        self.n_max_agents = configs.get('special_inputs').get('n_max_agents')
-        self.n_layers = configs.get('trainer').get('n_layers')
-        self.x_dim = configs.get('trainer').get('x_dim')
-        self.h_dim = configs.get('trainer').get('h_dim')
-        self.z_dim = configs.get('trainer').get('z_dim')
-        self.d_dim = configs.get('trainer').get('n_max_agents')*2
-        self.g_dim = configs.get('trainer').get('g_dim')
-        self.rnn_dim = configs.get('trainer').get('rnn_dim')
-
-        self.graph_model = configs.get('trainer').get('graph_model')
-        self.graph_hid = configs.get('trainer').get('graph_hid')
-        self.adjacency_type = configs.get('trainer').get('adjacency_type')
-        self.top_k_neigh = configs.get('trainer').get('top_k_neigh')
-        self.sigma = configs.get('trainer').get('sigma')
-        self.alpha = configs.get('trainer').get('alpha')
-        self.n_heads = configs.get('trainer').get('n_heads')
-        self.configs = configs
-
+        super(DAGNet, self).__init__(configs)
+        self.d_dim = self.n_max_agents * 2
 
         # goal generator
         self.dec_goal = nn.Sequential(
@@ -145,7 +124,11 @@ class DAGNet (BaseTorchModel):
         nll = torch.mean(0.5 * (x1 + x2 + x3))
         return nll
 
-    def forward(self, traj, traj_rel, goals_ohe, seq_start_end, adj_out):
+    def predict(self, data):
+        raise ValueError('predict not implemented for dagnet')
+
+    def forward(self, data):
+        traj, traj_rel, goals_ohe, seq_start_end, adj_out = data
         timesteps, batch, features = traj.shape
 
         d = torch.zeros(timesteps, batch, features*self.n_max_agents).cuda()
@@ -299,47 +282,38 @@ class DAGNet (BaseTorchModel):
         avg_kld_loss = kld_loss / len(train_loader.dataset)
         avg_nll_loss = nll_loss / len(train_loader.dataset)
         avg_cross_entropy_loss = cross_entropy_loss / len(train_loader.dataset)
-
         end = time()
 
+    def after_loader_to_device(self, batch_i, batch):
+        return [batch_i, [x.to(self.device) for x in batch]]
 
-def forward_hook(t_configs, data, output) -> List[torch.Tensor]:
-    # data = [tensor.to(self.device) for tensor in data]
+    def before_iteration(self, data):
+        (obs_traj, pred_traj_gt, obs_traj_rel, pred_traj_rel_gt,
+            obs_goals, pred_goals_gt, seq_start_end) = data
+        # seq_start_end = seq_start_end.transpose(0, 1)
 
-    (obs_traj, pred_traj_gt, obs_traj_rel, pred_traj_rel_gt,
-     obs_goals, pred_goals_gt, seq_start_end) = data
-    # seq_start_end = seq_start_end.transpose(0, 1)
+        seq_len = len(obs_traj) + len(pred_traj_gt)
+        assert seq_len == self.obs_len + self.pred_len
 
-    seq_len = len(obs_traj) + len(pred_traj_gt)
-    assert seq_len == t_configs.get('obs_len') + t_configs.get('pred_len')
+        # goals one-hot encoding
+        obs_goals_ohe = to_goals_one_hot(obs_goals, self.g_dim).to(self.device)
+        pred_goals_gt_ohe = to_goals_one_hot(pred_goals_gt, self.g_dim).to(self.device)
 
-    # goals one-hot encoding
-    obs_goals_ohe = to_goals_one_hot(obs_goals, t_configs.get('g_dim')).to(self.device)
-    pred_goals_gt_ohe = to_goals_one_hot(pred_goals_gt, t_configs.get('g_dim')).to(self.device)
+        # adj matrix for current batch
+        if self.adjacency_type == 0:
+            adj_out = compute_adjs(self.configs.get('special_inputs'), seq_start_end).to(self.device)
+        elif self.adjacency_type == 1:
+            adj_out = compute_adjs_distsim(self.configs.get('special_inputs'), seq_start_end, obs_traj.detach().cpu(),
+                                           pred_traj_gt.detach().cpu()).to(self.device)
+        elif self.adjacency_type == 2:
+            adj_out = compute_adjs_knnsim(self.configs.get('special_inputs'), seq_start_end, obs_traj.detach().cpu(),
+                                          pred_traj_gt.detach().cpu()).to(self.device)
 
-    # adj matrix for current batch
-    if t_configs.get('adjacency_type') == 0:
-        adj_out = compute_adjs(t_configs, seq_start_end).to(self.device)
-    elif t_configs['adjacency_type'] == 1:
-        adj_out = compute_adjs_distsim(t_configs, seq_start_end, obs_traj.detach().cpu(),
-                                       pred_traj_gt.detach().cpu()).to(self.device)
-    elif t_configs['adjacency_type'] == 2:
-        adj_out = compute_adjs_knnsim(t_configs, seq_start_end, obs_traj.detach().cpu(),
-                                      pred_traj_gt.detach().cpu()).to(self.device)
-
-    # during training we feed the entire trjs to the model
-    all_traj = torch.cat((obs_traj, pred_traj_gt), dim=0)
-    all_traj_rel = torch.cat((obs_traj_rel, pred_traj_rel_gt), dim=0)
-    all_goals_ohe = torch.cat((obs_goals_ohe, pred_goals_gt_ohe), dim=0)
-    return [all_traj, all_traj_rel, all_goals_ohe, seq_start_end, adj_out]
-
-
-
-
-
-
-
-
+        # during training we feed the entire trjs to the model
+        all_traj = torch.cat((obs_traj, pred_traj_gt), dim=0)
+        all_traj_rel = torch.cat((obs_traj_rel, pred_traj_rel_gt), dim=0)
+        all_goals_ohe = torch.cat((obs_goals_ohe, pred_goals_gt_ohe), dim=0)
+        return [all_traj, all_traj_rel, all_goals_ohe, seq_start_end, adj_out]
 
 
 class GCN(nn.Module):
@@ -471,15 +445,15 @@ def compute_adjs(t, seq_start_end):
     return block_diag_irregular(adj_out)
 
 
-def compute_adjs_knnsim(t_config, seq_start_end, obs_traj, pred_traj_gt):
+def compute_adjs_knnsim(special_inputs, seq_start_end, obs_traj, pred_traj_gt):
     adj_out = []
     for _, (start, end) in enumerate(seq_start_end):
         obs_and_pred_traj = torch.cat((obs_traj, pred_traj_gt))
         knn_t = []
-        for t in range(0, t_config.obs_len + t_config.pred_len):
+        for t in range(0, special_inputs.obs_len + special_inputs.pred_len):
             dists = distance_matrix(np.asarray(obs_and_pred_traj[t, start:end, :]),
                                     np.asarray(obs_and_pred_traj[t, start:end, :]))
-            knn = np.argsort(dists, axis=1)[:, 0: min(t_config.top_k_neigh, dists.shape[0])]
+            knn = np.argsort(dists, axis=1)[:, 0: min(special_inputs.top_k_neigh, dists.shape[0])]
             final_dists = []
             for i in range(dists.shape[0]):
                 knni = np.zeros((dists.shape[1],))
@@ -496,12 +470,12 @@ def compute_adjs_distsim(t_config, seq_start_end, obs_traj, pred_traj_gt):
     for _, (start, end) in enumerate(seq_start_end):
         obs_and_pred_traj = torch.cat((obs_traj, pred_traj_gt))
         sim_t = []
-        for t in range(0, t_config.obs_len + t_config.pred_len):
+        for t in range(0, t_config['obs_len'] + t_config['pred_len']):
             dists = distance_matrix(np.asarray(obs_and_pred_traj[t, start:end, :]),
                                     np.asarray(obs_and_pred_traj[t, start:end, :]))
             #sum_dist = np.sum(dists)
             #dists = np.divide(dists, sum_dist)
-            sim = np.exp(-dists / t_config.sigma)
+            sim = np.exp(-dists / t_config['sigma'])
             sim_t.append(torch.from_numpy(sim))
         adj_out.append(torch.stack(sim_t, 0))
     return block_diag_irregular(adj_out)
@@ -773,4 +747,158 @@ def compute_goals_fixed(tj, min_x, max_x, min_y, max_y, n_cells_x, n_cells_y, wi
     return goals
 
 
+######################### MATRIX UTILITIES #############################
+# FROM:  https://github.com/yulkang/pylabyk/blob/master/numpytorch.py
+def block_diag(m):
+    """
+    Make a block diagonal matrix along dim=-3
+    EXAMPLE:
+    block_diag(torch.ones(4,3,2))
+    should give a 12 x 8 matrix with blocks of 3 x 2 ones.
+    Prepend batch dimensions if needed.
+    You can also give a list of matrices.
+    :type m: torch.Tensor, list
+    :rtype: torch.Tensor
+    """
+    if type(m) is list:
+        m = torch.cat([m1.unsqueeze(-3) for m1 in m], -3)
 
+    d = m.dim()
+    n = m.shape[-3]
+    siz0 = m.shape[:-3]
+    siz1 = m.shape[-2:]
+    m2 = m.unsqueeze(-2)
+    eye = attach_dim(torch.eye(n).unsqueeze(-2), d - 3, 1).to(device)
+    return (m2 * eye).reshape(siz0 + torch.Size(torch.tensor(siz1) * n))
+
+
+def attach_dim(v, n_dim_to_prepend=0, n_dim_to_append=0):
+    return v.reshape(
+        torch.Size([1] * n_dim_to_prepend)
+        + v.shape
+        + torch.Size([1] * n_dim_to_append))
+
+
+def permute2st(v, ndim_en=1):
+    """
+    Permute last ndim_en of tensor v to the first
+    :type v: torch.Tensor
+    :type ndim_en: int
+    :rtype: torch.Tensor
+    """
+    nd = v.ndimension()
+    return v.permute([*range(-ndim_en, 0)] + [*range(nd - ndim_en)])
+
+
+def permute2en(v, ndim_st=1):
+    """
+    Permute last ndim_en of tensor v to the first
+    :type v: torch.Tensor
+    :type ndim_st: int
+    :rtype: torch.Tensor
+    """
+    nd = v.ndimension()
+    return v.permute([*range(ndim_st, nd)] + [*range(ndim_st)])
+
+
+def block_diag_irregular(matrices):
+    matrices = [permute2st(m, 2) for m in matrices]
+
+    ns = torch.LongTensor([m.shape[0] for m in matrices])
+    n = torch.sum(ns)
+    batch_shape = matrices[0].shape[2:]
+
+    v = torch.zeros(torch.Size([n, n]) + batch_shape)
+    for ii, m1 in enumerate(matrices):
+        st = torch.sum(ns[:ii])
+        en = torch.sum(ns[:(ii + 1)])
+        v[st:en, st:en] = m1
+    return permute2en(v, 2)
+
+
+class GAT(nn.Module):
+    """Dense version of GAT."""
+    def __init__(self, nin, nhid, nout, alpha, nheads):
+        super(GAT, self).__init__()
+
+        self.attentions = [GraphAttentionLayer(nin, nhid, alpha=alpha, concat=True) for _ in range(nheads)]
+        for i, attention in enumerate(self.attentions):
+            self.add_module('attention_{}'.format(i), attention)
+
+        self.out_att = GraphAttentionLayer(nhid * nheads, nout, alpha=alpha, concat=False)
+        self.bn1 = nn.BatchNorm1d(nout)
+
+    def forward(self, x, adj):
+        x = torch.cat([att(x, adj) for att in self.attentions], dim=1)
+        x = self.out_att(x, adj)
+        x = self.bn1(x)
+        return torch.tanh(x)
+
+
+class GraphAttentionLayer(nn.Module):
+    """
+    Simple GAT layer, similar to https://arxiv.org/abs/1710.10903
+    """
+
+    def __init__(self, in_features, out_features, alpha, concat=True):
+        super(GraphAttentionLayer, self).__init__()
+
+        self.in_features = in_features
+        self.out_features = out_features
+        self.alpha = alpha
+        self.concat = concat
+
+        self.W = nn.Parameter(torch.zeros(size=(in_features, out_features)))
+        nn.init.xavier_uniform_(self.W.data, gain=1.414)
+        self.a = nn.Parameter(torch.zeros(size=(2 * out_features, 1)))
+        nn.init.xavier_uniform_(self.a.data, gain=1.414)
+
+        self.leakyrelu = nn.LeakyReLU(self.alpha)
+
+    def forward(self, input, adj):
+        h = torch.mm(input, self.W)  # matrix multiplication of the matrices
+        N = h.size()[0]
+
+        a_input = torch.cat([h.repeat(1, N).view(N * N, -1), h.repeat(N, 1)], dim=1).view(N, -1, 2 * self.out_features)
+        e = self.leakyrelu(torch.matmul(a_input, self.a).squeeze(2))
+
+        zero_vec = -9e15 * torch.ones_like(e)
+        attention = torch.where(adj > 0, e, zero_vec)
+        attention = F.softmax(attention, dim=1)
+        h_prime = torch.matmul(attention, h)
+
+        if self.concat:
+            return F.elu(h_prime)
+        else:
+            return h_prime
+
+
+class GraphConvolution(nn.Module):
+    def __init__(self, in_features, out_features, bias=True):
+        super(GraphConvolution, self).__init__()
+        self.in_features = in_features
+        self.out_features = out_features
+        self.weight = nn.Parameter(torch.FloatTensor(in_features, out_features))
+
+        if bias:
+            self.bias = nn.Parameter(torch.FloatTensor(out_features))
+        else:
+            self.register_parameter('bias', None)
+
+        self.reset_parameters()
+
+    def forward(self, input, adj):
+        support = torch.mm(input, self.weight.to(device))
+        output = torch.spmm(adj, support)
+        if self.bias is not None:
+            return output + self.bias.to(device)
+        else:
+            return output
+
+    def reset_parameters(self):
+        # torch.nn.init.xavier_uniform_(self.weight)
+        # self.bias.data.fill_(0.01)
+        stdv = 1. / math.sqrt(self.weight.size(1))
+        self.weight.data.uniform_(-stdv, stdv)
+        if self.bias is not None:
+            self.bias.data.uniform_(-stdv, stdv)

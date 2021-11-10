@@ -7,23 +7,16 @@ from abc import ABC, abstractmethod
 class BaseModel(object):
 
     @abstractmethod
-    def forward(self, *args, **kwargs) -> Dict:
+    def forward(self, data):
         """
         passes inputs through the model
-        returns: dict that is feed to right to loss and must contain 'outputs'
-        example:
-            {'outputs': something, ...}
+        returns: anything that is feed to right to loss
         """
 
     @abstractmethod
-    def predict(self, examples):
+    def predict(self, data):
         """
-        Used during train step - the output will be the input to metrics
-
-        returns:
-            probabilities of type (torch.FloatTensor, numpy.ndarray)
-            of size [N x K] where each cell corresponds to nth examples and
-            kth label probability
+        Used during prediction step
         """
 
 

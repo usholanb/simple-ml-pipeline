@@ -9,6 +9,8 @@ All details of the training are specified in the config file
 """
 from copy import deepcopy
 
+from torch.utils.data import DataLoader
+
 from modules.helpers.csv_saver import CSVSaver
 from modules.helpers.namer import Namer
 from utils.constants import TRAIN_RESULTS_DIR
@@ -17,27 +19,44 @@ from utils.common import build_config, setup_imports, setup_directories, add_gri
 from utils.registry import registry
 import pandas as pd
 from ray import tune
-from typing import Dict
+from typing import Dict, List
 
 
-def train_one(configs: Dict, dataset: pd.DataFrame, save: bool = False) -> None:
+def train_one(configs: Dict, dls: List, save: bool = False) -> None:
     """ Prepares Dataset """
     setup_imports()
     trainer = registry.get_trainer_class(
         configs.get('trainer').get('name')
-    )(configs, dataset)
+    )(configs, dls)
     trainer.train()
     if save:
         trainer.save()
 
 
+def get_data_loaders(configs):
+    dls = []
+    for name in ['train', 'valid', 'test']:
+        hps = configs.get('dataset').get('data_loaders').get(name)
+        dl = get_data_loader(configs, name, hps)
+        dls.append(dl)
+
+    return dls
+
+
+def get_data_loader(configs, name, hps):
+    dataset = registry.get_dataset_class(configs.get('dataset').get('name'))(configs, name)
+    return DataLoader(dataset, **hps, collate_fn=dataset.collate)
+
+
 def train(configs: Dict) -> None:
+    dls = get_data_loaders(configs)
     grid = add_grid_search_parameters(configs)
     sync_config = tune.SyncConfig(sync_to_driver=False)
     config_copy = deepcopy(configs)
     if grid:
         analysis = tune.run(
-            train_one,
+            tune.with_parameters(train_one, dls=dls),
+
             config=configs,
             local_dir=TRAIN_RESULTS_DIR,
             sync_config=sync_config,
@@ -54,10 +73,11 @@ def train(configs: Dict) -> None:
                                  **best_configs.get('special_inputs')})
         configs = best_configs
 
-    train_one(configs, dataset, save=configs.get('trainer').get('save'))
+    train_one(configs, dls, save=configs.get('trainer').get('save'))
 
 
 if __name__ == '__main__':
+    setup_imports()
     setup_directories()
     parser = train_flags.parser
     args = parser.parse_args()

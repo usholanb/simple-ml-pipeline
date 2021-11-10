@@ -13,8 +13,8 @@ from utils.constants import DATA_DIR, PROJECT_DIR, PROCESSED_DATA_DIR
 from utils.registry import registry
 
 
-@registry.register_dataset('dagnet_dataset')
-class DagnetDataset(DefaultDataset):
+@registry.register_dataset('dagnet_reader')
+class DagnetReader(DefaultDataset):
 
     def __init__(self, configs):
         super().__init__(configs)
@@ -120,36 +120,9 @@ def dagnet_data_loader(set_path, shuffle=True):
     return loader
 
 
-def _read_files(_path):
-    sequences = np.load(f'{_path}/trajectories.npy')
-    goals = np.load(f'{_path}/goals.npy')
-    return sequences, goals
 
 
-def seq_collate(data):
-    (obs_traj, pred_traj, obs_traj_rel, pred_traj_rel,
-     obs_goals, pred_goals) = zip(*data)
 
-    batch_size = len(obs_traj)
-    obs_seq_len, n_agents, features = obs_traj[0].shape
-    pred_seq_len, _, _ = pred_traj[0].shape
-
-    obs_traj = torch.cat(obs_traj, dim=1)
-    pred_traj = torch.cat(pred_traj, dim=1)
-    obs_traj_rel = torch.cat(obs_traj_rel, dim=1)
-    pred_traj_rel = torch.cat(pred_traj_rel, dim=1)
-    obs_goals = torch.cat(obs_goals, dim=1)
-    pred_goals = torch.cat(pred_goals, dim=1)
-
-    # fixed number of agent for every play -> we can manually build seq_start_end
-    idxs = list(range(0, (batch_size * n_agents) + n_agents, n_agents))
-    seq_start_end = [[start, end] for start, end in zip(idxs[:], idxs[1:])]
-
-    out = [
-        obs_traj, pred_traj, obs_traj_rel, pred_traj_rel, obs_goals,
-        pred_goals, torch.tensor(seq_start_end)
-    ]
-    return tuple(out)
 
 
 class BasketDataset(Dataset):

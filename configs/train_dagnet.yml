@@ -2,28 +2,25 @@ includes:
   - configs/constant_configs.yml
 
 
-
-
 dataset:
-  name: dagnet_dataset
+  name: basket_dataset
   input_path: processed_data/dagnet_dataset
 
-  train_dataloader:
-    batch_size: 100
-    shuffle: true
-    num_workers: 4
+  data_loaders:
+    train:
+      batch_size: 100
+      shuffle: true
+      num_workers: 4
 
-  valid_dataloader:
-    batch_size: 100
-    shuffle: false
-    num_workers: 4
+    valid:
+      batch_size: 100
+      shuffle: false
+      num_workers: 4
 
-  test_dataloader:
-    batch_size: 100
-    shuffle: false
-    num_workers: 4
-
-
+    test:
+      batch_size: 100
+      shuffle: false
+      num_workers: 4
 
 
 model:
@@ -38,29 +35,7 @@ optim:
 
 
 # this inputs will go to your specific model __init__
-#special_inputs:
-
-
-
-trainer:
-  name: torch_trainer3
-  optim: Adam
-  loss: dagnet_loss
-  save: 1
-  epochs: 300
-  log_valid_every: 10
-
-  tune:
-    resources_per_trial:
-      cpu: 2
-      gpu: 0
-
-#  metrics:
-#    - mse_loss
-
-  grid_metric:
-    name: train_DagnetLoss
-    mode: min
+special_inputs:
 
   num_workers: 4
   obs_len: 10
@@ -87,7 +62,6 @@ trainer:
 #  eval_every: 20
   num_samples: 20  # Number of samples for evaluation
 
-
   graph_model: gcn  #  choices=['gat','gcn'], help='Graph type'
   graph_hid: 8  #  help='Number of hidden units'
   sigma: 1.2  # Sigma value for similarity matrix
@@ -98,13 +72,44 @@ trainer:
   # 2 (knn similarity matrix).
   adjacency_type: 1
 
-
   top_k_neigh: None
   n_heads: 4  # Number of heads for graph attention network
   alpha: 0.2  # Negative steep for the Leaky-ReLU activation
 
+  transformers: goals_ohe
+
+
+trainer:
+  name: torch_trainer3
+  optim: Adam
+  loss: dagnet_loss
+  save: 1
+  epochs: 300
+  log_valid_every: 10
+
+  tune:
+    resources_per_trial:
+      cpu: 2
+      gpu: 0
+
+#  metrics:
+#    - mse_loss
+
+  grid_metric:
+    name: train_DagnetLoss
+    mode: min
+
+
 
 
 #features_list:
+
+
+
+
+
+
+
+
 
 

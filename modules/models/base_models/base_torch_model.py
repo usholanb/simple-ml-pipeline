@@ -7,15 +7,11 @@ from modules.models.base_models.base_model import BaseModel
 class BaseTorchModel(nn.Module, BaseModel):
     """ Use and/or override torch functions if you need to """
 
-    def __init__(self):
+    def __init__(self, configs):
         super().__init__()
-        if torch.has_cuda:
-            self.device = 'cuda'
-        else:
-            self.device = 'cpu'
-
-    def parameters(self, recurse: bool = True):
-        return self.clf.parameters(recurse=recurse)
+        self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+        self.__dict__.update(configs.get('special_inputs'))
+        self.configs = configs
 
 
 
