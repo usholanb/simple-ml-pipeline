@@ -43,7 +43,7 @@ optim:
 
 
 trainer:
-  name: torch_trainer2
+  name: torch_trainer3
   optim: Adam
   loss: dagnet_loss
   save: 1

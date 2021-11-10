@@ -1,9 +1,7 @@
 from abc import ABC, abstractmethod
 
 import numpy as np
-from dependency_injector.wiring import Provide
 from typing import Dict
-from modules.containers.train_container import TrainContainer
 
 
 class BaseWrapper(ABC):

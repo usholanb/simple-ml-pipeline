@@ -8,13 +8,11 @@ output dataset is is processed_data/ folder
 from modules.helpers.csv_saver import CSVSaver
 from modules.helpers.namer import Namer
 from utils.flags import preprocessing_flags
-from dependency_injector.wiring import Provide, inject
 from utils.common import build_config, setup_imports, setup_directories
 from utils.registry import registry
 from typing import Dict
 
 
-@inject
 def preprocessing(configs: Dict) -> None:
     """ Prepares Dataset """
     setup_imports()

@@ -8,7 +8,7 @@ from utils.registry import registry
 
 
 @registry.register_trainer('torch_trainer2')
-class TorchTrainer2(DefaultTrainer):
+class TorchTrainer2:
 
     def __init__(self, configs: Dict, dataset):
         self.configs = configs

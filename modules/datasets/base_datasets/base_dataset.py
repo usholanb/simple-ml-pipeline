@@ -1,6 +1,5 @@
 from abc import ABC, abstractmethod
 from typing import Dict, AnyStr
-from dependency_injector.wiring import Provide, inject
 
 
 class BaseDataset(ABC):

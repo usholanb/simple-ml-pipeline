@@ -32,13 +32,12 @@ def train_one(configs: Dict, dataset: pd.DataFrame, save: bool = False) -> None:
 
 
 def train(configs: Dict) -> None:
-    dataset = CSVSaver().load(configs)
     grid = add_grid_search_parameters(configs)
     sync_config = tune.SyncConfig(sync_to_driver=False)
     config_copy = deepcopy(configs)
     if grid:
         analysis = tune.run(
-            tune.with_parameters(train_one, dataset=dataset),
+            train_one,
             config=configs,
             local_dir=TRAIN_RESULTS_DIR,
             sync_config=sync_config,
