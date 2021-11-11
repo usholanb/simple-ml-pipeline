@@ -53,6 +53,9 @@ class BasketDataset(Dataset):
         # 'trajectories' shape (seq_len, batch*n_agents, 2) -> 2 = coords (x,y) for the single player
         # 'goals' shape (seq_len, batch*n_agents)
         traj_abs, goals = BasketDataset._read_files(self.data_dir)
+        # print(traj_abs.shape, goals.shape)
+        traj_abs = traj_abs[:, :40, :]
+        goals = goals[:, :40]
 
         assert traj_abs.shape[0] == self.seq_len and goals.shape[0] == self.seq_len
         #assert self.seq_len <= traj_abs.shape[0] and self.seq_len <= goals.shape[0]

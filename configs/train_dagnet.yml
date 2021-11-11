@@ -84,7 +84,7 @@ trainer:
   optim: Adam
   loss: dagnet_loss
   save: 1
-  epochs: 300
+  epochs: 3
   log_valid_every: 10
 
   tune:

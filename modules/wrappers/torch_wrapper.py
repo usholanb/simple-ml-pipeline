@@ -57,6 +57,3 @@ class TorchWrapper(DefaultWrapper):
 
     def parameters(self):
         return self.clf.parameters()
-
-    def epoch_prepare(self):
-        self.clf.epoch_prepare()

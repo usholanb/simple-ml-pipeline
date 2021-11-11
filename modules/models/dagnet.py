@@ -3,6 +3,7 @@ import torch
 import math
 from torch.nn import functional as F
 
+from modules.containers.di_containers import TrainerContainer
 from modules.models.base_models.base_torch_model import BaseTorchModel
 from utils.registry import registry
 import matplotlib.pyplot as plt
@@ -106,8 +107,8 @@ class DAGNet (BaseTorchModel):
         self.rnn = nn.GRU(self.h_dim + self.h_dim, self.rnn_dim, self.n_layers)
 
     def _reparameterize(self, mean, log_var):
-        logvar = torch.exp(log_var * 0.5).cuda()
-        eps = torch.rand_like(logvar).cuda()
+        logvar = torch.exp(log_var * 0.5).to(self.device)
+        eps = torch.rand_like(logvar).to(self.device)
         return eps.mul(logvar).add(mean)
 
     def _kld(self, mean_enc, logvar_enc, mean_prior, logvar_prior):
@@ -131,17 +132,17 @@ class DAGNet (BaseTorchModel):
         traj, traj_rel, goals_ohe, seq_start_end, adj_out = data
         timesteps, batch, features = traj.shape
 
-        d = torch.zeros(timesteps, batch, features*self.n_max_agents).cuda()
-        h = torch.zeros(self.n_layers, batch, self.rnn_dim).cuda()
+        d = torch.zeros(timesteps, batch, features*self.n_max_agents).to(self.device)
+        h = torch.zeros(self.n_layers, batch, self.rnn_dim).to(self.device)
 
         # an agent has to know all the xy abs positions of all the other agents in its sequence (for every timestep)
         for idx, (start,end) in enumerate(seq_start_end):
             n_agents = (end-start).item()
             d[:, start:end, :n_agents*2] = traj[:, start:end, :].reshape(timesteps, -1).unsqueeze(1).repeat(1,n_agents,1)
 
-        KLD = torch.zeros(1).cuda()
-        NLL = torch.zeros(1).cuda()
-        cross_entropy = torch.zeros(1).cuda()
+        KLD = torch.zeros(1).to(self.device)
+        NLL = torch.zeros(1).to(self.device)
+        cross_entropy = torch.zeros(1).to(self.device)
 
         for timestep in range(1, timesteps):
             x_t = traj_rel[timestep]
@@ -149,7 +150,6 @@ class DAGNet (BaseTorchModel):
             g_t = goals_ohe[timestep]   # ground truth goal
 
             # refined goal must resemble real goal g_t
-            print([x.shape for x in [d_t, h[-1], goals_ohe[timestep - 1]]])
             dec_goal_t = self.dec_goal(torch.cat([d_t, h[-1], goals_ohe[timestep-1]], 1))
             g_graph = self.graph_goals(dec_goal_t, adj_out[timestep])  # graph refinement
             g_combined = self.lg_goals(torch.cat((dec_goal_t, g_graph), dim=-1))     # combination
@@ -193,9 +193,9 @@ class DAGNet (BaseTorchModel):
         g_t = g_start   # at start, the previous goal is the last goal from GT observation
         x_t_abs = x_abs_start # at start, the curr abs pos of the agents come from the last abs pos from GT observations
 
-        samples = torch.zeros(samples_seq_len, batch_size, self.x_dim).cuda()
-        d = torch.zeros(samples_seq_len, batch_size, self.n_max_agents * self.x_dim).cuda()
-        displacements = torch.zeros(samples_seq_len, batch_size, self.n_max_agents * 2).cuda()
+        samples = torch.zeros(samples_seq_len, batch_size, self.x_dim).to(self.device)
+        d = torch.zeros(samples_seq_len, batch_size, self.n_max_agents * self.x_dim).to(self.device)
+        displacements = torch.zeros(samples_seq_len, batch_size, self.n_max_agents * 2).to(self.device)
 
         # at start, the disposition of the agents is composed by the last abs positions from GT obs
         for idx, (start,end) in enumerate(seq_start_end):
@@ -207,11 +207,11 @@ class DAGNet (BaseTorchModel):
                 d_t = d[timestep]
 
                 if self.adjacency_type == 0:
-                    adj_pred = adjs_fully_connected_pred(seq_start_end).cuda()
+                    adj_pred = adjs_fully_connected_pred(seq_start_end).to(self.device)
                 elif self.adjacency_type == 1:
-                    adj_pred = adjs_distance_sim_pred(self.sigma, seq_start_end, x_t_abs.detach().cpu()).cuda()
+                    adj_pred = adjs_distance_sim_pred(self.sigma, seq_start_end, x_t_abs.detach().cpu()).to(self.device)
                 elif self.adjacency_type == 2:
-                    adj_pred = adjs_knn_sim_pred(self.top_k_neigh, seq_start_end, x_t_abs.detach().cpu()).cuda()
+                    adj_pred = adjs_knn_sim_pred(self.top_k_neigh, seq_start_end, x_t_abs.detach().cpu()).to(self.device)
 
                 # sampling agents' goals + graph refinement step
                 dec_g = self.dec_goal(torch.cat([d_t, h[-1], g_t], 1))
@@ -242,11 +242,11 @@ class DAGNet (BaseTorchModel):
 
                 # graph refinement for agents' hiddens
                 if self.adjacency_type == 0:
-                    adj_pred = adjs_fully_connected_pred(seq_start_end).cuda()
+                    adj_pred = adjs_fully_connected_pred(seq_start_end).to(self.device)
                 elif self.adjacency_type == 1:
-                    adj_pred = adjs_distance_sim_pred(self.sigma, seq_start_end, x_t_abs.detach().cpu()).cuda()
+                    adj_pred = adjs_distance_sim_pred(self.sigma, seq_start_end, x_t_abs.detach().cpu()).to(self.device)
                 elif self.adjacency_type == 2:
-                    adj_pred = adjs_knn_sim_pred(self.top_k_neigh, seq_start_end, x_t_abs.detach().cpu()).cuda()
+                    adj_pred = adjs_knn_sim_pred(self.top_k_neigh, seq_start_end, x_t_abs.detach().cpu()).to(self.device)
 
                 h_graph = self.graph_hiddens(h[-1].clone(), adj_pred)
                 h[-1] = self.lg_hiddens(torch.cat((h_graph, h[-1]), dim=-1)).unsqueeze(0)
@@ -263,30 +263,21 @@ class DAGNet (BaseTorchModel):
 
         return samples
 
-    def epoch_prepare(self):
+    def before_epoch(self):
         self.train_loss = 0
         self.kld_loss = 0
         self.nll_loss = 0
         self.cross_entropy_loss = 0
-        self.train_loss = 0
 
-    def after_epoch(self, forward_outputs):
-        torch.nn.utils.clip_grad_norm_(self.clf.parameters(), self.configs.get('trainer').get('clip'))
-        optimizer.step()
+    def after_epoch(self, split_name, loader):
 
-        train_loss += loss.item()
-        kld_loss += self.kld.item()
-        nll_loss += self.nll.item()
-        cross_entropy_loss += self.ce.item()
+        return {
+            f'{split_name}_avg_loss': self.train_loss / len(loader.dataset),
+            f'{split_name}_avg_kld_loss': self.kld_loss / len(loader.dataset),
+            f'{split_name}_avg_nll_loss': self.nll_loss / len(loader.dataset),
+            f'{split_name}_avg_cross_entropy_loss': self.cross_entropy_loss / len(loader.dataset),
+        }
 
-        avg_loss = train_loss / len(train_loader.dataset)
-        avg_kld_loss = kld_loss / len(train_loader.dataset)
-        avg_nll_loss = nll_loss / len(train_loader.dataset)
-        avg_cross_entropy_loss = cross_entropy_loss / len(train_loader.dataset)
-        end = time()
-
-    def after_loader_to_device(self, batch_i, batch):
-        return [batch_i, [x.to(self.device) for x in batch]]
 
     def before_iteration(self, data):
         (obs_traj, pred_traj_gt, obs_traj_rel, pred_traj_rel_gt,
@@ -309,6 +300,12 @@ class DAGNet (BaseTorchModel):
         all_traj_rel = torch.cat((obs_traj_rel, pred_traj_rel_gt), dim=0)
         all_goals_ohe = torch.cat((obs_goals_ohe, pred_goals_gt_ohe), dim=0)
         return [all_traj, all_traj_rel, all_goals_ohe, seq_start_end, adj_out]
+
+    def after_iteration(self, data, outputs, loss_outputs):
+        self.train_loss += loss_outputs['train_loss'].item()
+        self.kld_loss += loss_outputs['kld_loss'].item()
+        self.nll_loss += loss_outputs['nll_loss'].item()
+        self.cross_entropy_loss += loss_outputs['cross_entropy_loss'].item()
 
 
 class GCN(nn.Module):
@@ -883,10 +880,10 @@ class GraphConvolution(nn.Module):
         self.reset_parameters()
 
     def forward(self, input, adj):
-        support = torch.mm(input, self.weight.to(device))
+        support = torch.mm(input, self.weight.to(TrainerContainer.device))
         output = torch.spmm(adj, support)
         if self.bias is not None:
-            return output + self.bias.to(device)
+            return output + self.bias.to(TrainerContainer.device)
         else:
             return output
 
