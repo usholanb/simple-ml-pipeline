@@ -1,7 +1,10 @@
+from typing import AnyStr
+
 import torch
 from torch import nn
 from abc import ABC, abstractmethod
 from modules.models.base_models.base_model import BaseModel
+from utils.constants import CLASSIFIERS_DIR
 
 
 class BaseTorchModel(nn.Module, BaseModel):
@@ -12,6 +15,11 @@ class BaseTorchModel(nn.Module, BaseModel):
         self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         self.__dict__.update(configs.get('special_inputs'))
         self.configs = configs
+
+    def model_path(self) -> AnyStr:
+        m = self.configs.get('model')
+        return f'{CLASSIFIERS_DIR}/{m.get("name")}_{m.get("tag")}.pkl'
+
 
 
 

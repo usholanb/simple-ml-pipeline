@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Dict, AnyStr
 
 from torch import nn
 from abc import ABC, abstractmethod
@@ -18,6 +18,10 @@ class BaseModel(object):
         """
         Used during prediction step
         """
+
+    @abstractmethod
+    def model_path(self) -> AnyStr:
+        """ absolute path to the model """
 
 
 

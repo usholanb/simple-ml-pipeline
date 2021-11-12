@@ -11,13 +11,13 @@ class TorchTrainer3:
 
     def __init__(self, configs: Dict, dls: List):
         self.configs = configs
-        self.train_loader, self.test_loader, self.test_loader = dls
+        self.train_loader, self.valid_loader, self.test_loader = dls
         self.criterion = self.get_loss()
         self.model = self.get_model()
         self.optimizer = self.get_optimizer(self.model)
 
     def train(self) -> None:
-        train_results, valid_results = None, None
+        train_results, valid_results = {}, {}
         for epoch in range(self.configs.get('trainer').get('epochs')):
             print(f'epoch: {epoch}')
             train_results = self.train_loop(epoch)
@@ -57,6 +57,9 @@ class TorchTrainer3:
 
     def compute_metrics(self, train_results: Dict, valid_results: Dict, test_results: Dict) -> None:
         if inside_tune():
+            print(train_results)
+            print(valid_results)
+            print(test_results)
             tune.report(**train_results, **valid_results, **test_results)
         else:
             for r in [train_results, valid_results, test_results]:
@@ -111,4 +114,4 @@ class TorchTrainer3:
 
     def save(self) -> None:
         """ saves model """
-        pickle_obj(self.model, self.model_path())
+        pickle_obj(self.model, self.model.model_path())
