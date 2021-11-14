@@ -12,7 +12,6 @@ import random
 import numpy as np
 import torch.nn as nn
 from scipy.spatial import distance_matrix
-from time import time
 
 
 @registry.register_model('dagnet')
@@ -535,16 +534,6 @@ def compute_adjs_distsim_pred(sigma, seq_start_end, pred_traj):
     return block_diag_irregular(adj_out)
 
 
-def sample_multinomial(probs):
-    """ Each element of probs tensor [shape = (batch, g_dim)] has 'g_dim' probabilities (one for each grid cell),
-    i.e. is a row containing a probability distribution for the goal. We sample n (=batch) indices (one for each row)
-    from these distributions, and covert it to a 1-hot encoding. """
-
-    inds = torch.multinomial(probs, 1).data.long().squeeze()
-    ret = one_hot_encode(inds, probs.size(-1))
-    return ret
-
-
 ######################### MISCELLANEOUS ############################
 def relative_to_abs(traj_rel, start_pos):
     """
@@ -805,8 +794,6 @@ def attach_dim(v, n_dim_to_prepend=0, n_dim_to_append=0):
         torch.Size([1] * n_dim_to_prepend)
         + v.shape
         + torch.Size([1] * n_dim_to_append))
-
-
 
 
 class GAT(nn.Module):

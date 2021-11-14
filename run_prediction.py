@@ -17,7 +17,6 @@ def prediction(configs: Dict):
     setup_imports()
     predictor = Predictor(configs)
     output_dataset = predictor.predict()
-    # predictor.save_probs(output_dataset)
 
 
 if __name__ == '__main__':

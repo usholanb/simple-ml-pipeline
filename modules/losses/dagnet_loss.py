@@ -1,6 +1,4 @@
 from typing import Dict
-
-import torch
 import numpy as np
 from modules.losses.base_losses.base_loss import BaseLoss
 from utils.registry import registry

@@ -344,5 +344,5 @@ class Timeit:
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         now = time()
-        print(f'epoch - {self.epoch} time: {round(now - self.start)},     '
-              f'training time: {round(now - Timeit.original_start, 2)}')
+        print(f'epoch # {self.epoch}:   time: {round(now - self.start)},    '
+              f'total training time: {round(now - Timeit.original_start, 2)}')

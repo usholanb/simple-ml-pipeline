@@ -18,7 +18,6 @@ class TorchTrainer3:
 
     def train(self) -> None:
         for epoch in range(self.configs.get('trainer').get('epochs')):
-            print(f'epoch: {epoch}')
             with Timeit(epoch):
                 self.train_loop(epoch)
             if (epoch + 1) % self.configs.get('trainer').get('log_valid_every', 10) == 0:
@@ -26,19 +25,10 @@ class TorchTrainer3:
         test_results = self.test_loop()
         self.log_metrics(test_results)
 
-    def compute_metrics(self, loader):
-        self.model.eval()
-        with torch.no_grad():
-            for batch_i, batch in enumerate(loader):
-                batch = [x.to(TrainerContainer.device) for x in batch]
-                data = transform(batch, self.configs)
-                outputs = self.model.predict(data)
-
     def train_loop(self, epoch: int = 0) -> Dict:
         self.model.train()
         self.model.before_epoch_train()
         for batch_i, batch in enumerate(self.train_loader):
-            # print(f'batch # {batch_i + 1} / {len(self.train_loader)}')
             data = [x.to(TrainerContainer.device) for x in batch]
             transformed_data = transform(data, self.configs)
             forward_data = self.model.before_iteration_train(transformed_data)
@@ -52,8 +42,8 @@ class TorchTrainer3:
             self.optimizer.step()
             self.model.end_iteration_compute_loss(data, forward_data, outputs, loss_outputs)
 
-        results = self.model.after_epoch_loss('train', self.train_loader)
-        return results
+        loss_results = self.model.after_epoch_loss('train', self.train_loader)
+        return loss_results
 
     def test_loop(self, epoch: int = 0) -> Dict:
         self.model.eval()
