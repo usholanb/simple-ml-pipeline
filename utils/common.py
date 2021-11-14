@@ -340,7 +340,7 @@ class Timeit:
     def __enter__(self):
         self.start = time()
         Timeit.original_start = Timeit.original_start \
-            if Timeit.original_start is None else self.start
+            if Timeit.original_start is not None else self.start
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         now = time()

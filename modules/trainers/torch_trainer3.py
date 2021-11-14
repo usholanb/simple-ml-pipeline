@@ -21,9 +21,9 @@ class TorchTrainer3:
             print(f'epoch: {epoch}')
             with Timeit(epoch):
                 self.train_loop(epoch)
-            if epoch + 1 % self.configs.get('trainer').get('log_valid_every', 10) == 0:
+            if (epoch + 1) % self.configs.get('trainer').get('log_valid_every', 10) == 0:
                 self.valid_loop(epoch)
-        test_results = self.test_loop(0)
+        test_results = self.test_loop()
         self.log_metrics(test_results)
 
     def compute_metrics(self, loader):
@@ -69,6 +69,7 @@ class TorchTrainer3:
                 self.model.end_iteration_compute_predictions(data, forward_data, outputs)
             predictions_results = self.model.after_epoch_predictions('test', self.test_loader)
             loss_results = self.model.after_epoch_loss('test', self.test_loader)
+        print(f'test:\n predictions_results: {predictions_results}, loss_results: {loss_results}\n')
         return loss_results
 
     def valid_loop(self, epoch: int = 0) -> Dict:
@@ -85,6 +86,7 @@ class TorchTrainer3:
                 self.model.end_iteration_compute_predictions(data, forward_data, outputs)
             predictions_results = self.model.after_epoch_predictions('valid', self.valid_loader)
             loss_results = self.model.after_epoch_loss('valid', self.valid_loader)
+            print(f'valid:\n predictions_results: {predictions_results}, loss_results: {loss_results}\n')
         return loss_results
 
     def log_metrics(self, results: Dict) -> None:

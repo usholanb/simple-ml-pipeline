@@ -20,7 +20,7 @@ trainer:
   loss: dagnet_loss
   save: 1
   epochs: 100
-  log_valid_every: 1
+  log_valid_every: 10
 
   tune:
     resources_per_trial:
