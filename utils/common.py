@@ -307,5 +307,23 @@ def get_data_loader(configs, split_name, hps):
     return DataLoader(dataset, **hps, collate_fn=dataset.collate)
 
 
+def get_model(configs):
+    setup_imports()
+    model = registry.get_model_class(
+        configs.get('model').get('name')
+    )(configs)
+    return model
+
+
+def transform(batch, configs):
+    setup_imports()
+    ts = configs.get('special_inputs').get('transformers')
+    ts = ts if isinstance(ts, list) else [ts]
+    for t_name in ts:
+        t = registry.get_transformer_class(t_name)(configs)
+        batch = t.apply(batch)
+    return batch
+
+
 # def save_checkpoint(fn, save_dict):
 #     torch.save(save_dict, fn)

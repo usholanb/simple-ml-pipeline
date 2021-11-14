@@ -9,10 +9,12 @@ All details of the training are specified in the config file
 """
 from copy import deepcopy
 
+from modules.containers.di_containers import TrainerContainer
 from modules.helpers.namer import Namer
 from utils.constants import TRAIN_RESULTS_DIR
 from utils.flags import train_flags
-from utils.common import build_config, setup_imports, setup_directories, add_grid_search_parameters, get_data_loaders
+from utils.common import build_config, setup_imports, setup_directories, add_grid_search_parameters, get_data_loaders, \
+    get_model
 from utils.registry import registry
 from ray import tune
 from typing import Dict

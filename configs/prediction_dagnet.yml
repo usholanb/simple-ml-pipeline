@@ -5,3 +5,8 @@ includes:
 
 models:
   uan: dagnet
+
+
+trainer:
+  name: torch_trainer3
+  loss: dagnet_loss

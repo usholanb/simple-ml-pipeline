@@ -293,7 +293,7 @@ class DAGNet (BaseTorchModel):
         all_goals_ohe = torch.cat((obs_goals_ohe, pred_goals_gt_ohe), dim=0)
         return all_traj, all_traj_rel, all_goals_ohe, seq_start_end, adj_out
 
-    def after_epoch(self, split_name, loader):
+    def after_epoch_loss(self, split_name, loader):
         return {
             f'{split_name}_avg_loss': self.train_loss / len(loader.dataset),
             f'{split_name}_avg_kld_loss': self.kld_loss / len(loader.dataset),
@@ -301,14 +301,21 @@ class DAGNet (BaseTorchModel):
             f'{split_name}_avg_cross_entropy_loss': self.cross_entropy_loss / len(loader.dataset),
         }
 
-    def end_iteration_train(self, data, forward_data, outputs, loss_outputs):
+    def after_epoch_predictions(self, split_name, loader):
+        return {
+            f'{split_name}_total_traj': self.total_traj / len(loader.dataset),
+            f'{split_name}_ade': self.ade / len(loader.dataset),
+            f'{split_name}_fde': self.fde / len(loader.dataset),
+        }
+
+    def end_iteration_compute_loss(self, data, forward_data, outputs, loss_outputs):
         self.train_loss += loss_outputs['train_loss'].item()
         self.kld_loss += loss_outputs['kld_loss'].item()
         self.nll_loss += loss_outputs['nll_loss'].item()
         self.cross_entropy_loss += loss_outputs['cross_entropy_loss'].item()
 
-    def end_iteration_eval(self, data, forward_data, outputs, loss_outputs):
-        self.end_iteration_train(data, forward_data, outputs, loss_outputs)
+    def end_iteration_compute_predictions(self, data, forward_data, outputs):
+
         obs_traj, obs_traj_rel, obs_goals_ohe, seq_start_end, adj_out = forward_data
         obs_traj, pred_traj_gt, obs_traj_rel, pred_traj_rel_gt, \
             obs_goals, pred_goals_gt, seq_start_end = data
@@ -317,8 +324,8 @@ class DAGNet (BaseTorchModel):
         samples = relative_to_abs(samples_rel, obs_traj[-1])
 
         self.total_traj += samples.shape[1]  # num_seqs
-        self.ade += average_displacement_error(samples, pred_traj_gt)
-        self.fde += final_displacement_error(samples[-1, :, :], pred_traj_gt[-1, :, :])
+        self.ade += average_displacement_error(samples, pred_traj_gt).item()
+        self.fde += final_displacement_error(samples[-1, :, :], pred_traj_gt[-1, :, :]).item()
 
 
 class GCN(nn.Module):
