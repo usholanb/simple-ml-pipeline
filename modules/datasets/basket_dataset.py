@@ -37,12 +37,12 @@ def seq_collate(data):
 class BasketDataset(Dataset):
     """Dataloder for the Basketball trajectories datasets"""
 
-    def __init__(self, configs, name):
+    def __init__(self, configs, split_nane):
         super(BasketDataset, self).__init__()
         self.configs = configs
         si = self.configs.get('special_inputs')
-        name = name if name != 'valid' else 'validation'
-        self.data_dir = f'{DATA_DIR}/dagnet/{name}'
+        self.name = split_nane if split_nane != 'valid' else 'validation'
+        self.data_dir = f'{DATA_DIR}/dagnet/{self.name}'
         self.obs_len = si.get('obs_len')
         self.pred_len = si.get('pred_len')
         self.seq_len = self.obs_len + self.pred_len
@@ -56,6 +56,8 @@ class BasketDataset(Dataset):
         # print(traj_abs.shape, goals.shape)
         traj_abs = traj_abs[:, :40, :]
         goals = goals[:, :40]
+        # print(goals.shape)
+        # exit()
 
         assert traj_abs.shape[0] == self.seq_len and goals.shape[0] == self.seq_len
         #assert self.seq_len <= traj_abs.shape[0] and self.seq_len <= goals.shape[0]
@@ -65,6 +67,8 @@ class BasketDataset(Dataset):
         seq_start_end = [[start, end] for start, end in zip(idxs[:], idxs[1:])]
 
         self.num_samples = len(seq_start_end)
+        # print(f'num_samples: {self.num_samples}')
+        # exit()
 
         traj_rel = np.zeros(traj_abs.shape)
         traj_rel[1:, :, :] = traj_abs[1:, :, :] - traj_abs[:-1, :, :]
@@ -94,6 +98,7 @@ class BasketDataset(Dataset):
 
     def __getitem__(self, idx):
         start, end = self.seq_start_end[idx]
+        # print(f'start {start}, end: {end}')
         out = [
             self.obs_traj[:, start:end, :], self.pred_traj[:, start:end, :],
             self.obs_traj_rel[:, start:end, :], self.pred_traj_rel[:, start:end, :],

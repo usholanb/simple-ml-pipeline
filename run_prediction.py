@@ -9,14 +9,13 @@ from typing import Dict
 from modules.helpers.csv_saver import CSVSaver
 from modules.helpers.predictor import Predictor
 from utils.flags import prediction_flags
-from utils.common import build_config, setup_imports, setup_directories
+from utils.common import build_config, setup_imports, setup_directories, get_data_loaders
 
 
 def prediction(configs: Dict):
     """ Prepares Dataset """
     setup_imports()
-    dataset = CSVSaver().load(configs)
-    predictor = Predictor(configs, dataset)
+    predictor = Predictor(configs)
     output_dataset = predictor.predict()
     predictor.save_probs(output_dataset)
 

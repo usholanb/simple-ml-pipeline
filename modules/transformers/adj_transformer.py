@@ -109,11 +109,8 @@ class AdjTransformer(BaseTransformer):
         elif si.get('adjacency_type') == 2:
             adj_out = compute_adjs_knnsim(self.configs.get('special_inputs'), seq_start_end, obs_traj.detach().cpu(),
                                           pred_traj_gt.detach().cpu()).to(self.device)
+        return obs_traj, pred_traj_gt, obs_traj_rel, pred_traj_rel_gt, \
+            obs_goals_ohe, pred_goals_gt_ohe, seq_start_end, adj_out
 
-        # during training we feed the entire trjs to the model
-        all_traj = torch.cat((obs_traj, pred_traj_gt), dim=0)
-        all_traj_rel = torch.cat((obs_traj_rel, pred_traj_rel_gt), dim=0)
-        all_goals_ohe = torch.cat((obs_goals_ohe, pred_goals_gt_ohe), dim=0)
-        return [all_traj, all_traj_rel, all_goals_ohe, seq_start_end, adj_out]
 
 

@@ -12,10 +12,13 @@ from typing import AnyStr
 import pickle
 import re
 import ray
-
+import torch
+from torch.utils.data import DataLoader
 
 from utils.constants import DATA_DIR, CONFIGS_DIR, PREDICTIONS_DIR, TRAIN_RESULTS_DIR, PROJECT_DIR
 import numpy as np
+
+from utils.registry import registry
 
 
 def load_config(path: AnyStr, previous_includes: List = None):
@@ -285,3 +288,24 @@ def do_after_iter(iterable, func):
     for i in iter(iterable):
         func(i)
         return i
+
+
+def get_data_loaders(configs, specific=None):
+    split_names = [specific] if specific is not None else ['train', 'valid', 'test']
+    dls = []
+    for split_name in split_names:
+        hps = configs.get('dataset').get('data_loaders').get(split_name)
+        dl = get_data_loader(configs, split_name, hps)
+        dls.append(dl)
+
+    return dls
+
+
+def get_data_loader(configs, split_name, hps):
+    dataset = registry.get_dataset_class(configs.get('dataset')
+                                         .get('name'))(configs, split_name)
+    return DataLoader(dataset, **hps, collate_fn=dataset.collate)
+
+
+# def save_checkpoint(fn, save_dict):
+#     torch.save(save_dict, fn)

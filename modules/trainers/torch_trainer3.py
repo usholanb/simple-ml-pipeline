@@ -17,33 +17,70 @@ class TorchTrainer3:
         self.optimizer = self.get_optimizer(self.model)
 
     def train(self) -> None:
-        train_results, valid_results = {}, {}
         for epoch in range(self.configs.get('trainer').get('epochs')):
             print(f'epoch: {epoch}')
-            train_results = self.train_loop(epoch)
+            self.train_loop(epoch)
             if epoch + 1 % self.configs.get('trainer').get('log_valid_every', 10) == 0:
-                valid_results = self.valid_loop(epoch)
-        test_results = self.test_loop(epoch)
-        self.compute_metrics(train_results, valid_results, test_results)
+                self.valid_loop(epoch)
+        test_results = self.test_loop(0)
+        self.log_metrics(test_results)
+
+    def compute_metrics(self, loader):
+        self.model.eval()
+        with torch.no_grad():
+            for batch_i, batch in enumerate(loader):
+                batch = [x.to(TrainerContainer.device) for x in batch]
+                data = self.transform(batch)
+                outputs = self.model.predict(data)
 
     def train_loop(self, epoch: int) -> Dict:
         self.model.train()
-        self.model.before_epoch()
+        self.model.before_epoch_train()
         for batch_i, batch in enumerate(self.train_loader):
             print(f'batch # {batch_i + 1} / {len(self.train_loader)}')
-            batch = [x.to(TrainerContainer.device) for x in batch]
-            data = self.transform(batch)
+            data = [x.to(TrainerContainer.device) for x in batch]
+            transformed_data = self.transform(data)
+            forward_data = self.model.before_iteration_train(transformed_data)
             self.optimizer.zero_grad()
-            outputs = self.model.forward(data)
+            outputs = self.model.forward(forward_data)
             loss_outputs = self.criterion(outputs, epoch)
             loss = loss_outputs['train_loss']
             loss.backward()
             torch.nn.utils.clip_grad_norm_(
                 self.model.parameters(), self.configs.get('special_inputs', {}).get('clip', 1e10))
             self.optimizer.step()
-            self.model.end_iteration(data, outputs, loss_outputs)
+            self.model.end_iteration_train(data, forward_data, outputs, loss_outputs)
 
         results = self.model.after_epoch('train', self.train_loader)
+        return results
+
+    def test_loop(self, epoch: int) -> Dict:
+        self.model.eval()
+        self.model.before_epoch_eval()
+        with torch.no_grad():
+            for batch_i, batch in enumerate(self.test_loader):
+                data = [x.to(TrainerContainer.device) for x in batch]
+                transformed_data = self.transform(data)
+                forward_data = self.model.before_iteration_eval(transformed_data)
+                outputs = self.model.forward(forward_data)
+                loss_outputs = self.criterion(outputs, epoch)
+                self.model.end_iteration_eval(data, forward_data, outputs, loss_outputs)
+            results = self.model.after_epoch('test', self.test_loader)
+        return results
+
+    def valid_loop(self, epoch: int) -> Dict:
+        self.model.eval()
+        self.model.before_epoch_eval()
+        with torch.no_grad():
+            for batch_i, batch in enumerate(self.valid_loader):
+                print(f'valid: {[x.shape for x in batch]}')
+                data = [x.to(TrainerContainer.device) for x in batch]
+                transformed_data = self.transform(data)
+                forward_data = self.model.before_iteration_eval(transformed_data)
+                outputs = self.model.forward(forward_data)
+                loss_outputs = self.criterion(outputs, epoch)
+                self.model.end_iteration_eval(data, forward_data, outputs, loss_outputs)
+            results = self.model.after_epoch('valid', self.valid_loader)
         return results
 
     def transform(self, batch):
@@ -55,39 +92,12 @@ class TorchTrainer3:
             batch = t.apply(batch)
         return batch
 
-    def compute_metrics(self, train_results: Dict, valid_results: Dict, test_results: Dict) -> None:
+    def log_metrics(self, results: Dict) -> None:
         if inside_tune():
-            print(train_results)
-            print(valid_results)
-            print(test_results)
-            tune.report(**train_results, **valid_results, **test_results)
+            print(results)
+            tune.report(**results)
         else:
-            for r in [train_results, valid_results, test_results]:
-                print(r)
-
-    def test_loop(self, epoch: int) -> Dict:
-        self.model.eval()
-        with torch.no_grad():
-            for batch_i, batch in enumerate(self.test_loader):
-                batch = [x.to(TrainerContainer.device) for x in batch]
-                data = self.transform(batch)
-                outputs = self.model.forward(data)
-                loss_outputs = self.criterion(outputs, epoch)
-                self.model.end_iteration(data, outputs, loss_outputs)
-            results = self.model.after_epoch('test', self.test_loader)
-        return results
-
-    def valid_loop(self, epoch: int) -> Dict:
-        self.model.eval()
-        with torch.no_grad():
-            for batch_i, batch in enumerate(self.valid_loader):
-                batch = [x.to(TrainerContainer.device) for x in batch]
-                data = self.transform(batch)
-                outputs = self.model.forward(data)
-                loss_outputs = self.criterion(outputs, epoch)
-                self.model.end_iteration(data, outputs, loss_outputs)
-            results = self.model.after_epoch('valid', self.valid_loader)
-        return results
+            print(results)
 
     def get_loss(self) -> torch.nn.Module:
         if hasattr(torch.nn, self.configs.get('trainer').get('loss')):

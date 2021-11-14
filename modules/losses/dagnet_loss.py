@@ -20,11 +20,11 @@ class DagnetLoss(BaseLoss):
         self.CE_weight = special_inputs.get('CE_weight')
 
     def __call__(self, outputs, epoch: int) -> Dict:
-        kld, nll, ce, _ = outputs
+        kld, nll, cross_entropy = outputs['kld'], outputs['nll'], outputs['cross_entropy']
         return {
-            'train_loss': (self.warmup[epoch - 1] * kld) + nll + (ce * self.CE_weight),
+            'train_loss': (self.warmup[epoch - 1] * kld) + nll + (cross_entropy * self.CE_weight),
             'kld_loss': kld,
             'nll_loss': nll,
-            'cross_entropy_loss': ce,
+            'cross_entropy_loss': cross_entropy,
         }
 

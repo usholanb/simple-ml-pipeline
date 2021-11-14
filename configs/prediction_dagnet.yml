@@ -1,0 +1,7 @@
+includes:
+  - configs/constant_configs.yml
+  - configs/dagnet_constant_configs.yml
+
+
+models:
+  uan: dagnet

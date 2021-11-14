@@ -1,7 +1,7 @@
 import pandas as pd
 
 from modules.helpers.csv_saver import CSVSaver
-from utils.common import unpickle_obj
+from utils.common import unpickle_obj, get_data_loaders
 from utils.constants import CLASSIFIERS_DIR, PREDICTIONS_DIR, PROCESSED_DATA_DIR
 from copy import deepcopy
 
@@ -10,23 +10,17 @@ class Predictor:
     """ uses all wrappers pointed in prediction config to
         make and save several prediction files """
 
-    def __init__(self, configs, dataset):
+    def __init__(self, configs):
         self.configs = configs
-        self.dataset = dataset
+        self.train_loader, self.valid_loader, self.test_loader = \
+            get_data_loaders(configs, specific=None)
 
-    def predict(self) -> pd.DataFrame:
-        output_dataset = deepcopy(self.dataset)
+    def predict(self):
         for tag, model_name in self.configs.get('models').items():
             model_name_tag = f'{model_name}_{tag}'
             model_path = f'{CLASSIFIERS_DIR}/{model_name_tag}.pkl'
-            wrapper = unpickle_obj(model_path)
-            probs = wrapper.predict_proba(self.dataset)
-            if len(wrapper.label_types) > 1:
-                for label, label_index in wrapper.label_types.items():
-                    output_dataset[f'{model_name_tag}_{label}'] = probs[:, label_index]
-            else:
-                output_dataset[f'{model_name_tag}'] = probs
-        return output_dataset
+            model = unpickle_obj(model_path)
+            probs = model.predict_proba(self.dataset)
 
     def save_probs(self, output_dataset) -> None:
         for split_name in output_dataset['split'].unique():

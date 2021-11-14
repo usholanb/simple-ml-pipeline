@@ -5,6 +5,7 @@ from torch.nn import functional as F
 
 from modules.containers.di_containers import TrainerContainer
 from modules.models.base_models.base_torch_model import BaseTorchModel
+from modules.transformers.adj_transformer import block_diag_irregular
 from utils.registry import registry
 import matplotlib.pyplot as plt
 import random
@@ -184,9 +185,14 @@ class DAGNet (BaseTorchModel):
             h_graph = self.graph_hiddens(h[-1].clone(), adj_out[timestep])  # graph refinement
             h[-1] = self.lg_hiddens(torch.cat((h_graph, h[-1]), dim=-1)).unsqueeze(0) # combination
 
-        return KLD, NLL, cross_entropy, h
+        return {
+            'kld': KLD,
+            'nll': NLL,
+            'cross_entropy': cross_entropy,
+            'h': h,
+        }
 
-    def sample(self, samples_seq_len, h, x_abs_start, g_start, seq_start_end):
+    def predict_proba(self, samples_seq_len, h, x_abs_start, g_start, seq_start_end):
         _, batch_size, _ = h.shape
 
         g_t = g_start   # at start, the previous goal is the last goal from GT observation
@@ -262,11 +268,30 @@ class DAGNet (BaseTorchModel):
 
         return samples
 
-    def before_epoch(self):
+    def before_epoch_train(self):
         self.train_loss = 0
         self.kld_loss = 0
         self.nll_loss = 0
         self.cross_entropy_loss = 0
+
+    def before_iteration_eval(self, data):
+        obs_traj, pred_traj_gt, obs_traj_rel, pred_traj_rel_gt, \
+        obs_goals_ohe, pred_goals_gt_ohe, seq_start_end, adj_out = data
+        return obs_traj, obs_traj_rel, obs_goals_ohe, seq_start_end, adj_out
+
+    def before_epoch_eval(self):
+        self.before_epoch_train()
+        self.total_traj = 0
+        self.ade = 0
+        self.fde = 0
+
+    def before_iteration_train(self, data):
+        obs_traj, pred_traj_gt, obs_traj_rel, pred_traj_rel_gt, \
+        obs_goals_ohe, pred_goals_gt_ohe, seq_start_end, adj_out = data
+        all_traj = torch.cat((obs_traj, pred_traj_gt), dim=0)
+        all_traj_rel = torch.cat((obs_traj_rel, pred_traj_rel_gt), dim=0)
+        all_goals_ohe = torch.cat((obs_goals_ohe, pred_goals_gt_ohe), dim=0)
+        return all_traj, all_traj_rel, all_goals_ohe, seq_start_end, adj_out
 
     def after_epoch(self, split_name, loader):
         return {
@@ -276,11 +301,24 @@ class DAGNet (BaseTorchModel):
             f'{split_name}_avg_cross_entropy_loss': self.cross_entropy_loss / len(loader.dataset),
         }
 
-    def end_iteration(self, data, outputs, loss_outputs):
+    def end_iteration_train(self, data, forward_data, outputs, loss_outputs):
         self.train_loss += loss_outputs['train_loss'].item()
         self.kld_loss += loss_outputs['kld_loss'].item()
         self.nll_loss += loss_outputs['nll_loss'].item()
         self.cross_entropy_loss += loss_outputs['cross_entropy_loss'].item()
+
+    def end_iteration_eval(self, data, forward_data, outputs, loss_outputs):
+        self.end_iteration_train(data, forward_data, outputs, loss_outputs)
+        obs_traj, obs_traj_rel, obs_goals_ohe, seq_start_end, adj_out = forward_data
+        obs_traj, pred_traj_gt, obs_traj_rel, pred_traj_rel_gt, \
+            obs_goals, pred_goals_gt, seq_start_end = data
+        # predict trajectories from latest h; samples_rel shape=(pred_seq_len, n_agents, batch, xy)
+        samples_rel = self.predict_proba(self.pred_len, outputs['h'], obs_traj[-1], obs_goals_ohe[-1], seq_start_end)
+        samples = relative_to_abs(samples_rel, obs_traj[-1])
+
+        self.total_traj += samples.shape[1]  # num_seqs
+        self.ade += average_displacement_error(samples, pred_traj_gt)
+        self.fde += final_displacement_error(samples[-1, :, :], pred_traj_gt[-1, :, :])
 
 
 class GCN(nn.Module):
