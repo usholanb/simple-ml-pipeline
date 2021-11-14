@@ -12,7 +12,7 @@ from typing import AnyStr
 import pickle
 import re
 import ray
-import torch
+from time import time
 from torch.utils.data import DataLoader
 
 from utils.constants import DATA_DIR, CONFIGS_DIR, PREDICTIONS_DIR, TRAIN_RESULTS_DIR, PROJECT_DIR
@@ -327,3 +327,22 @@ def transform(batch, configs):
 
 # def save_checkpoint(fn, save_dict):
 #     torch.save(save_dict, fn)
+
+
+class Timeit:
+    """ to compute epoch time """
+    original_start = None
+
+    def __init__(self, epoch):
+        self.start = None
+        self.epoch = epoch
+
+    def __enter__(self):
+        self.start = time()
+        Timeit.original_start = Timeit.original_start \
+            if Timeit.original_start is None else self.start
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        now = time()
+        print(f'epoch: {self.epoch} time: {round(now - self.start)}, '
+              f'total time: {round(now - Timeit.original_start, 2)}')

@@ -2,7 +2,7 @@ from typing import Dict, List
 import torch
 from ray import tune
 from modules.containers.di_containers import TrainerContainer
-from utils.common import pickle_obj, setup_imports, inside_tune, transform, get_model
+from utils.common import pickle_obj, setup_imports, inside_tune, transform, get_model, Timeit
 from utils.registry import registry
 
 
@@ -19,7 +19,8 @@ class TorchTrainer3:
     def train(self) -> None:
         for epoch in range(self.configs.get('trainer').get('epochs')):
             print(f'epoch: {epoch}')
-            self.train_loop(epoch)
+            with Timeit(epoch):
+                self.train_loop(epoch)
             if epoch + 1 % self.configs.get('trainer').get('log_valid_every', 10) == 0:
                 self.valid_loop(epoch)
         test_results = self.test_loop(0)
