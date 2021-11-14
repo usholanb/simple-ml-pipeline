@@ -23,8 +23,8 @@ class DagnetLoss(BaseLoss):
         kld, nll, cross_entropy = outputs['kld'], outputs['nll'], outputs['cross_entropy']
         return {
             'train_loss': (self.warmup[epoch - 1] * kld) + nll + (cross_entropy * self.CE_weight),
-            'kld_loss': kld,
-            'nll_loss': nll,
-            'cross_entropy_loss': cross_entropy,
+            'kld_loss': kld.item(),
+            'nll_loss': nll.item(),
+            'cross_entropy_loss': cross_entropy.item(),
         }
 

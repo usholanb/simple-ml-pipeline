@@ -73,7 +73,6 @@ special_inputs:
   lr_scheduler: true
   n_heads: 4
   n_layers: 2
-  num_epochs: 300
   num_samples: 20
   num_workers: 0
   obs_len: 10
@@ -90,5 +89,6 @@ special_inputs:
   warmup: false
   x_dim: 2
   z_dim: 32
+  mode: raw
 
 

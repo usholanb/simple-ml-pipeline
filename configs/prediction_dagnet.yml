@@ -10,3 +10,4 @@ models:
 trainer:
   name: torch_trainer3
   loss: dagnet_loss
+  num_samples: 20

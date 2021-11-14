@@ -282,8 +282,10 @@ class DAGNet (BaseTorchModel):
     def before_epoch_eval(self):
         self.before_epoch_train()
         self.total_traj = 0
-        self.ade = 0
-        self.fde = 0
+        self.ade_outer = []
+        self.fde_outer = []
+        self.ade = []
+        self.fde = []
 
     def before_iteration_train(self, data):
         obs_traj, pred_traj_gt, obs_traj_rel, pred_traj_rel_gt, \
@@ -310,22 +312,46 @@ class DAGNet (BaseTorchModel):
 
     def end_iteration_compute_loss(self, data, forward_data, outputs, loss_outputs):
         self.train_loss += loss_outputs['train_loss'].item()
-        self.kld_loss += loss_outputs['kld_loss'].item()
-        self.nll_loss += loss_outputs['nll_loss'].item()
-        self.cross_entropy_loss += loss_outputs['cross_entropy_loss'].item()
+        self.kld_loss += loss_outputs['kld_loss']
+        self.nll_loss += loss_outputs['nll_loss']
+        self.cross_entropy_loss += loss_outputs['cross_entropy_loss']
 
     def end_iteration_compute_predictions(self, data, forward_data, outputs):
-
         obs_traj, obs_traj_rel, obs_goals_ohe, seq_start_end, adj_out = forward_data
         obs_traj, pred_traj_gt, obs_traj_rel, pred_traj_rel_gt, \
-            obs_goals, pred_goals_gt, seq_start_end = data
-        # predict trajectories from latest h; samples_rel shape=(pred_seq_len, n_agents, batch, xy)
-        samples_rel = self.predict_proba(self.pred_len, outputs['h'], obs_traj[-1], obs_goals_ohe[-1], seq_start_end)
-        samples = relative_to_abs(samples_rel, obs_traj[-1])
+        obs_goals, pred_goals_gt, seq_start_end = data
+        ade, fde = [], []
+        self.total_traj += obs_traj.shape[1]
 
-        self.total_traj += samples.shape[1]  # num_seqs
-        self.ade += average_displacement_error(samples, pred_traj_gt).item()
-        self.fde += final_displacement_error(samples[-1, :, :], pred_traj_gt[-1, :, :]).item()
+        for _ in range(self.configs.get('trainer').get('num_samples')):
+            samples_rel = self.predict_proba(self.pred_len, outputs['h'], obs_traj[-1], obs_goals_ohe[-1], seq_start_end)
+            samples = relative_to_abs(samples_rel, obs_traj[-1])
+
+            ade.append(average_displacement_error(samples, pred_traj_gt, mode='raw'))
+            fde.append(final_displacement_error(samples[-1, :, :], pred_traj_gt[-1, :, :], mode='raw'))
+
+        ade_sum = evaluate_helper(ade, seq_start_end).item()
+        fde_sum = evaluate_helper(fde, seq_start_end).item()
+
+        self.ade_outer.append(ade_sum)
+        self.fde_outer.append(fde_sum)
+        self.ade = sum(self.ade_outer) / (self.total_traj * self.pred_len)
+        self.fde = sum(self.fde_outer) / self.total_traj
+
+
+def evaluate_helper(error, seq_start_end):
+    sum_ = 0
+    error = torch.stack(error, dim=1)
+
+    for (start, end) in seq_start_end:
+        start = start.item()
+        end = end.item()
+        _error = error[start:end]
+        _error = torch.sum(_error, dim=0)
+        _error = torch.min(_error)
+        sum_ += _error
+    return sum_
+
 
 
 class GCN(nn.Module):
