@@ -148,7 +148,6 @@ class DAGNet (BaseTorchModel):
             x_t = traj_rel[timestep]
             d_t = d[timestep]
             g_t = goals_ohe[timestep]   # ground truth goal
-
             # refined goal must resemble real goal g_t
             dec_goal_t = self.dec_goal(torch.cat([d_t, h[-1], goals_ohe[timestep-1]], 1))
             g_graph = self.graph_goals(dec_goal_t, adj_out[timestep])  # graph refinement
@@ -270,7 +269,6 @@ class DAGNet (BaseTorchModel):
         self.cross_entropy_loss = 0
 
     def after_epoch(self, split_name, loader):
-
         return {
             f'{split_name}_avg_loss': self.train_loss / len(loader.dataset),
             f'{split_name}_avg_kld_loss': self.kld_loss / len(loader.dataset),
@@ -278,30 +276,7 @@ class DAGNet (BaseTorchModel):
             f'{split_name}_avg_cross_entropy_loss': self.cross_entropy_loss / len(loader.dataset),
         }
 
-
-    def before_iteration(self, data):
-        (obs_traj, pred_traj_gt, obs_traj_rel, pred_traj_rel_gt,
-            obs_goals_ohe, pred_goals_gt_ohe, seq_start_end) = data
-        seq_len = len(obs_traj) + len(pred_traj_gt)
-        assert seq_len == self.obs_len + self.pred_len
-
-        # adj matrix for current batch
-        if self.adjacency_type == 0:
-            adj_out = compute_adjs(self.configs.get('special_inputs'), seq_start_end).to(self.device)
-        elif self.adjacency_type == 1:
-            adj_out = compute_adjs_distsim(self.configs.get('special_inputs'), seq_start_end, obs_traj.detach().cpu(),
-                                           pred_traj_gt.detach().cpu()).to(self.device)
-        elif self.adjacency_type == 2:
-            adj_out = compute_adjs_knnsim(self.configs.get('special_inputs'), seq_start_end, obs_traj.detach().cpu(),
-                                          pred_traj_gt.detach().cpu()).to(self.device)
-
-        # during training we feed the entire trjs to the model
-        all_traj = torch.cat((obs_traj, pred_traj_gt), dim=0)
-        all_traj_rel = torch.cat((obs_traj_rel, pred_traj_rel_gt), dim=0)
-        all_goals_ohe = torch.cat((obs_goals_ohe, pred_goals_gt_ohe), dim=0)
-        return [all_traj, all_traj_rel, all_goals_ohe, seq_start_end, adj_out]
-
-    def after_iteration(self, data, outputs, loss_outputs):
+    def end_iteration(self, data, outputs, loss_outputs):
         self.train_loss += loss_outputs['train_loss'].item()
         self.kld_loss += loss_outputs['kld_loss'].item()
         self.nll_loss += loss_outputs['nll_loss'].item()
@@ -425,16 +400,6 @@ def adjs_knn_sim_pred(top_k_neigh, seq_start_end, pred_traj):
 
 
 ###################################### ORIGINAL ADJ MATRICES ######################################
-
-def compute_adjs(t, seq_start_end):
-    adj_out = []
-    for _, (start, end) in enumerate(seq_start_end):
-        mat = []
-        for t in range(0, t.obs_len + t.pred_len):
-            interval = end - start
-            mat.append(torch.from_numpy(np.ones((interval, interval))))
-        adj_out.append(torch.stack(mat, 0))
-    return block_diag_irregular(adj_out)
 
 
 def compute_adjs_knnsim(special_inputs, seq_start_end, obs_traj, pred_traj_gt):
@@ -771,41 +736,6 @@ def attach_dim(v, n_dim_to_prepend=0, n_dim_to_append=0):
         + torch.Size([1] * n_dim_to_append))
 
 
-def permute2st(v, ndim_en=1):
-    """
-    Permute last ndim_en of tensor v to the first
-    :type v: torch.Tensor
-    :type ndim_en: int
-    :rtype: torch.Tensor
-    """
-    nd = v.ndimension()
-    return v.permute([*range(-ndim_en, 0)] + [*range(nd - ndim_en)])
-
-
-def permute2en(v, ndim_st=1):
-    """
-    Permute last ndim_en of tensor v to the first
-    :type v: torch.Tensor
-    :type ndim_st: int
-    :rtype: torch.Tensor
-    """
-    nd = v.ndimension()
-    return v.permute([*range(ndim_st, nd)] + [*range(ndim_st)])
-
-
-def block_diag_irregular(matrices):
-    matrices = [permute2st(m, 2) for m in matrices]
-
-    ns = torch.LongTensor([m.shape[0] for m in matrices])
-    n = torch.sum(ns)
-    batch_shape = matrices[0].shape[2:]
-
-    v = torch.zeros(torch.Size([n, n]) + batch_shape)
-    for ii, m1 in enumerate(matrices):
-        st = torch.sum(ns[:ii])
-        en = torch.sum(ns[:(ii + 1)])
-        v[st:en, st:en] = m1
-    return permute2en(v, 2)
 
 
 class GAT(nn.Module):

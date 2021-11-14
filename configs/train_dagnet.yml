@@ -30,7 +30,7 @@ model:
 
 # must be same names as parameters of the actual optimizer
 optim:
-  lr: [0.01, 0.001]
+  lr: 0.01
   weight_decay: 0.00001
 
 
@@ -75,7 +75,7 @@ special_inputs:
   n_heads: 4  # Number of heads for graph attention network
   alpha: 0.2  # Negative steep for the Leaky-ReLU activation
 
-  transformers: goals_ohe
+  transformers: [goals_ohe, adj]
 
 
 trainer:
@@ -90,9 +90,6 @@ trainer:
     resources_per_trial:
       cpu: 2
       gpu: 0
-
-#  metrics:
-#    - mse_loss
 
   grid_metric:
     name: valid_avg_kld_loss

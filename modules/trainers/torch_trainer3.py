@@ -13,7 +13,7 @@ class TorchTrainer3:
         self.configs = configs
         self.train_loader, self.valid_loader, self.test_loader = dls
         self.criterion = self.get_loss()
-        self.model = self.get_model()
+        self.model = self.get_model().to(TrainerContainer.device)
         self.optimizer = self.get_optimizer(self.model)
 
     def train(self) -> None:
@@ -27,12 +27,12 @@ class TorchTrainer3:
         self.compute_metrics(train_results, valid_results, test_results)
 
     def train_loop(self, epoch: int) -> Dict:
+        self.model.train()
         self.model.before_epoch()
         for batch_i, batch in enumerate(self.train_loader):
             print(f'batch # {batch_i + 1} / {len(self.train_loader)}')
             batch = [x.to(TrainerContainer.device) for x in batch]
             data = self.transform(batch)
-            data = self.model.before_iteration(data)
             self.optimizer.zero_grad()
             outputs = self.model.forward(data)
             loss_outputs = self.criterion(outputs, epoch)
@@ -41,7 +41,7 @@ class TorchTrainer3:
             torch.nn.utils.clip_grad_norm_(
                 self.model.parameters(), self.configs.get('special_inputs', {}).get('clip', 1e10))
             self.optimizer.step()
-            self.model.after_iteration(data, outputs, loss_outputs)
+            self.model.end_iteration(data, outputs, loss_outputs)
 
         results = self.model.after_epoch('train', self.train_loader)
         return results
@@ -66,28 +66,26 @@ class TorchTrainer3:
                 print(r)
 
     def test_loop(self, epoch: int) -> Dict:
+        self.model.eval()
         with torch.no_grad():
-            self.model.eval()
             for batch_i, batch in enumerate(self.test_loader):
                 batch = [x.to(TrainerContainer.device) for x in batch]
                 data = self.transform(batch)
-                data = self.model.before_iteration(data)
                 outputs = self.model.forward(data)
                 loss_outputs = self.criterion(outputs, epoch)
-                self.model.after_iteration(data, outputs, loss_outputs)
+                self.model.end_iteration(data, outputs, loss_outputs)
             results = self.model.after_epoch('test', self.test_loader)
         return results
 
     def valid_loop(self, epoch: int) -> Dict:
+        self.model.eval()
         with torch.no_grad():
-            self.model.eval()
             for batch_i, batch in enumerate(self.valid_loader):
                 batch = [x.to(TrainerContainer.device) for x in batch]
                 data = self.transform(batch)
-                data = self.model.before_iteration(data)
                 outputs = self.model.forward(data)
                 loss_outputs = self.criterion(outputs, epoch)
-                self.model.after_iteration(data, outputs, loss_outputs)
+                self.model.end_iteration(data, outputs, loss_outputs)
             results = self.model.after_epoch('valid', self.valid_loader)
         return results
 

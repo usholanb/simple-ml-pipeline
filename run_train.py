@@ -69,13 +69,10 @@ def train(configs: Dict) -> None:
             metric=configs.get('trainer').get('grid_metric').get('name'),
             mode=configs.get('trainer').get('grid_metric').get('mode')
         )
-
         print("Best configs: ", {**best_configs.get('optim'),
                                  **best_configs.get('special_inputs')})
-        # configs = best_configs
-    else:
-
-        train_one(configs, save=configs.get('trainer').get('save'))
+        configs = best_configs
+    train_one(configs, save=configs.get('trainer').get('save'))
 
 
 if __name__ == '__main__':
