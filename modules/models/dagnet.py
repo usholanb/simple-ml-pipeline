@@ -1,8 +1,6 @@
-from typing import List
 import torch
 import math
 from torch.nn import functional as F
-
 from modules.containers.di_containers import TrainerContainer
 from modules.models.base_models.base_torch_model import BaseTorchModel
 from modules.transformers.adj_transformer import block_diag_irregular
@@ -191,7 +189,7 @@ class DAGNet (BaseTorchModel):
 
             # hidden states refinement with graph
             h_graph = self.graph_hiddens(h[-1].clone(), adj_out[timestep])  # graph refinement
-            h[-1] = self.lg_hiddens(torch.cat((h_graph, h[-1]), dim=-1)).unsqueeze(0) # combination
+            h[-1] = self.lg_hiddens(torch.cat((h_graph, h[-1]), dim=-1)).unsqueeze(0)  # combination
 
         return {
             'kld': KLD,
@@ -312,10 +310,12 @@ class DAGNet (BaseTorchModel):
         }
 
     def after_epoch_predictions(self, split_name, loader):
+        self.ade = sum(self.ade_outer) / (self.total_traj * self.pred_len)
+        self.fde = sum(self.fde_outer) / self.total_traj
         return {
-            f'{split_name}_total_traj': self.total_traj / len(loader.dataset),
-            f'{split_name}_ade': self.ade / len(loader.dataset),
-            f'{split_name}_fde': self.fde / len(loader.dataset),
+            f'{split_name}_total_traj': self.total_traj,
+            f'{split_name}_ade': self.ade,
+            f'{split_name}_fde': self.fde,
         }
 
     def end_iteration_compute_loss(self, data, forward_data, outputs, loss_outputs):
@@ -343,8 +343,6 @@ class DAGNet (BaseTorchModel):
 
         self.ade_outer.append(ade_sum)
         self.fde_outer.append(fde_sum)
-        self.ade = sum(self.ade_outer) / (self.total_traj * self.pred_len)
-        self.fde = sum(self.fde_outer) / self.total_traj
 
 
 def evaluate_helper(error, seq_start_end):

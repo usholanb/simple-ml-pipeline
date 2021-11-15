@@ -35,13 +35,13 @@ def seq_collate(data):
 
 @registry.register_dataset('basket_dataset')
 class BasketDataset(Dataset):
-    """Dataloder for the Basketball trajectories datasets"""
+    """ Dataloader for the Basketball trajectories datasets """
 
-    def __init__(self, configs, split_nane):
+    def __init__(self, configs, split_name):
         super(BasketDataset, self).__init__()
         self.configs = configs
         si = self.configs.get('special_inputs')
-        self.name = split_nane if split_nane != 'valid' else 'validation'
+        self.name = split_name if split_name != 'valid' else 'validation'
         self.data_dir = f'{DATA_DIR}/dagnet/{self.name}'
         self.obs_len = si.get('obs_len')
         self.pred_len = si.get('pred_len')
