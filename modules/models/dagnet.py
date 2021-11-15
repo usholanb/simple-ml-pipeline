@@ -19,6 +19,15 @@ class DAGNet (BaseTorchModel):
     def __init__(self, configs):
         super(DAGNet, self).__init__(configs)
         self.d_dim = self.n_max_agents * 2
+        self.total_traj = None
+        self.ade_outer = None
+        self.fde_outer = None
+        self.ade = None
+        self.fde = None
+        self.train_loss = None
+        self.kld_loss = None
+        self.nll_loss = None
+        self.cross_entropy_loss = None
 
         # goal generator
         self.dec_goal = nn.Sequential(
@@ -283,8 +292,8 @@ class DAGNet (BaseTorchModel):
         self.total_traj = 0
         self.ade_outer = []
         self.fde_outer = []
-        self.ade = []
-        self.fde = []
+        self.ade = None
+        self.fde = None
 
     def before_iteration_train(self, data):
         obs_traj, pred_traj_gt, obs_traj_rel, pred_traj_rel_gt, \

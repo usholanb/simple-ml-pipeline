@@ -45,7 +45,7 @@ class DefaultTrainer(BaseTrainer):
 
 
     def model_path(self) -> AnyStr:
-        return f'{CLASSIFIERS_DIR}/{Namer.wrapper_name(self.configs.get("model"))}.pkl'
+        return f'{CLASSIFIERS_DIR}/{Namer.model_name(self.configs.get("model"))}.pkl'
 
     def save(self) -> None:
         pickle_obj(self.wrapper, self.model_path())

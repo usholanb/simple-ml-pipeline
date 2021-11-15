@@ -79,7 +79,6 @@ special_inputs:
   players: atk
   pred_len: 40
   print_every_batch: 30
-  resume: true
   rnn_dim: 64
   run: exp9_ATK
   save_every: 10
@@ -90,5 +89,6 @@ special_inputs:
   x_dim: 2
   z_dim: 32
   mode: raw
+
 
 

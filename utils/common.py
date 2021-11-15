@@ -14,8 +14,7 @@ import re
 import ray
 from time import time
 from torch.utils.data import DataLoader
-
-from utils.constants import DATA_DIR, CONFIGS_DIR, PREDICTIONS_DIR, TRAIN_RESULTS_DIR, PROJECT_DIR
+from utils.constants import DATA_DIR, CONFIGS_DIR, PREDICTIONS_DIR, TRAIN_RESULTS_DIR, PROJECT_DIR, CLASSIFIERS_DIR
 import numpy as np
 
 from utils.registry import registry
@@ -247,6 +246,7 @@ def inside_tune() -> bool:
 
 class Singleton(type):
     _instances = {}
+
     def __call__(cls, *args, **kwargs):
         if cls not in cls._instances:
             cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
@@ -263,7 +263,6 @@ def get_outside_library(model_name):
     module = importlib.import_module(module_name)
     class_name = model_name.split('.')[-1]
     return getattr(module, class_name)
-
 
 
 def check_label_type(targets):
@@ -305,14 +304,6 @@ def get_data_loader(configs, split_name, hps):
     dataset = registry.get_dataset_class(configs.get('dataset')
                                          .get('name'))(configs, split_name)
     return DataLoader(dataset, **hps, collate_fn=dataset.collate)
-
-
-def get_model(configs):
-    setup_imports()
-    model = registry.get_model_class(
-        configs.get('model').get('name')
-    )(configs)
-    return model
 
 
 def transform(batch, configs):

@@ -6,17 +6,16 @@ The predictions and probabilities are saved in the prediction files in
 predictions/ folder
 """
 from typing import Dict
-from modules.helpers.csv_saver import CSVSaver
 from modules.helpers.predictor import Predictor
 from utils.flags import prediction_flags
-from utils.common import build_config, setup_imports, setup_directories, get_data_loaders
+from utils.common import build_config, setup_imports, setup_directories
 
 
 def prediction(configs: Dict):
     """ Prepares Dataset """
     setup_imports()
     predictor = Predictor(configs)
-    output_dataset = predictor.predict()
+    predictor.predict()
 
 
 if __name__ == '__main__':

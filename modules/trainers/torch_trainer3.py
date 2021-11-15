@@ -2,18 +2,19 @@ from typing import Dict, List
 import torch
 from ray import tune
 from modules.containers.di_containers import TrainerContainer
-from utils.common import pickle_obj, setup_imports, inside_tune, transform, get_model, Timeit
+from modules.models.base_models.base_torch_model import BaseTorchModel
+from utils.common import pickle_obj, setup_imports, inside_tune, transform, Timeit
 from utils.registry import registry
 
 
 @registry.register_trainer('torch_trainer3')
 class TorchTrainer3:
 
-    def __init__(self, configs: Dict, dls: List):
+    def __init__(self, configs: Dict, dls: List, model: BaseTorchModel):
         self.configs = configs
         self.train_loader, self.valid_loader, self.test_loader = dls
         self.criterion = self.get_loss()
-        self.model = get_model(configs).to(TrainerContainer.device)
+        self.model = model
         self.optimizer = self.get_optimizer(self.model)
 
     def train(self) -> None:
@@ -21,9 +22,19 @@ class TorchTrainer3:
             with Timeit(epoch):
                 self.train_loop(epoch)
             if (epoch + 1) % self.configs.get('trainer').get('log_valid_every', 10) == 0:
-                self.valid_loop(epoch)
+                valid_results = self.valid_loop(epoch)
+                self.checkpoint(valid_results, self.model)
         test_results = self.test_loop()
         self.log_metrics(test_results)
+
+    @classmethod
+    def checkpoint(cls, valid_results, model):
+        if not hasattr(cls, 'valid_avg_loss') or \
+                valid_results['valid_avg_loss'] < cls.valid_avg_loss:
+            cls.valid_avg_loss = valid_results['valid_avg_loss']
+            pickle_obj(model, model.model_path())
+            print(f'saved checkpoint at {model.model_path()} '
+                  f'with best valid loss: {cls.valid_avg_loss}\n')
 
     def train_loop(self, epoch: int = 0) -> Dict:
         self.model.train()

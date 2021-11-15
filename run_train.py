@@ -7,26 +7,48 @@ The best model can be saved
 All details of the training are specified in the config file
 
 """
+import os
 from copy import deepcopy
-
 from modules.containers.di_containers import TrainerContainer
 from modules.helpers.namer import Namer
-from utils.constants import TRAIN_RESULTS_DIR
+from utils.constants import TRAIN_RESULTS_DIR, CLASSIFIERS_DIR
 from utils.flags import train_flags
 from utils.common import build_config, setup_imports, setup_directories, add_grid_search_parameters, get_data_loaders, \
-    get_model
+    unpickle_obj
 from utils.registry import registry
 from ray import tune
 from typing import Dict
+
+
+def get_model(configs):
+    if configs.get('trainer', {}).get('resume', False):
+        name = Namer.model_name(configs.get('model'))
+        folder = CLASSIFIERS_DIR
+        model_path = f'{folder}/{name}.pkl'
+        if os.path.isfile(model_path):
+            model = unpickle_obj(model_path)
+            print(f'resumed {name}')
+        else:
+            raise ValueError(f'cannot resume model {name}'
+                             f' - no checkpoint exist in folder {folder}')
+    else:
+        setup_imports()
+        model = registry.get_model_class(
+            configs.get('model').get('name')
+        )(configs)
+    return model
 
 
 def train_one(configs: Dict, save: bool = False) -> None:
     """ Prepares Dataset """
     setup_imports()
     dls = get_data_loaders(configs)
+    model = get_model(configs).to(TrainerContainer.device)
+    if configs.get('trainer', {}).get('resume', False):
+        configs = model.configs
     trainer = registry.get_trainer_class(
         configs.get('trainer').get('name')
-    )(configs, dls)
+    )(configs, dls, model)
     trainer.train()
     if save:
         trainer.save()
@@ -42,7 +64,7 @@ def train(configs: Dict) -> None:
             config=configs,
             local_dir=TRAIN_RESULTS_DIR,
             sync_config=sync_config,
-            name=Namer.wrapper_name(configs.get('model')),
+            name=Namer.model_name(configs.get('model')),
             **config_copy.get('trainer').get('tune', {}),
             keep_checkpoints_num=1,
             checkpoint_score_attr=configs.get('trainer').get('grid_metric').get('name'),
