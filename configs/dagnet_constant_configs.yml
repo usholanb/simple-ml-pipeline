@@ -69,12 +69,10 @@ special_inputs:
   graph_hid: 8
   graph_model: gat
   h_dim: 64
-  learning_rate: 0.001
+  learning_rate: something_if_works_remove_lr_is_in_trainer_block
   lr_scheduler: true
   n_heads: 4
   n_layers: 2
-  num_samples: 20
-  num_workers: 0
   obs_len: 10
   players: atk
   pred_len: 40
@@ -90,6 +88,7 @@ special_inputs:
   z_dim: 32
   mode: raw
   wrmp_epochs: 50
+  lambda_: 0.01
 
 
 

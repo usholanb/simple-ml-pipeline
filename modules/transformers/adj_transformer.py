@@ -43,17 +43,15 @@ def compute_adjs(t, seq_start_end):
 
 
 def block_diag_irregular(matrices):
-    matrices = [permute2st(m, 2) for m in matrices]
+    if len(matrices[0].shape) == 3:
+        l, b, h = matrices[0].shape
+        total_num = len(matrices)
 
-    ns = torch.LongTensor([m.shape[0] for m in matrices])
-    n = torch.sum(ns)
-    batch_shape = matrices[0].shape[2:]
-
-    v = torch.zeros(torch.Size([n, n]) + batch_shape)
-    for ii, m1 in enumerate(matrices):
-        st = torch.sum(ns[:ii])
-        en = torch.sum(ns[:(ii + 1)])
-        v[st:en, st:en] = m1
+        m_lst = [matrices[i].reshape(l, b*h) for i in range(len(matrices))]
+        v = torch.block_diag(*m_lst)
+        v = v.reshape([l * total_num, b * total_num, h])
+    else:
+        v = torch.block_diag(*matrices) # v_2
     return permute2en(v, 2)
 
 
@@ -93,19 +91,35 @@ def compute_adjs_distsim(t_config, seq_start_end, obs_traj, pred_traj_gt):
     return block_diag_irregular(adj_out)
 
 
+def compute_adjs_distsim_v2(si, seq_start_end, obs_traj, pred_traj_gt):
+    num_agents = si.get('n_max_agents')
+    sigma = torch.tensor(si.get('sigma'), device=torch.device('cuda'))
+    obs_and_pred_traj = torch.cat((obs_traj, pred_traj_gt))
+    seq_len, num_traj, xy = obs_and_pred_traj.shape
+    obs_and_pred_traj_ts = torch.reshape(obs_and_pred_traj, (seq_len, num_traj // num_agents, num_agents, xy))
+    timestep, batch, _, _ = obs_and_pred_traj_ts.shape
+    obs_and_pred_traj_batch = obs_and_pred_traj_ts.permute(1, 0, 2, 3).reshape((batch * timestep, num_agents, xy))
+
+    dists = torch.cdist(obs_and_pred_traj_batch, obs_and_pred_traj_batch)
+    batch_dist, _, _ = dists.shape
+    sim = torch.exp(-dists / sigma).reshape(batch, timestep, num_agents, num_agents)
+    sim = torch.permute(sim, (0, 2, 3, 1))
+
+    return block_diag_irregular(torch.unbind(sim))
+
+
 @registry.register_transformer('adj')
 class AdjTransformer(BaseTransformer):
-    def apply(self, data):
+    def apply(self, batch):
         obs_traj, pred_traj_gt, obs_traj_rel, pred_traj_rel_gt, \
-        obs_goals_ohe, pred_goals_gt_ohe, seq_start_end = data
+        obs_goals_ohe, pred_goals_gt_ohe, seq_start_end = batch
         si = self.configs.get('special_inputs')
         seq_len = len(obs_traj) + len(pred_traj_gt)
         assert seq_len == si.get('obs_len') + si.get('pred_len')
         if si.get('adjacency_type') == 0:
             adj_out = compute_adjs(self.configs.get('special_inputs'), seq_start_end).to(self.device)
         elif si.get('adjacency_type') == 1:
-            adj_out = compute_adjs_distsim(self.configs.get('special_inputs'), seq_start_end, obs_traj.detach().cpu(),
-                                           pred_traj_gt.detach().cpu()).to(self.device)
+            adj_out = compute_adjs_distsim_v2(self.configs.get('special_inputs'), seq_start_end, obs_traj, pred_traj_gt)
         elif si.get('adjacency_type') == 2:
             adj_out = compute_adjs_knnsim(self.configs.get('special_inputs'), seq_start_end, obs_traj.detach().cpu(),
                                           pred_traj_gt.detach().cpu()).to(self.device)

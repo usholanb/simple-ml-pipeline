@@ -17,12 +17,16 @@ class DagnetLoss(BaseLoss):
             if warmup else self.warmup[:wrmp_epochs]
         self.CE_weight = si.get('CE_weight')
 
-    def __call__(self, outputs, epoch: int) -> Dict:
-        kld, nll, cross_entropy = outputs['kld'], outputs['nll'], outputs['cross_entropy']
-        return {
-            'train_loss': (self.warmup[epoch - 1] * kld) + nll + (cross_entropy * self.CE_weight),
+    def __call__(self, all_data: Dict) -> None:
+        outputs = all_data['outputs']
+        kld, nll, cross_entropy, euclidean_batch_loss = \
+            outputs['kld'], outputs['nll'], outputs['cross_entropy'], outputs['euclidean_batch_loss']
+        epoch = all_data['epoch']
+        all_data['loss_outputs'] = {
+            'loss': (self.warmup[epoch - 1] * kld) + nll + (cross_entropy * self.CE_weight),
             'kld_loss': kld.item(),
             'nll_loss': nll.item(),
             'cross_entropy_loss': cross_entropy.item(),
+            'euclidean_batch_loss': euclidean_batch_loss.item()
         }
 

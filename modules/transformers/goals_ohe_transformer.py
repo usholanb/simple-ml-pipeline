@@ -19,9 +19,9 @@ def to_goals_one_hot(original_goal, ohe_dim):
 
 @registry.register_transformer('goals_ohe')
 class GoalsOHETransformer(BaseTransformer):
-    def apply(self, data):
+    def apply(self, batch):
         obs_traj, pred_traj_gt, obs_traj_rel, pred_traj_rel_gt, \
-            obs_goals, pred_goals_gt, seq_start_end = data
+            obs_goals, pred_goals_gt, seq_start_end = batch
 
         obs_goals_ohe = to_goals_one_hot(
             obs_goals, self.configs.get('special_inputs').get('g_dim')

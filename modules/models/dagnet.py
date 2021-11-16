@@ -22,10 +22,12 @@ class DAGNet (BaseTorchModel):
         self.fde_outer = None
         self.ade = None
         self.fde = None
-        self.train_loss = None
+        self.loss = None
         self.kld_loss = None
         self.nll_loss = None
         self.cross_entropy_loss = None
+        self.euclidean_loss = None
+
 
         # goal generator
         self.dec_goal = nn.Sequential(
@@ -135,8 +137,8 @@ class DAGNet (BaseTorchModel):
     def predict(self, data):
         raise ValueError('predict not implemented for dagnet')
 
-    def forward(self, data):
-        traj, traj_rel, goals_ohe, seq_start_end, adj_out = data
+    def forward(self, all_data):
+        traj, traj_rel, goals_ohe, seq_start_end, adj_out = all_data['forward']
         timesteps, batch, features = traj.shape
 
         d = torch.zeros(timesteps, batch, features*self.n_max_agents).to(self.device)
@@ -191,11 +193,24 @@ class DAGNet (BaseTorchModel):
             h_graph = self.graph_hiddens(h[-1].clone(), adj_out[timestep])  # graph refinement
             h[-1] = self.lg_hiddens(torch.cat((h_graph, h[-1]), dim=-1)).unsqueeze(0)  # combination
 
-        return {
+        obs_traj, pred_traj_gt, obs_traj_rel, pred_traj_rel_gt, \
+        obs_goals_ohe, pred_goals_gt_ohe, seq_start_end, adj_out = all_data['transformed_batch']
+        seq_len = len(obs_traj) + len(pred_traj_gt)
+        samples_rel = self.predict_proba(self.pred_len, h, obs_traj[-1],
+                                         obs_goals_ohe[-1], seq_start_end)
+
+        samples = relative_to_abs(samples_rel, obs_traj[-1])
+        batch_traj = obs_traj.shape[1]  # num_seqs
+        ade_traj = average_displacement_error(samples, pred_traj_gt)
+
+        euclidean_batch_loss = ade_traj / (batch_traj * seq_len)
+        self.euclidean_loss += euclidean_batch_loss.item()
+        all_data['outputs'] = {
             'kld': KLD,
             'nll': NLL,
             'cross_entropy': cross_entropy,
             'h': h,
+            'euclidean_batch_loss': euclidean_batch_loss,
         }
 
     def predict_proba(self, samples_seq_len, h, x_abs_start, g_start, seq_start_end):
@@ -275,10 +290,11 @@ class DAGNet (BaseTorchModel):
         return samples
 
     def before_epoch_train(self):
-        self.train_loss = 0
+        self.loss = 0
         self.kld_loss = 0
         self.nll_loss = 0
         self.cross_entropy_loss = 0
+        self.euclidean_loss = 0
 
     def before_iteration_eval(self, data):
         obs_traj, pred_traj_gt, obs_traj_rel, pred_traj_rel_gt, \
@@ -293,17 +309,18 @@ class DAGNet (BaseTorchModel):
         self.ade = None
         self.fde = None
 
-    def before_iteration_train(self, data):
+    def before_iteration_train(self, all_data):
         obs_traj, pred_traj_gt, obs_traj_rel, pred_traj_rel_gt, \
-        obs_goals_ohe, pred_goals_gt_ohe, seq_start_end, adj_out = data
+        obs_goals_ohe, pred_goals_gt_ohe, seq_start_end, adj_out = all_data['transformed_batch']
         all_traj = torch.cat((obs_traj, pred_traj_gt), dim=0)
         all_traj_rel = torch.cat((obs_traj_rel, pred_traj_rel_gt), dim=0)
         all_goals_ohe = torch.cat((obs_goals_ohe, pred_goals_gt_ohe), dim=0)
-        return all_traj, all_traj_rel, all_goals_ohe, seq_start_end, adj_out
+        all_data['forward'] = all_traj, all_traj_rel, all_goals_ohe, seq_start_end, adj_out
+
 
     def after_epoch_loss(self, split_name, loader):
         return {
-            f'{split_name}_avg_loss': self.train_loss / len(loader.dataset),
+            f'{split_name}_avg_loss': self.loss / len(loader.dataset),
             f'{split_name}_avg_kld_loss': self.kld_loss / len(loader.dataset),
             f'{split_name}_avg_nll_loss': self.nll_loss / len(loader.dataset),
             f'{split_name}_avg_cross_entropy_loss': self.cross_entropy_loss / len(loader.dataset),
@@ -318,13 +335,15 @@ class DAGNet (BaseTorchModel):
             f'{split_name}_fde': self.fde,
         }
 
-    def end_iteration_compute_loss(self, data, forward_data, outputs, loss_outputs):
-        self.train_loss += loss_outputs['train_loss'].item()
+    def end_iteration_compute_loss(self, all_data):
+        loss_outputs = all_data['loss_outputs']
+        self.loss += loss_outputs['loss'].item()
         self.kld_loss += loss_outputs['kld_loss']
         self.nll_loss += loss_outputs['nll_loss']
         self.cross_entropy_loss += loss_outputs['cross_entropy_loss']
 
-    def end_iteration_compute_predictions(self, data, forward_data, outputs):
+    def end_iteration_compute_predictions(self, all_data):
+        data, forward_data, outputs = all_data['batch'], all_data['forward_data'], all_data['outputs'],
         obs_traj, obs_traj_rel, obs_goals_ohe, seq_start_end, adj_out = forward_data
         obs_traj, pred_traj_gt, obs_traj_rel, pred_traj_rel_gt, \
         obs_goals, pred_goals_gt, seq_start_end = data
