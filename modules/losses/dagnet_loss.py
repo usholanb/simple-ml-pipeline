@@ -16,6 +16,7 @@ class DagnetLoss(BaseLoss):
         self.warmup[:wrmp_epochs] = np.linspace(0, 1, num=wrmp_epochs)\
             if warmup else self.warmup[:wrmp_epochs]
         self.CE_weight = si.get('CE_weight')
+        self._lambda = si.get('_lambda')
 
     def __call__(self, all_data: Dict) -> None:
         outputs = all_data['outputs']
@@ -23,7 +24,8 @@ class DagnetLoss(BaseLoss):
             outputs['kld'], outputs['nll'], outputs['cross_entropy'], outputs['euclidean_batch_loss']
         epoch = all_data['epoch']
         all_data['loss_outputs'] = {
-            'loss': (self.warmup[epoch - 1] * kld) + nll + (cross_entropy * self.CE_weight),
+            'loss': (self.warmup[epoch - 1] * kld) + nll + (cross_entropy * self.CE_weight)
+                                + self._lambda * euclidean_batch_loss,
             'kld_loss': kld.item(),
             'nll_loss': nll.item(),
             'cross_entropy_loss': cross_entropy.item(),

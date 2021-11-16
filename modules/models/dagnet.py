@@ -138,7 +138,7 @@ class DAGNet (BaseTorchModel):
         raise ValueError('predict not implemented for dagnet')
 
     def forward(self, all_data):
-        traj, traj_rel, goals_ohe, seq_start_end, adj_out = all_data['forward']
+        traj, traj_rel, goals_ohe, seq_start_end, adj_out = all_data['forward_data']
         timesteps, batch, features = traj.shape
 
         d = torch.zeros(timesteps, batch, features*self.n_max_agents).to(self.device)
@@ -315,8 +315,7 @@ class DAGNet (BaseTorchModel):
         all_traj = torch.cat((obs_traj, pred_traj_gt), dim=0)
         all_traj_rel = torch.cat((obs_traj_rel, pred_traj_rel_gt), dim=0)
         all_goals_ohe = torch.cat((obs_goals_ohe, pred_goals_gt_ohe), dim=0)
-        all_data['forward'] = all_traj, all_traj_rel, all_goals_ohe, seq_start_end, adj_out
-
+        all_data['forward_data'] = all_traj, all_traj_rel, all_goals_ohe, seq_start_end, adj_out
 
     def after_epoch_loss(self, split_name, loader):
         return {

@@ -306,14 +306,13 @@ def get_data_loader(configs, split_name, hps):
     return DataLoader(dataset, **hps, collate_fn=dataset.collate)
 
 
-def transform(batch, configs):
+def transform(all_data, configs):
     setup_imports()
     ts = configs.get('special_inputs').get('transformers')
     ts = ts if isinstance(ts, list) else [ts]
     for t_name in ts:
         t = registry.get_transformer_class(t_name)(configs)
-        batch = t.apply(batch)
-    return batch
+        t.apply(all_data)
 
 
 # def save_checkpoint(fn, save_dict):

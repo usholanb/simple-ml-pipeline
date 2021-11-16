@@ -110,20 +110,36 @@ def compute_adjs_distsim_v2(si, seq_start_end, obs_traj, pred_traj_gt):
 
 @registry.register_transformer('adj')
 class AdjTransformer(BaseTransformer):
-    def apply(self, batch):
+
+    def apply(self, all_data):
+
+        batch = all_data['batch'] if 'transformed_batch' not in all_data \
+            else all_data['transformed_batch']
+
         obs_traj, pred_traj_gt, obs_traj_rel, pred_traj_rel_gt, \
         obs_goals_ohe, pred_goals_gt_ohe, seq_start_end = batch
-        si = self.configs.get('special_inputs')
-        seq_len = len(obs_traj) + len(pred_traj_gt)
-        assert seq_len == si.get('obs_len') + si.get('pred_len')
-        if si.get('adjacency_type') == 0:
-            adj_out = compute_adjs(self.configs.get('special_inputs'), seq_start_end).to(self.device)
-        elif si.get('adjacency_type') == 1:
-            adj_out = compute_adjs_distsim_v2(self.configs.get('special_inputs'), seq_start_end, obs_traj, pred_traj_gt)
-        elif si.get('adjacency_type') == 2:
-            adj_out = compute_adjs_knnsim(self.configs.get('special_inputs'), seq_start_end, obs_traj.detach().cpu(),
-                                          pred_traj_gt.detach().cpu()).to(self.device)
-        return obs_traj, pred_traj_gt, obs_traj_rel, pred_traj_rel_gt, \
+
+        batch_i = all_data['batch_i']
+        if not hasattr(AdjTransformer, 'adj_train'):
+            AdjTransformer.adj_train = []
+
+        if len(AdjTransformer.adj_train) > batch_i:
+            adj_out = AdjTransformer.adj_train[batch_i]
+        else:
+            si = self.configs.get('special_inputs')
+            seq_len = len(obs_traj) + len(pred_traj_gt)
+            assert seq_len == si.get('obs_len') + si.get('pred_len')
+            if si.get('adjacency_type') == 0:
+                adj_out = compute_adjs(self.configs.get('special_inputs'), seq_start_end).to(self.device)
+            elif si.get('adjacency_type') == 1:
+                adj_out = compute_adjs_distsim_v2(self.configs.get('special_inputs'), seq_start_end, obs_traj,
+                                                  pred_traj_gt)
+            elif si.get('adjacency_type') == 2:
+                adj_out = compute_adjs_knnsim(self.configs.get('special_inputs'), seq_start_end,
+                                              obs_traj.detach().cpu(),
+                                              pred_traj_gt.detach().cpu()).to(self.device)
+
+        all_data['transformed_batch'] = obs_traj, pred_traj_gt, obs_traj_rel, pred_traj_rel_gt, \
             obs_goals_ohe, pred_goals_gt_ohe, seq_start_end, adj_out
 
 

@@ -48,7 +48,7 @@ class TorchTrainer3:
                 'batch_i': batch_i,
                 'batch': [x.to(TrainerContainer.device) for x in batch]
             })
-            all_data['transformed_batch'] = transform(all_data['batch'], self.configs)
+            transform(all_data, self.configs)
             self.model.before_iteration_train(all_data)
             self.optimizer.zero_grad()
             self.model.forward(all_data)
@@ -73,7 +73,7 @@ class TorchTrainer3:
                     'batch_i': batch_i,
                     'batch': [x.to(TrainerContainer.device) for x in batch]
                 })
-                all_data['transformed_batch'] = transform(all_data['batch'], self.configs)
+                transform(all_data, self.configs)
                 self.model.before_iteration_train(all_data)
                 self.model.forward(all_data)
                 self.criterion(all_data)
@@ -95,7 +95,7 @@ class TorchTrainer3:
                     'batch_i': batch_i,
                     'batch': [x.to(TrainerContainer.device) for x in batch]
                 })
-                all_data['transformed_batch'] = transform(all_data['batch'], self.configs)
+                transform(all_data, self.configs)
                 self.model.before_iteration_train(all_data)
                 self.model.forward(all_data)
                 self.criterion(all_data)
