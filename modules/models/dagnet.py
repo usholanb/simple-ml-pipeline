@@ -28,7 +28,6 @@ class DAGNet (BaseTorchModel):
         self.cross_entropy_loss = None
         self.euclidean_loss = None
 
-
         # goal generator
         self.dec_goal = nn.Sequential(
             nn.Linear(self.d_dim + self.g_dim + self.rnn_dim, self.h_dim),
@@ -233,11 +232,12 @@ class DAGNet (BaseTorchModel):
                 d_t = d[timestep]
 
                 if self.adjacency_type == 0:
-                    adj_pred = adjs_fully_connected_pred(seq_start_end).to(self.device)
+                    adj_pred = adjs_fully_connected_pred(seq_start_end)
                 elif self.adjacency_type == 1:
-                    adj_pred = adjs_distance_sim_pred(self.sigma, seq_start_end, x_t_abs.detach().cpu()).to(self.device)
+                    adj_pred = adjs_distance_sim_pred(self.sigma, seq_start_end, x_t_abs.detach().cpu())
                 elif self.adjacency_type == 2:
-                    adj_pred = adjs_knn_sim_pred(self.top_k_neigh, seq_start_end, x_t_abs.detach().cpu()).to(self.device)
+                    adj_pred = adjs_knn_sim_pred(self.top_k_neigh, seq_start_end, x_t_abs.detach().cpu())
+                adj_pred = adj_pred.to(self.device).float()
 
                 # sampling agents' goals + graph refinement step
                 dec_g = self.dec_goal(torch.cat([d_t, h[-1], g_t], 1))
@@ -268,12 +268,12 @@ class DAGNet (BaseTorchModel):
 
                 # graph refinement for agents' hiddens
                 if self.adjacency_type == 0:
-                    adj_pred = adjs_fully_connected_pred(seq_start_end).to(self.device)
+                    adj_pred = adjs_fully_connected_pred(seq_start_end)
                 elif self.adjacency_type == 1:
-                    adj_pred = adjs_distance_sim_pred(self.sigma, seq_start_end, x_t_abs.detach().cpu()).to(self.device)
+                    adj_pred = adjs_distance_sim_pred(self.sigma, seq_start_end, x_t_abs.detach().cpu())
                 elif self.adjacency_type == 2:
-                    adj_pred = adjs_knn_sim_pred(self.top_k_neigh, seq_start_end, x_t_abs.detach().cpu()).to(self.device)
-
+                    adj_pred = adjs_knn_sim_pred(self.top_k_neigh, seq_start_end, x_t_abs.detach().cpu())
+                adj_pred = adj_pred.to(self.device).float()
                 h_graph = self.graph_hiddens(h[-1].clone(), adj_pred)
                 h[-1] = self.lg_hiddens(torch.cat((h_graph, h[-1]), dim=-1)).unsqueeze(0)
 
@@ -323,15 +323,16 @@ class DAGNet (BaseTorchModel):
             f'{split_name}_avg_kld_loss': self.kld_loss / len(loader.dataset),
             f'{split_name}_avg_nll_loss': self.nll_loss / len(loader.dataset),
             f'{split_name}_avg_cross_entropy_loss': self.cross_entropy_loss / len(loader.dataset),
+            f'{split_name}_mean_euclidean_loss': self.euclidean_loss / len(loader.dataset),
         }
 
-    def after_epoch_predictions(self, split_name, loader):
-        self.ade = sum(self.ade_outer) / (self.total_traj * self.pred_len)
-        self.fde = sum(self.fde_outer) / self.total_traj
+    def after_epoch_predictions(self, split_name):
+        ade = sum(self.ade_outer) / (self.total_traj * self.pred_len)
+        fde = sum(self.fde_outer) / self.total_traj
         return {
             f'{split_name}_total_traj': self.total_traj,
-            f'{split_name}_ade': self.ade,
-            f'{split_name}_fde': self.fde,
+            f'{split_name}_ade': ade,
+            f'{split_name}_fde': fde,
         }
 
     def end_iteration_compute_loss(self, all_data):
@@ -375,7 +376,6 @@ def evaluate_helper(error, seq_start_end):
         _error = torch.min(_error)
         sum_ += _error
     return sum_
-
 
 
 class GCN(nn.Module):
@@ -883,20 +883,20 @@ class GraphConvolution(nn.Module):
         super(GraphConvolution, self).__init__()
         self.in_features = in_features
         self.out_features = out_features
-        self.weight = nn.Parameter(torch.FloatTensor(in_features, out_features))
+        self.weight = nn.Parameter(torch.FloatTensor(in_features, out_features)).to(TrainerContainer.device)
 
         if bias:
-            self.bias = nn.Parameter(torch.FloatTensor(out_features))
+            self.bias = nn.Parameter(torch.FloatTensor(out_features)).to(TrainerContainer.device)
         else:
             self.register_parameter('bias', None)
 
         self.reset_parameters()
 
     def forward(self, input, adj):
-        support = torch.mm(input, self.weight.to(TrainerContainer.device))
+        support = torch.mm(input, self.weight)
         output = torch.spmm(adj, support)
         if self.bias is not None:
-            return output + self.bias.to(TrainerContainer.device)
+            return output + self.bias
         else:
             return output
 

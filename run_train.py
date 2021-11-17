@@ -20,6 +20,22 @@ from ray import tune
 from typing import Dict
 
 
+# from typing import List
+#
+# from ray import tune
+# from ray.tune.checkpoint_manager import Checkpoint
+# from ray.tune.trial import Trial
+#
+#
+# class SaveModel(tune.Callback):
+#     def on_checkpoint(self, iteration: int, trials: List[Trial],
+#                       trial: Trial, checkpoint: Checkpoint, **info):
+#         print(type(checkpoint))
+#         print(checkpoint)
+#         print(checkpoint.__dict__)
+#         exit()
+#
+
 def get_model(configs):
     if configs.get('trainer', {}).get('resume', False):
         name = Namer.model_name(configs.get('model'))
@@ -69,6 +85,7 @@ def train(configs: Dict) -> None:
             keep_checkpoints_num=1,
             checkpoint_score_attr=configs.get('trainer').get('grid_metric').get('name'),
             mode=configs.get('trainer').get('grid_metric').get('mode'),
+            # callbacks=[SaveModel()],
         )
         best_configs = analysis.get_best_config(
             metric=configs.get('trainer').get('grid_metric').get('name'),
@@ -77,6 +94,7 @@ def train(configs: Dict) -> None:
         print("Best configs: ", {**best_configs.get('optim'),
                                  **best_configs.get('special_inputs')})
         configs = best_configs
+
     train_one(configs, save=configs.get('trainer').get('save'))
 
 

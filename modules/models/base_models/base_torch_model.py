@@ -16,9 +16,13 @@ class BaseTorchModel(nn.Module, BaseModel):
         self.__dict__.update(configs.get('special_inputs'))
         self.configs = configs
 
-    def model_path(self) -> AnyStr:
+    @property
+    def model_name(self) -> AnyStr:
         m = self.configs.get('model')
-        return f'{CLASSIFIERS_DIR}/{m.get("name")}_{m.get("tag")}.pkl'
+        return f'{m.get("name")}_{m.get("tag")}'
+
+    def model_path(self) -> AnyStr:
+        return f'{CLASSIFIERS_DIR}/{self.model_name}.pkl'
 
 
 

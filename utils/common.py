@@ -14,7 +14,7 @@ import re
 import ray
 from time import time
 from torch.utils.data import DataLoader
-from utils.constants import DATA_DIR, CONFIGS_DIR, PREDICTIONS_DIR, TRAIN_RESULTS_DIR, PROJECT_DIR, CLASSIFIERS_DIR
+import torch
 import numpy as np
 
 from utils.registry import registry
@@ -245,6 +245,7 @@ def inside_tune() -> bool:
 
 
 class Singleton(type):
+    """ CAREFULL USING IN MULTITHREADING """
     _instances = {}
 
     def __call__(cls, *args, **kwargs):
@@ -306,26 +307,19 @@ def get_data_loader(configs, split_name, hps):
     return DataLoader(dataset, **hps, collate_fn=dataset.collate)
 
 
-def transform(all_data, configs):
-    setup_imports()
-    ts = configs.get('special_inputs').get('transformers')
-    ts = ts if isinstance(ts, list) else [ts]
-    for t_name in ts:
-        t = registry.get_transformer_class(t_name)(configs)
+def transform(all_data, transformers):
+    for t in transformers:
         t.apply(all_data)
-
-
-# def save_checkpoint(fn, save_dict):
-#     torch.save(save_dict, fn)
 
 
 class Timeit:
     """ to compute epoch time """
     original_start = None
 
-    def __init__(self, epoch):
+    def __init__(self, index, name):
         self.start = None
-        self.epoch = epoch
+        self.epoch = index
+        self.name = name
 
     def __enter__(self):
         self.start = time()
@@ -334,5 +328,5 @@ class Timeit:
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         now = time()
-        print(f'epoch # {self.epoch}:   time: {round(now - self.start)},    '
+        print(f'{self.name} # {self.epoch}:   time: {round(now - self.start, 2)},    '
               f'total training time: {round(now - Timeit.original_start, 2)}')

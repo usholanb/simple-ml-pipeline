@@ -2,8 +2,6 @@ from abc import ABC, abstractmethod
 import numpy as np
 import torch
 
-from utils.common import Singleton
-
 
 class BaseMetric(ABC):
     """ computes metrics """

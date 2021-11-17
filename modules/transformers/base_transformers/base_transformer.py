@@ -1,11 +1,10 @@
 from abc import ABC, abstractmethod
 from modules.containers.di_containers import TrainerContainer
-from utils.common import Singleton
 
 
 class BaseTransformer(ABC):
     """ A preprocessing function on a feature """
-    __metaclass__ = Singleton
+    # __metaclass__ = Singleton # mot sure if safe using in multithreading
 
     def __init__(self, configs):
         self.configs = configs

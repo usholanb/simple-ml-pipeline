@@ -7,6 +7,7 @@ from utils.registry import registry
 @registry.register_loss('dagnet_loss')
 class DagnetLoss(BaseLoss):
     def __init__(self, configs):
+
         self.configs = configs
         si = self.configs.get('special_inputs')
         warmup = si.get('warmup')

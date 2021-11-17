@@ -10,7 +10,7 @@ model:
 
 # must be same names as parameters of the actual optimizer
 optim:
-  lr: 0.001
+  lr: 0.0001
 
 
 trainer:
@@ -18,13 +18,14 @@ trainer:
   optim: Adam
   loss: dagnet_loss
   save: 1
-  epochs: 3
-  log_valid_every: 1
+  epochs: 300
+  log_valid_every: 3
 
   tune:
     resources_per_trial:
-      cpu: 2
-      gpu: 8
+      cpu: 25
+      gpu: 1
+    verbose: 0
 
   grid_metric:
     name: valid_avg_kld_loss
@@ -32,6 +33,7 @@ trainer:
 
   num_samples: 1
   resume: false
+  checkpoint: false
 
 
 

@@ -20,8 +20,7 @@ def to_goals_one_hot(original_goal, ohe_dim):
 @registry.register_transformer('goals_ohe')
 class GoalsOHETransformer(BaseTransformer):
     def apply(self, all_data):
-        batch = all_data['batch'] if 'transformed_batch' not in all_data \
-            else all_data['transformed_batch']
+        batch = all_data['batch']
 
         obs_traj, pred_traj_gt, obs_traj_rel, pred_traj_rel_gt, \
             obs_goals, pred_goals_gt, seq_start_end = batch
