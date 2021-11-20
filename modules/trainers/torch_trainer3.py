@@ -23,7 +23,7 @@ class TorchTrainer3:
             train_results = self.train_loop(epoch)
             if epoch + 1 % self.configs.get('trainer').get('log_valid_every', 10) == 0:
                 valid_results = self.valid_loop(epoch)
-        test_results = self.test_loop(epoch)
+        test_results = self.test_loop(epoch=0)
         self.compute_metrics(train_results, valid_results, test_results)
 
     def train_loop(self, epoch: int) -> Dict:
