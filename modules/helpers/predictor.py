@@ -1,37 +1,44 @@
-import pandas as pd
-
+from modules.containers.di_containers import TrainerContainer
 from modules.helpers.csv_saver import CSVSaver
-from utils.common import unpickle_obj
-from utils.constants import CLASSIFIERS_DIR, PREDICTIONS_DIR, PROCESSED_DATA_DIR
-from copy import deepcopy
+from utils.common import unpickle_obj, get_data_loaders, transform, get_transformers
+from utils.constants import CLASSIFIERS_DIR, PREDICTIONS_DIR
+import torch
 
 
 class Predictor:
-    """ uses all wrappers pointed in prediction config to
-        make and save several prediction files """
+    """ uses all models pointed in prediction configs to
+        to make predictions and compare models"""
 
-    def __init__(self, configs, dataset):
+    def __init__(self, configs):
+        self.device = TrainerContainer.device
         self.configs = configs
-        self.dataset = dataset
+        dls = get_data_loaders(configs, specific='test')
+        self.test_loader = dls[0]
+        self.ts = get_transformers(self.configs)
 
-    def predict(self) -> pd.DataFrame:
-        output_dataset = deepcopy(self.dataset)
+    def predict(self):
+        model_results = {}
         for tag, model_name in self.configs.get('models').items():
             model_name_tag = f'{model_name}_{tag}'
             model_path = f'{CLASSIFIERS_DIR}/{model_name_tag}.pkl'
-            wrapper = unpickle_obj(model_path)
-            probs = wrapper.predict_proba(self.dataset)
-            if len(wrapper.label_types) > 1:
-                for label, label_index in wrapper.label_types.items():
-                    output_dataset[f'{model_name_tag}_{label}'] = probs[:, label_index]
-            else:
-                output_dataset[f'{model_name_tag}'] = probs
-        return output_dataset
-
-    def save_probs(self, output_dataset) -> None:
-        for split_name in output_dataset['split'].unique():
-            split = output_dataset.loc[output_dataset['split'] == split_name]
-            dataset_path = self.configs.get('dataset').get('input_path')
-            dataset_name = dataset_path.split('_output.csv')[0].split('/')[1]
-            CSVSaver.save_file(f'{PREDICTIONS_DIR}/{dataset_name}_{split_name}', split)
+            model = unpickle_obj(model_path)
+            model.to(self.device)
+            model.eval()
+            model.before_epoch_eval()
+            with torch.no_grad():
+                for batch_i, batch in enumerate(self.test_loader):
+                    all_data = {
+                        'epoch': 0,
+                        'batch_i': batch_i,
+                        'batch': [x.to(TrainerContainer.device) for x in batch],
+                        'split': 'test',
+                    }
+                    transform(all_data, self.ts)
+                    model.before_iteration_valid(all_data)
+                    model.forward(all_data)
+                    model.end_iteration_valid(all_data)
+                predictions_results = model.after_epoch_valid('test', self.test_loader)
+                model_results[model_name_tag] = predictions_results
+            print(f'{model_name_tag}: {predictions_results}')
+        return model_results
 

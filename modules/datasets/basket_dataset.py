@@ -35,14 +35,14 @@ def seq_collate(data):
 
 @registry.register_dataset('basket_dataset')
 class BasketDataset(Dataset):
-    """Dataloder for the Basketball trajectories datasets"""
+    """ Dataloader for the Basketball trajectories datasets """
 
-    def __init__(self, configs, name):
+    def __init__(self, configs, split_name):
         super(BasketDataset, self).__init__()
         self.configs = configs
         si = self.configs.get('special_inputs')
-        name = name if name != 'valid' else 'validation'
-        self.data_dir = f'{DATA_DIR}/dagnet/{name}'
+        self.name = split_name if split_name != 'valid' else 'validation'
+        self.data_dir = f'{DATA_DIR}/dagnet/{self.name}'
         self.obs_len = si.get('obs_len')
         self.pred_len = si.get('pred_len')
         self.seq_len = self.obs_len + self.pred_len
@@ -53,9 +53,9 @@ class BasketDataset(Dataset):
         # 'trajectories' shape (seq_len, batch*n_agents, 2) -> 2 = coords (x,y) for the single player
         # 'goals' shape (seq_len, batch*n_agents)
         traj_abs, goals = BasketDataset._read_files(self.data_dir)
-        # print(traj_abs.shape, goals.shape)
-        traj_abs = traj_abs[:, :40, :]
-        goals = goals[:, :40]
+
+        traj_abs = traj_abs[:, :640, :]
+        goals = goals[:, :640]
 
         assert traj_abs.shape[0] == self.seq_len and goals.shape[0] == self.seq_len
         #assert self.seq_len <= traj_abs.shape[0] and self.seq_len <= goals.shape[0]

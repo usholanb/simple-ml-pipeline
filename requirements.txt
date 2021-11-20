@@ -1,5 +1,5 @@
-pip install -U ray
-pip install ray[rllib]
-pip install tabulate
-pip install scikit-learn
-pip install dependency-injector
+ray
+ray[rllib]
+tabulate
+scikit-learn
+dependency-injector

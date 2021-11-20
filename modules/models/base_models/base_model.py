@@ -14,7 +14,7 @@ class BaseModel(object):
         """
 
     @abstractmethod
-    def predict(self, data):
+    def predict_proba(self, data):
         """
         Used during prediction step
         """

@@ -12,10 +12,12 @@ from typing import AnyStr
 import pickle
 import re
 import ray
-
-
-from utils.constants import DATA_DIR, CONFIGS_DIR, PREDICTIONS_DIR, TRAIN_RESULTS_DIR, PROJECT_DIR
+from time import time
+from torch.utils.data import DataLoader
+import torch
 import numpy as np
+
+from utils.registry import registry
 
 
 def load_config(path: AnyStr, previous_includes: List = None):
@@ -243,7 +245,9 @@ def inside_tune() -> bool:
 
 
 class Singleton(type):
+    """ CAREFULL USING IN MULTITHREADING """
     _instances = {}
+
     def __call__(cls, *args, **kwargs):
         if cls not in cls._instances:
             cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
@@ -260,7 +264,6 @@ def get_outside_library(model_name):
     module = importlib.import_module(module_name)
     class_name = model_name.split('.')[-1]
     return getattr(module, class_name)
-
 
 
 def check_label_type(targets):
@@ -285,3 +288,52 @@ def do_after_iter(iterable, func):
     for i in iter(iterable):
         func(i)
         return i
+
+
+def get_data_loaders(configs, specific=None):
+    split_names = [specific] if specific is not None else ['train', 'valid', 'test']
+    dls = []
+    for split_name in split_names:
+        hps = configs.get('dataset').get('data_loaders').get(split_name)
+        dl = get_data_loader(configs, split_name, hps)
+        dls.append(dl)
+
+    return dls
+
+
+def get_data_loader(configs, split_name, hps):
+    dataset = registry.get_dataset_class(configs.get('dataset')
+                                         .get('name'))(configs, split_name)
+    return DataLoader(dataset, **hps, collate_fn=dataset.collate)
+
+
+def transform(all_data, transformers):
+    for t in transformers:
+        t.apply(all_data)
+
+def get_transformers(configs):
+    setup_imports()
+    ts = configs.get('special_inputs').get('transformers')
+    ts = ts if isinstance(ts, list) else [ts]
+    return [registry.get_transformer_class(t_name)(configs)
+            for t_name in ts]
+
+
+class Timeit:
+    """ to compute epoch time """
+    original_start = None
+
+    def __init__(self, index, name):
+        self.start = None
+        self.epoch = index
+        self.name = name
+
+    def __enter__(self):
+        self.start = time()
+        Timeit.original_start = Timeit.original_start \
+            if Timeit.original_start is not None else self.start
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        now = time()
+        print(f'{self.name} # {self.epoch}:   time: {round(now - self.start, 2)},    '
+              f'total training time: {round(now - Timeit.original_start, 2)}')

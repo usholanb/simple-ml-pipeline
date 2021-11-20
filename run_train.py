@@ -7,46 +7,51 @@ The best model can be saved
 All details of the training are specified in the config file
 
 """
+import os
 from copy import deepcopy
-
-from torch.utils.data import DataLoader
-
-from modules.helpers.csv_saver import CSVSaver
+from modules.containers.di_containers import TrainerContainer
 from modules.helpers.namer import Namer
-from utils.constants import TRAIN_RESULTS_DIR
+from utils.constants import TRAIN_RESULTS_DIR, CLASSIFIERS_DIR
 from utils.flags import train_flags
-from utils.common import build_config, setup_imports, setup_directories, add_grid_search_parameters
+from utils.common import build_config, setup_imports, setup_directories, add_grid_search_parameters, get_data_loaders, \
+    unpickle_obj
 from utils.registry import registry
-import pandas as pd
 from ray import tune
-from typing import Dict, List
+from typing import Dict
+
+
+def get_model(configs):
+    if configs.get('trainer', {}).get('resume', False):
+        name = Namer.model_name(configs.get('model'))
+        folder = CLASSIFIERS_DIR
+        model_path = f'{folder}/{name}.pkl'
+        if os.path.isfile(model_path):
+            model = unpickle_obj(model_path)
+            print(f'resumed {name}')
+        else:
+            raise ValueError(f'cannot resume model {name}'
+                             f' - no checkpoint exist in folder {folder}')
+    else:
+        setup_imports()
+        model = registry.get_model_class(
+            configs.get('model').get('name')
+        )(configs)
+    return model
 
 
 def train_one(configs: Dict, save: bool = False) -> None:
     """ Prepares Dataset """
     setup_imports()
     dls = get_data_loaders(configs)
+    model = get_model(configs).to(TrainerContainer.device)
+    if configs.get('trainer', {}).get('resume', False):
+        configs = model.configs
     trainer = registry.get_trainer_class(
         configs.get('trainer').get('name')
-    )(configs, dls)
+    )(configs, dls, model)
     trainer.train()
     if save:
         trainer.save()
-
-
-def get_data_loaders(configs):
-    dls = []
-    for name in ['train', 'valid', 'test']:
-        hps = configs.get('dataset').get('data_loaders').get(name)
-        dl = get_data_loader(configs, name, hps)
-        dls.append(dl)
-
-    return dls
-
-
-def get_data_loader(configs, name, hps):
-    dataset = registry.get_dataset_class(configs.get('dataset').get('name'))(configs, name)
-    return DataLoader(dataset, **hps, collate_fn=dataset.collate)
 
 
 def train(configs: Dict) -> None:
@@ -59,23 +64,22 @@ def train(configs: Dict) -> None:
             config=configs,
             local_dir=TRAIN_RESULTS_DIR,
             sync_config=sync_config,
-            name=Namer.wrapper_name(configs.get('model')),
+            name=Namer.model_name(configs.get('model')),
             **config_copy.get('trainer').get('tune', {}),
             keep_checkpoints_num=1,
             checkpoint_score_attr=configs.get('trainer').get('grid_metric').get('name'),
             mode=configs.get('trainer').get('grid_metric').get('mode'),
+            # callbacks=[SaveModel()],
         )
         best_configs = analysis.get_best_config(
             metric=configs.get('trainer').get('grid_metric').get('name'),
             mode=configs.get('trainer').get('grid_metric').get('mode')
         )
-
         print("Best configs: ", {**best_configs.get('optim'),
                                  **best_configs.get('special_inputs')})
-        # configs = best_configs
-    else:
+        configs = best_configs
 
-        train_one(configs, save=configs.get('trainer').get('save'))
+    train_one(configs, save=configs.get('trainer').get('save'))
 
 
 if __name__ == '__main__':

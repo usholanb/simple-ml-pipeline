@@ -1,8 +1,6 @@
 from typing import AnyStr
-
 import torch
 from torch import nn
-from abc import ABC, abstractmethod
 from modules.models.base_models.base_model import BaseModel
 from utils.constants import CLASSIFIERS_DIR
 
@@ -16,14 +14,21 @@ class BaseTorchModel(nn.Module, BaseModel):
         self.__dict__.update(configs.get('special_inputs'))
         self.configs = configs
 
-    def model_path(self) -> AnyStr:
+    @property
+    def model_name(self) -> AnyStr:
         m = self.configs.get('model')
-        return f'{CLASSIFIERS_DIR}/{m.get("name")}_{m.get("tag")}.pkl'
+        return f'{m.get("name")}_{m.get("tag")}'
+
+    def model_path(self) -> AnyStr:
+        return f'{CLASSIFIERS_DIR}/{self.model_name}.pkl'
 
     def before_epoch(self):
         pass
 
-    def before_iteration(self, all_data):
+    def before_iteration_train(self, all_data):
+        pass
+
+    def before_iteration_valid(self, all_data):
         pass
 
     def after_iteration(self, all_data):

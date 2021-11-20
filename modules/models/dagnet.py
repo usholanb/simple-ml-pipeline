@@ -1,17 +1,15 @@
-from typing import List
 import torch
 import math
 from torch.nn import functional as F
-
 from modules.containers.di_containers import TrainerContainer
 from modules.models.base_models.base_torch_model import BaseTorchModel
+from modules.transformers.adj_transformer import block_diag_irregular
 from utils.registry import registry
 import matplotlib.pyplot as plt
 import random
 import numpy as np
 import torch.nn as nn
 from scipy.spatial import distance_matrix
-from time import time
 
 
 @registry.register_model('dagnet')
@@ -19,6 +17,16 @@ class DAGNet (BaseTorchModel):
     def __init__(self, configs):
         super(DAGNet, self).__init__(configs)
         self.d_dim = self.n_max_agents * 2
+        self.total_traj = None
+        self.ade_outer = None
+        self.fde_outer = None
+        self.ade = None
+        self.fde = None
+        self.loss = None
+        self.kld_loss = None
+        self.nll_loss = None
+        self.cross_entropy_loss = None
+        self.euclidean_loss = None
 
         # goal generator
         self.dec_goal = nn.Sequential(
@@ -125,11 +133,8 @@ class DAGNet (BaseTorchModel):
         nll = torch.mean(0.5 * (x1 + x2 + x3))
         return nll
 
-    def predict(self, data):
-        raise ValueError('predict not implemented for dagnet')
-
-    def forward(self, data):
-        traj, traj_rel, goals_ohe, seq_start_end, adj_out = data
+    def forward(self, all_data):
+        traj, traj_rel, goals_ohe, seq_start_end, adj_out = all_data['forward_data']
         timesteps, batch, features = traj.shape
 
         d = torch.zeros(timesteps, batch, features*self.n_max_agents).to(self.device)
@@ -148,7 +153,6 @@ class DAGNet (BaseTorchModel):
             x_t = traj_rel[timestep]
             d_t = d[timestep]
             g_t = goals_ohe[timestep]   # ground truth goal
-
             # refined goal must resemble real goal g_t
             dec_goal_t = self.dec_goal(torch.cat([d_t, h[-1], goals_ohe[timestep-1]], 1))
             g_graph = self.graph_goals(dec_goal_t, adj_out[timestep])  # graph refinement
@@ -183,11 +187,28 @@ class DAGNet (BaseTorchModel):
 
             # hidden states refinement with graph
             h_graph = self.graph_hiddens(h[-1].clone(), adj_out[timestep])  # graph refinement
-            h[-1] = self.lg_hiddens(torch.cat((h_graph, h[-1]), dim=-1)).unsqueeze(0) # combination
+            h[-1] = self.lg_hiddens(torch.cat((h_graph, h[-1]), dim=-1)).unsqueeze(0)  # combination
 
-        return KLD, NLL, cross_entropy, h
+        obs_traj, pred_traj_gt, obs_traj_rel, pred_traj_rel_gt, \
+        obs_goals_ohe, pred_goals_gt_ohe, seq_start_end, adj_out = all_data['transformed_batch']
+        seq_len = len(obs_traj) + len(pred_traj_gt)
+        samples_rel = self.predict_proba(self.pred_len, h, obs_traj[-1],
+                                         obs_goals_ohe[-1], seq_start_end)
 
-    def sample(self, samples_seq_len, h, x_abs_start, g_start, seq_start_end):
+        samples = relative_to_abs(samples_rel, obs_traj[-1])
+        batch_traj = obs_traj.shape[1]  # num_seqs
+        ade_traj = average_displacement_error(samples, pred_traj_gt)
+
+        euclidean_batch_loss = ade_traj / (batch_traj * seq_len)
+        all_data['outputs'] = {
+            'kld': KLD,
+            'nll': NLL,
+            'cross_entropy': cross_entropy,
+            'h': h,
+            'euclidean_loss': euclidean_batch_loss,
+        }
+
+    def predict_proba(self, samples_seq_len, h, x_abs_start, g_start, seq_start_end):
         _, batch_size, _ = h.shape
 
         g_t = g_start   # at start, the previous goal is the last goal from GT observation
@@ -207,11 +228,12 @@ class DAGNet (BaseTorchModel):
                 d_t = d[timestep]
 
                 if self.adjacency_type == 0:
-                    adj_pred = adjs_fully_connected_pred(seq_start_end).to(self.device)
+                    adj_pred = adjs_fully_connected_pred(seq_start_end)
                 elif self.adjacency_type == 1:
-                    adj_pred = adjs_distance_sim_pred(self.sigma, seq_start_end, x_t_abs.detach().cpu()).to(self.device)
+                    adj_pred = adjs_distance_sim_pred(self.sigma, seq_start_end, x_t_abs.detach().cpu())
                 elif self.adjacency_type == 2:
-                    adj_pred = adjs_knn_sim_pred(self.top_k_neigh, seq_start_end, x_t_abs.detach().cpu()).to(self.device)
+                    adj_pred = adjs_knn_sim_pred(self.top_k_neigh, seq_start_end, x_t_abs.detach().cpu())
+                adj_pred = adj_pred.to(self.device).float()
 
                 # sampling agents' goals + graph refinement step
                 dec_g = self.dec_goal(torch.cat([d_t, h[-1], g_t], 1))
@@ -242,12 +264,12 @@ class DAGNet (BaseTorchModel):
 
                 # graph refinement for agents' hiddens
                 if self.adjacency_type == 0:
-                    adj_pred = adjs_fully_connected_pred(seq_start_end).to(self.device)
+                    adj_pred = adjs_fully_connected_pred(seq_start_end)
                 elif self.adjacency_type == 1:
-                    adj_pred = adjs_distance_sim_pred(self.sigma, seq_start_end, x_t_abs.detach().cpu()).to(self.device)
+                    adj_pred = adjs_distance_sim_pred(self.sigma, seq_start_end, x_t_abs.detach().cpu())
                 elif self.adjacency_type == 2:
-                    adj_pred = adjs_knn_sim_pred(self.top_k_neigh, seq_start_end, x_t_abs.detach().cpu()).to(self.device)
-
+                    adj_pred = adjs_knn_sim_pred(self.top_k_neigh, seq_start_end, x_t_abs.detach().cpu())
+                adj_pred = adj_pred.to(self.device).float()
                 h_graph = self.graph_hiddens(h[-1].clone(), adj_pred)
                 h[-1] = self.lg_hiddens(torch.cat((h_graph, h[-1]), dim=-1)).unsqueeze(0)
 
@@ -263,49 +285,96 @@ class DAGNet (BaseTorchModel):
 
         return samples
 
-    def before_epoch(self):
-        self.train_loss = 0
+    def before_epoch_train(self):
+        self.loss = 0
         self.kld_loss = 0
         self.nll_loss = 0
         self.cross_entropy_loss = 0
+        self.euclidean_loss = 0
 
-    def after_epoch(self, split_name, loader):
+    def before_iteration_valid(self, all_data):
+        obs_traj, pred_traj_gt, obs_traj_rel, pred_traj_rel_gt, \
+        obs_goals_ohe, pred_goals_gt_ohe, seq_start_end, adj_out = all_data['transformed_batch']
+        all_data['forward_data'] = obs_traj, obs_traj_rel, obs_goals_ohe, seq_start_end, adj_out
 
-        return {
-            f'{split_name}_avg_loss': self.train_loss / len(loader.dataset),
-            f'{split_name}_avg_kld_loss': self.kld_loss / len(loader.dataset),
-            f'{split_name}_avg_nll_loss': self.nll_loss / len(loader.dataset),
-            f'{split_name}_avg_cross_entropy_loss': self.cross_entropy_loss / len(loader.dataset),
-        }
+    def before_epoch_eval(self):
+        self.before_epoch_train()
+        self.total_traj = 0
+        self.ade_outer = []
+        self.fde_outer = []
+        self.ade = None
+        self.fde = None
 
-
-    def before_iteration(self, data):
-        (obs_traj, pred_traj_gt, obs_traj_rel, pred_traj_rel_gt,
-            obs_goals_ohe, pred_goals_gt_ohe, seq_start_end) = data
-        seq_len = len(obs_traj) + len(pred_traj_gt)
-        assert seq_len == self.obs_len + self.pred_len
-
-        # adj matrix for current batch
-        if self.adjacency_type == 0:
-            adj_out = compute_adjs(self.configs.get('special_inputs'), seq_start_end).to(self.device)
-        elif self.adjacency_type == 1:
-            adj_out = compute_adjs_distsim(self.configs.get('special_inputs'), seq_start_end, obs_traj.detach().cpu(),
-                                           pred_traj_gt.detach().cpu()).to(self.device)
-        elif self.adjacency_type == 2:
-            adj_out = compute_adjs_knnsim(self.configs.get('special_inputs'), seq_start_end, obs_traj.detach().cpu(),
-                                          pred_traj_gt.detach().cpu()).to(self.device)
-
-        # during training we feed the entire trjs to the model
+    def before_iteration_train(self, all_data):
+        obs_traj, pred_traj_gt, obs_traj_rel, pred_traj_rel_gt, \
+        obs_goals_ohe, pred_goals_gt_ohe, seq_start_end, adj_out = all_data['transformed_batch']
         all_traj = torch.cat((obs_traj, pred_traj_gt), dim=0)
         all_traj_rel = torch.cat((obs_traj_rel, pred_traj_rel_gt), dim=0)
         all_goals_ohe = torch.cat((obs_goals_ohe, pred_goals_gt_ohe), dim=0)
-        return [all_traj, all_traj_rel, all_goals_ohe, seq_start_end, adj_out]
+        all_data['forward_data'] = all_traj, all_traj_rel, all_goals_ohe, seq_start_end, adj_out
 
-    def after_iteration(self, data, outputs, loss_outputs):
-        self.train_loss += loss_outputs['train_loss'].item()
-        self.kld_loss += loss_outputs['kld_loss'].item()
-        self.nll_loss += loss_outputs['nll_loss'].item()
-        self.cross_entropy_loss += loss_outputs['cross_entropy_loss'].item()
+    def after_epoch_train(self, split_name, loader):
+        return {
+            f'{split_name}_avg_loss': self.loss / len(loader.dataset),
+            f'{split_name}_avg_kld_loss': self.kld_loss / len(loader.dataset),
+            f'{split_name}_avg_nll_loss': self.nll_loss / len(loader.dataset),
+            f'{split_name}_avg_cross_entropy_loss': self.cross_entropy_loss / len(loader.dataset),
+            f'{split_name}_mean_euclidean_loss': self.euclidean_loss / len(loader.dataset),
+        }
+
+    def after_epoch_valid(self, split_name, loader):
+        losses = self.after_epoch_train(split_name, loader)
+        ade = sum(self.ade_outer) / (self.total_traj * self.pred_len)
+        fde = sum(self.fde_outer) / self.total_traj
+        losses.update({
+            f'{split_name}_total_traj': self.total_traj,
+            f'{split_name}_ade': ade,
+            f'{split_name}_fde': fde,
+        })
+        return losses
+
+    def end_iteration_train(self, all_data):
+        loss_outputs = all_data['loss_outputs']
+        self.loss += loss_outputs['loss'].item()
+        self.kld_loss += loss_outputs['kld_loss']
+        self.nll_loss += loss_outputs['nll_loss']
+        self.cross_entropy_loss += loss_outputs['cross_entropy_loss']
+        self.euclidean_loss += loss_outputs['euclidean_loss']
+
+    def end_iteration_valid(self, all_data):
+        data, forward_data, outputs = all_data['batch'], all_data['forward_data'], all_data['outputs'],
+        obs_traj, obs_traj_rel, obs_goals_ohe, seq_start_end, adj_out = forward_data
+        obs_traj, pred_traj_gt, obs_traj_rel, pred_traj_rel_gt, \
+        obs_goals, pred_goals_gt, seq_start_end = data
+        ade, fde = [], []
+        self.total_traj += obs_traj.shape[1]
+
+        for _ in range(self.configs.get('trainer').get('num_samples')):
+            samples_rel = self.predict_proba(self.pred_len, outputs['h'], obs_traj[-1], obs_goals_ohe[-1], seq_start_end)
+            samples = relative_to_abs(samples_rel, obs_traj[-1])
+
+            ade.append(average_displacement_error(samples, pred_traj_gt, mode='raw'))
+            fde.append(final_displacement_error(samples[-1, :, :], pred_traj_gt[-1, :, :], mode='raw'))
+
+        ade_sum = evaluate_helper(ade, seq_start_end).item()
+        fde_sum = evaluate_helper(fde, seq_start_end).item()
+
+        self.ade_outer.append(ade_sum)
+        self.fde_outer.append(fde_sum)
+
+
+def evaluate_helper(error, seq_start_end):
+    sum_ = 0
+    error = torch.stack(error, dim=1)
+
+    for (start, end) in seq_start_end:
+        start = start.item()
+        end = end.item()
+        _error = error[start:end]
+        _error = torch.sum(_error, dim=0)
+        _error = torch.min(_error)
+        sum_ += _error
+    return sum_
 
 
 class GCN(nn.Module):
@@ -426,16 +495,6 @@ def adjs_knn_sim_pred(top_k_neigh, seq_start_end, pred_traj):
 
 ###################################### ORIGINAL ADJ MATRICES ######################################
 
-def compute_adjs(t, seq_start_end):
-    adj_out = []
-    for _, (start, end) in enumerate(seq_start_end):
-        mat = []
-        for t in range(0, t.obs_len + t.pred_len):
-            interval = end - start
-            mat.append(torch.from_numpy(np.ones((interval, interval))))
-        adj_out.append(torch.stack(mat, 0))
-    return block_diag_irregular(adj_out)
-
 
 def compute_adjs_knnsim(special_inputs, seq_start_end, obs_traj, pred_traj_gt):
     adj_out = []
@@ -497,16 +556,6 @@ def compute_adjs_distsim_pred(sigma, seq_start_end, pred_traj):
         sim = np.exp(-dists / sigma)
         adj_out.append(torch.from_numpy(sim))
     return block_diag_irregular(adj_out)
-
-
-def sample_multinomial(probs):
-    """ Each element of probs tensor [shape = (batch, g_dim)] has 'g_dim' probabilities (one for each grid cell),
-    i.e. is a row containing a probability distribution for the goal. We sample n (=batch) indices (one for each row)
-    from these distributions, and covert it to a 1-hot encoding. """
-
-    inds = torch.multinomial(probs, 1).data.long().squeeze()
-    ret = one_hot_encode(inds, probs.size(-1))
-    return ret
 
 
 ######################### MISCELLANEOUS ############################
@@ -771,43 +820,6 @@ def attach_dim(v, n_dim_to_prepend=0, n_dim_to_append=0):
         + torch.Size([1] * n_dim_to_append))
 
 
-def permute2st(v, ndim_en=1):
-    """
-    Permute last ndim_en of tensor v to the first
-    :type v: torch.Tensor
-    :type ndim_en: int
-    :rtype: torch.Tensor
-    """
-    nd = v.ndimension()
-    return v.permute([*range(-ndim_en, 0)] + [*range(nd - ndim_en)])
-
-
-def permute2en(v, ndim_st=1):
-    """
-    Permute last ndim_en of tensor v to the first
-    :type v: torch.Tensor
-    :type ndim_st: int
-    :rtype: torch.Tensor
-    """
-    nd = v.ndimension()
-    return v.permute([*range(ndim_st, nd)] + [*range(ndim_st)])
-
-
-def block_diag_irregular(matrices):
-    matrices = [permute2st(m, 2) for m in matrices]
-
-    ns = torch.LongTensor([m.shape[0] for m in matrices])
-    n = torch.sum(ns)
-    batch_shape = matrices[0].shape[2:]
-
-    v = torch.zeros(torch.Size([n, n]) + batch_shape)
-    for ii, m1 in enumerate(matrices):
-        st = torch.sum(ns[:ii])
-        en = torch.sum(ns[:(ii + 1)])
-        v[st:en, st:en] = m1
-    return permute2en(v, 2)
-
-
 class GAT(nn.Module):
     """Dense version of GAT."""
     def __init__(self, nin, nhid, nout, alpha, nheads):
@@ -870,20 +882,20 @@ class GraphConvolution(nn.Module):
         super(GraphConvolution, self).__init__()
         self.in_features = in_features
         self.out_features = out_features
-        self.weight = nn.Parameter(torch.FloatTensor(in_features, out_features))
+        self.weight = nn.Parameter(torch.FloatTensor(in_features, out_features)).to(TrainerContainer.device)
 
         if bias:
-            self.bias = nn.Parameter(torch.FloatTensor(out_features))
+            self.bias = nn.Parameter(torch.FloatTensor(out_features)).to(TrainerContainer.device)
         else:
             self.register_parameter('bias', None)
 
         self.reset_parameters()
 
     def forward(self, input, adj):
-        support = torch.mm(input, self.weight.to(TrainerContainer.device))
+        support = torch.mm(input, self.weight)
         output = torch.spmm(adj, support)
         if self.bias is not None:
-            return output + self.bias.to(TrainerContainer.device)
+            return output + self.bias
         else:
             return output
 

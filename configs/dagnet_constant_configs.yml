@@ -1,0 +1,104 @@
+dataset:
+  name: basket_dataset
+
+  data_loaders:
+    train:
+      batch_size: 64
+      shuffle: true
+      num_workers: 4
+      multiprocessing_context: spawn
+      pin_memory: true
+
+    valid:
+      batch_size: 64
+      shuffle: false
+      num_workers: 4
+      multiprocessing_context: spawn
+      pin_memory: true
+
+
+    test:
+      batch_size: 64
+      shuffle: false
+      num_workers: 4
+      multiprocessing_context: spawn
+      pin_memory: true
+
+
+# this inputs will go to your specific model __init__
+special_inputs:
+
+  transformers: [goals_ohe, adj]
+
+  CE_weight: 0.01
+  adjacency_type: 1
+  alpha: 0.2
+  clip: 10
+  g_dim: 90
+  graph_hid: 8
+  graph_model: gcn
+  h_dim: 64
+  n_heads: 4
+  n_layers: 2
+  obs_len: 10
+  players: atk
+  pred_len: 40
+  print_every_batch: 30
+  rnn_dim: 64
+  save_every: 10
+  seed: 128
+  sigma: 1.2
+  top_k_neigh: null
+  warmup: false
+  x_dim: 2
+  z_dim: 32
+  mode: raw
+  wrmp_epochs: 50
+  _lambda: 0.01
+
+
+
+
+
+
+#  obs_len: 10
+#  pred_len: 40
+#  players: all  # choices=['atk', 'def', 'all'], help='Which players to use'
+#
+#  lr_scheduler: false
+#  warmup: false
+#  wrmp_epochs: 50
+#  CE_weight: 0.01
+#
+#  clip: 10
+#  n_layers: 2  # Number of recurrent layers
+#  x_dim: 2
+#  h_dim: 64
+#  z_dim: 32
+#  g_dim: 90  # Dimension of the goal variables
+#  rnn_dim: 64  # Dimension of the recurrent layers
+#
+#  seed: 128
+#  print_every_batch: 30
+##  save_every: 10
+##  eval_every: 20
+#  num_samples: 20  # Number of samples for evaluation
+#
+#  graph_model: gcn  #  choices=['gat','gcn'], help='Graph type'
+#  graph_hid: 8  #  help='Number of hidden units'
+#  sigma: 1.2  # Sigma value for similarity matrix
+#
+#  # Type of adjacency matrix:
+#  # 0 (fully connected graph),
+#  # 1 (distances similarity matrix),
+#  # 2 (knn similarity matrix).
+#  adjacency_type: 1
+#
+#  top_k_neigh: None
+#  n_heads: 4  # Number of heads for graph attention network
+#  alpha: 0.2  # Negative steep for the Leaky-ReLU activation
+
+
+
+
+
