@@ -311,6 +311,7 @@ def transform(all_data, transformers):
     for t in transformers:
         t.apply(all_data)
 
+
 def get_transformers(configs):
     setup_imports()
     ts = configs.get('special_inputs').get('transformers')
@@ -323,10 +324,9 @@ class Timeit:
     """ to compute epoch time """
     original_start = None
 
-    def __init__(self, index, name):
+    def __init__(self, to_print):
         self.start = None
-        self.epoch = index
-        self.name = name
+        self.to_print = to_print
 
     def __enter__(self):
         self.start = time()
@@ -335,5 +335,5 @@ class Timeit:
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         now = time()
-        print(f'{self.name} # {self.epoch}:   time: {round(now - self.start, 2)},    '
+        print(f'{self.to_print}:   time: {round(now - self.start, 2)},    '
               f'total training time: {round(now - Timeit.original_start, 2)}')

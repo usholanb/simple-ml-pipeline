@@ -1,6 +1,8 @@
 from typing import AnyStr
 import torch
 from torch import nn
+
+from modules.containers.di_containers import TrainerContainer
 from modules.models.base_models.base_model import BaseModel
 from utils.constants import CLASSIFIERS_DIR
 
@@ -10,7 +12,7 @@ class BaseTorchModel(nn.Module, BaseModel):
 
     def __init__(self, configs):
         super().__init__()
-        self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+        self.device = TrainerContainer.device
         self.__dict__.update(configs.get('special_inputs'))
         self.configs = configs
 

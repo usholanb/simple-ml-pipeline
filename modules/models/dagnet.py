@@ -17,16 +17,7 @@ class DAGNet (BaseTorchModel):
     def __init__(self, configs):
         super(DAGNet, self).__init__(configs)
         self.d_dim = self.n_max_agents * 2
-        self.total_traj = None
-        self.ade_outer = None
-        self.fde_outer = None
-        self.ade = None
-        self.fde = None
-        self.loss = None
-        self.kld_loss = None
-        self.nll_loss = None
-        self.cross_entropy_loss = None
-        self.euclidean_loss = None
+        self.init_local_variables()
 
         # goal generator
         self.dec_goal = nn.Sequential(
@@ -113,6 +104,18 @@ class DAGNet (BaseTorchModel):
 
         # recurrence
         self.rnn = nn.GRU(self.h_dim + self.h_dim, self.rnn_dim, self.n_layers)
+
+    def init_local_variables(self):
+        self.total_traj = None
+        self.ade_outer = None
+        self.fde_outer = None
+        self.ade = None
+        self.fde = None
+        self.loss = None
+        self.kld_loss = None
+        self.nll_loss = None
+        self.cross_entropy_loss = None
+        self.euclidean_loss = None
 
     def _reparameterize(self, mean, log_var):
         logvar = torch.exp(log_var * 0.5).to(self.device)
@@ -331,6 +334,7 @@ class DAGNet (BaseTorchModel):
             f'{split_name}_ade': ade,
             f'{split_name}_fde': fde,
         })
+        self.init_local_variables()
         return losses
 
     def end_iteration_train(self, all_data):
@@ -734,7 +738,7 @@ def linear_velocity_acceleration(sequence, mode='mean', seconds_between_frames=0
 
 ######################### GOALS UTILITIES ############################
 def one_hot_encode(inds, N):
-    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    device = TrainerContainer.device
     dims = [inds.size(i) for i in range(len(inds.size()))]
     inds = inds.unsqueeze(-1).long()
     dims.append(N)

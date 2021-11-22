@@ -22,8 +22,9 @@ class TorchTrainer3:
         self.checkpoint_metric_val = None
 
     def train(self) -> None:
-        for epoch in range(self.configs.get('trainer').get('epochs')):
-            with Timeit(epoch, 'epoch'):
+        epochs = self.configs.get('trainer').get('epochs')
+        for epoch in range(epochs):
+            with Timeit(f'epoch # {epoch} / {epochs}'):
                 self.train_loop(epoch)
             if (epoch + 1) % self.configs.get('trainer').get('log_valid_every', 10) == 0:
                 valid_results = self.valid_loop(epoch)
@@ -47,7 +48,7 @@ class TorchTrainer3:
         self.model.train()
         self.model.before_epoch_train()
         for batch_i, batch in enumerate(self.train_loader):
-            # with Timeit(batch_i, 'batch_i'):
+            with Timeit(f'batch_i # {batch_i} / {len(self.train_loader)}'):
                 all_data = {
                     'epoch': epoch,
                     'batch_i': batch_i,
@@ -85,7 +86,7 @@ class TorchTrainer3:
                 self.model.before_iteration_valid(all_data)
                 self.model.forward(all_data)
                 self.criterion(all_data)
-                self.end_iteration_train(all_data)
+                self.model.end_iteration_train(all_data)
                 self.model.end_iteration_valid(all_data)
             predictions_results = self.model.after_epoch_valid('test', self.test_loader)
         return predictions_results
@@ -106,7 +107,7 @@ class TorchTrainer3:
                 self.model.before_iteration_valid(all_data)
                 self.model.forward(all_data)
                 self.criterion(all_data)
-                self.end_iteration_train(all_data)
+                self.model.end_iteration_train(all_data)
                 self.model.end_iteration_valid(all_data)
             predictions_results = self.model.after_epoch_valid('valid', self.valid_loader)
         return predictions_results
