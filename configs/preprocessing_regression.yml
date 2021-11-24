@@ -3,11 +3,12 @@ includes:
 
 
 dataset:
-  name: csv_dataset
+  name: xlsm_dataset
+  sheet_name: Sheet1
   label_type: regression  # classification or regression
-  input_path: data/winequality-red.csv
+  input_path: data/merged_df_uan2
   # index or name of the labels column in the input data
-  label: -1
+  label: value
   shuffle: 1 # can be (0, false null) OR (anything else, which means true)
    # if "split_ratio" doesn't sum to 1, then valid + test will be 1 - train
   split_ratio:
@@ -19,4 +20,85 @@ dataset:
 
 #Pick Transformers(defined in modules/transformers/) or create your own
 #defined: norm, ohe
-#features_list:
+features_list:
+  Loan_end_year: [ ]
+  Loan_start_year: [ ]
+  On Loan: [ ]
+  Team_encoded: [ ]
+  a_w: [ohe ]
+  a_w_High: [ ]
+  a_w_Low: [ ]
+  a_w_Medium: [ ]
+  acceleration: [ ]
+  age: [ ]
+  aggression: [ ]
+  agility: [ ]
+  attacking: [ ]
+  balance: [ ]
+  ball_control: [ ]
+  base_stats: [ ]
+  bov: [ ]
+  bp: [ohe ]
+  composure: [ ]
+  crossing: [ ]
+  curve: [ ]
+  d_w: [ ohe]
+  d_w_High: [ ]
+  d_w_Low: [ ]
+  d_w_Medium: [ ]
+  defe: [ ]
+  defending: [ ]
+  dri: [ ]
+  dribbling: [ ]
+  finishing: [ ]
+  fk_accuracy: [ ]
+  foot.1: [ ]
+  gk_diving: [ ]
+  gk_handling: [ ]
+  gk_kicking: [ ]
+  gk_positioning: [ ]
+  gk_reflexes: [ ]
+  goalkeeping: [ ]
+  growth: [ ]
+  heading_accuracy: [ ]
+  height: [ ]
+  id: [ ]
+  interceptions: [ ]
+  ir: [ ]
+  jumping: [ ]
+  loan_date_end: [ ]
+  long_passing: [ ]
+  long_shots: [ ]
+  marking: [ ]
+  mentality: [ ]
+  movement: [ ]
+  name: [ ]
+  nationality: [ ohe]
+  nationality_encoded: [ ]
+  ova: [ ]
+  pac: [ ]
+  pas: [ ]
+  penalties: [ ]
+  phy: [ ]
+  positioning: [ ]
+  pot: [ ]
+  power: [ ]
+  reactions: [ ]
+  release_clause: [ ]
+  sho: [ ]
+  short_passing: [ ]
+  shot_power: [ ]
+  skill: [ ]
+  sliding_tackle: [ ]
+  sm: [ ]
+  sprint_speed: [ ]
+  stamina: [ ]
+  standing_tackle: [ ]
+  strength: [ ]
+  total_stats: [ ]
+  vision: [ ]
+  volleys: [ ]
+  w_f: [ ]
+  wage: [ ]
+  weight: [ ]
+

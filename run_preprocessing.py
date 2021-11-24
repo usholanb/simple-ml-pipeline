@@ -12,16 +12,20 @@ from dependency_injector.wiring import Provide, inject
 from utils.common import build_config, setup_imports, setup_directories
 from utils.registry import registry
 from typing import Dict
+import yaml
 
 
-@inject
 def preprocessing(configs: Dict) -> None:
     """ Prepares Dataset """
     setup_imports()
-    dataset = registry.get_dataset_class(configs.get('dataset').get('name'))(configs)
+    dataset = registry.get_dataset_class(
+        configs.get('dataset').get('name'))(configs)
     dataset.collect()
     CSVSaver().save(dataset.data, configs)
     print(f'{Namer.dataset_name(configs.get("dataset"))} is ready')
+    print('If you need, you can copy these features to train config to pick'
+          ' the features that you want to train on')
+    print(yaml.dump(dataset.data.columns.tolist()))
 
 
 if __name__ == '__main__':
@@ -29,5 +33,4 @@ if __name__ == '__main__':
     parser = preprocessing_flags.parser
     args = parser.parse_args()
     configs = build_config(args)
-
     preprocessing(configs)

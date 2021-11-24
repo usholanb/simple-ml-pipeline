@@ -1,10 +1,10 @@
 from typing import Dict, Tuple, AnyStr
 import pandas as pd
 from modules.datasets.base_datasets.base_dataset import BaseDataset
-from modules.helpers.csv_saver import CSVSaver
 from modules.helpers.labels_processor import LabelsProcessor
 from utils.common import setup_imports
 from utils.registry import registry
+import yaml
 
 
 class DefaultDataset(BaseDataset):
@@ -83,6 +83,7 @@ class DefaultDataset(BaseDataset):
         data_x, data_y = label_processor.process_labels(data)
         data_x = self.apply_transformers(data_x)
         self.data = pd.concat([data_y, data_x], axis=1)
+        print(yaml.dump(data_x.columns.tolist()))
 
     def shuffle(self, data: pd.DataFrame) -> pd.DataFrame:
         if self.configs.get('dataset').get('shuffle', True):
