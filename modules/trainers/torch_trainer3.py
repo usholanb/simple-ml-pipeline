@@ -46,38 +46,6 @@ class TorchTrainer3:
                 print(f'saved checkpoint at {model.model_name} '
                       f'with best valid loss: {self.checkpoint_metric_val}\n')
 
-    # def train_loop_16(self, epoch: int = 0) -> Dict:
-    #     scaler = torch.cuda.amp.GradScaler()
-    #     self.model.train()
-    #     self.model.before_epoch_train()
-    #     for batch_i, batch in enumerate(self.train_loader):
-    #         with torch.cuda.amp.autocast():
-    #             # with Timeit(f'batch_i # {batch_i} / {len(self.train_loader)}'):
-    #                 all_data = {
-    #                     'epoch': epoch,
-    #                     'batch_i': batch_i,
-    #                     'batch': [x.to(TrainerContainer.device) for x in batch],
-    #                     'split': 'train',
-    #                 }
-    #                 transform(all_data, self.ts)
-    #                 self.model.before_iteration_train(all_data)
-    #                 self.optimizer.zero_grad()
-    #
-    #                 self.model.forward(all_data)
-    #                 self.criterion(all_data)
-    #                 loss = all_data['loss_outputs']['loss']
-    #                 # loss.backward()
-    #                 scaler.scale(loss).backward()
-    #                 torch.nn.utils.clip_grad_norm_(
-    #                     self.model.parameters(), self.configs.get('special_inputs', {}).get('clip', 10))
-    #                 # self.optimizer.step()
-    #                 scaler.step(self.optimizer)
-    #                 self.model.end_iteration_train(all_data)
-    #                 scaler.update()
-    #
-    #     loss_results = self.model.after_epoch_train('train', self.train_loader)
-    #     return loss_results
-
     def train_loop(self, epoch: int = 0) -> Dict:
         self.model.train()
         self.model.before_epoch_train()
