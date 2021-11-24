@@ -324,7 +324,7 @@ class Timeit:
     """ to compute epoch time """
     original_start = None
 
-    def __init__(self, to_print, iter_n: None):
+    def __init__(self, to_print, iter_n=None):
         self.start = None
         self.iter_n = iter_n
         self.to_print = to_print
