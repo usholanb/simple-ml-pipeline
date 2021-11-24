@@ -2,16 +2,17 @@ includes:
   - configs/constant_configs.yml
 
 model:
-  name: sklearn.linear_model.LinearRegression
+  name: sklearn.svm.LinearSVC
   tag: uan2
 
 # inputs go to __init__ of the model (sklearn RFC model in this case)
-special_inputs:
-  normalize: [true, false]
+#special_inputs:
 
-  
+
+
 trainer:
     name: sklearn_trainer
+    label_type: regression
     save: 1
     tune:
       resources_per_trial:
@@ -26,7 +27,7 @@ trainer:
 
 
 dataset:
-  input_path: processed_data/Summary of Weather
+  input_path: processed_data/winequality-red
 
 #features_list:
 

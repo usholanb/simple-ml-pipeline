@@ -51,7 +51,8 @@ class DefaultDataset(BaseDataset):
         setup_imports()
         transformers = {}
         processed_data = pd.DataFrame()
-        for feature, t_name_list in self.configs.get('features_list', {}).items():
+        all_features = {f: [] for f in data_x.columns}
+        for feature, t_name_list in self.configs.get('features_list', all_features).items():
             t_name_list = t_name_list if isinstance(t_name_list, list) else [t_name_list]
             feature_to_process = data_x[feature].values
             for t_name in t_name_list:

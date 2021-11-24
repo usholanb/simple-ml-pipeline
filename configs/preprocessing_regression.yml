@@ -5,9 +5,9 @@ includes:
 dataset:
   name: csv_dataset
   label_type: regression  # classification or regression
-  input_path: data/Summary of Weather.csv
+  input_path: data/winequality-red.csv
   # index or name of the labels column in the input data
-  label: Precip
+  label: -1
   shuffle: 1 # can be (0, false null) OR (anything else, which means true)
    # if "split_ratio" doesn't sum to 1, then valid + test will be 1 - train
   split_ratio:

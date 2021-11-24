@@ -6,7 +6,7 @@ from ray import tune
 from modules.helpers.namer import Namer
 from modules.trainers.base_trainer import BaseTrainer
 from typing import Dict, AnyStr, List
-from utils.common import inside_tune, setup_imports, is_outside_library, check_label_type
+from utils.common import inside_tune, setup_imports, is_outside_library
 from modules.wrappers.base_wrappers.base_wrapper import BaseWrapper
 from utils.common import pickle_obj
 from utils.constants import CLASSIFIERS_DIR
@@ -21,8 +21,7 @@ class DefaultTrainer(BaseTrainer):
         self.label_index_i = self.configs.get('static_columns').get('FINAL_LABEL_INDEX')
         self.label_i = self.configs.get('static_columns').get('FINAL_LABEL_NAME_INDEX')
         self.label_name = self.dataset.columns[self.configs.get('static_columns').get('FINAL_LABEL_INDEX')]
-        self.classification = check_label_type(self.dataset.iloc[:, self.label_index_i])
-        self.configs['trainer']['classification'] = self.classification
+        self.classification = self.configs.get('trainer').get('label_type') == 'classification'
         self.label_types = self.set_label_types()
         self.split_column = dataset.iloc[:, self.split_i]
         self.wrapper = None

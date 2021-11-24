@@ -21,7 +21,7 @@ class SKLearnWrapper(DefaultWrapper):
     def predict(self, examples: np.ndarray) -> np.ndarray:
         """ makes prediction on pandas examples of dim N X M
                  where N is number of examples and M number of features """
-        if self.configs.get('trainer').get('classification'):
+        if self.configs.get('trainer').get('label_type') == 'classification':
             result = np.zeros((len(examples), len(self.label_types)))
             result[np.arange(len(examples)), self.clf.predict(examples).astype(int)] = 1
         else:

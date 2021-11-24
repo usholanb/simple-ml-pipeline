@@ -41,7 +41,7 @@ trainer:
 
 
 dataset:
-  input_path: processed_data/regression
+  input_path: processed_data/winequality-red
 
 
 features_list:

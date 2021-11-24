@@ -263,11 +263,11 @@ def get_outside_library(model_name):
 
 
 
-def check_label_type(targets):
-    empty_array = np.zeros(len(targets))
-    np.mod(targets, 1, out=empty_array)
-    mask = (empty_array == 0)
-    return mask.all()
+# def check_label_type(targets):
+#     empty_array = np.zeros(len(targets))
+#     np.mod(targets, 1, out=empty_array)
+#     mask = (empty_array == 0)
+#     return mask.all()
 
 
 def to_snake_case(name):
