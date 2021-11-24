@@ -133,21 +133,21 @@ class AdjTransformer(BaseTransformer):
 
         batch_i = all_data['batch_i']
         if len(adj) > batch_i:
-            adj_out = adj[batch_i]
+            adj_out = adj[batch_i].to(self.device).float()
         else:
             si = self.configs.get('special_inputs')
             seq_len = len(obs_traj) + len(pred_traj_gt)
             assert seq_len == si.get('obs_len') + si.get('pred_len')
             if si.get('adjacency_type') == 0:
-                adj_out = compute_adjs(self.configs.get('special_inputs'), seq_start_end).to(self.device)
+                adj_out = compute_adjs(self.configs.get('special_inputs'), seq_start_end)
             elif si.get('adjacency_type') == 1:
                 adj_out = compute_adjs_distsim_v2(self.configs.get('special_inputs'), seq_start_end, obs_traj,
                                                   pred_traj_gt)
             elif si.get('adjacency_type') == 2:
                 adj_out = compute_adjs_knnsim(self.configs.get('special_inputs'), seq_start_end,
                                               obs_traj.detach().cpu(),
-                                              pred_traj_gt.detach().cpu()).to(self.device)
-            adj.append(adj_out.to(self.device).float())
+                                              pred_traj_gt.detach().cpu())
+            adj.append(adj_out.cpu().float())
 
         all_data['transformed_batch'] = obs_traj, pred_traj_gt, obs_traj_rel, pred_traj_rel_gt, \
             obs_goals_ohe, pred_goals_gt_ohe, seq_start_end, adj_out

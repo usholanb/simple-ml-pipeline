@@ -36,7 +36,7 @@ def get_model(configs):
         model = registry.get_model_class(
             configs.get('model').get('name')
         )(configs)
-    return model
+    return model.half()
 
 
 def train_one(configs: Dict, save: bool = False) -> None:
