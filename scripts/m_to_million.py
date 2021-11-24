@@ -6,11 +6,11 @@ from utils.constants import DATA_DIR
 def m_to_million(v):
     v = str(v)
     if 'M' in v:
-        m = 1e6
-    elif 'K' in v:
-        m = 1e3
-    else:
         m = 1
+    elif 'K' in v:
+        m = 1e-3
+    else:
+        m = 1e-6
     v = float(v.replace('M', '').replace('K', ''))
     return int(v * m)
 
@@ -23,8 +23,8 @@ def remove_ending(v):
     return v
 
 
-def foo(df):
-    arr = df.numpy()
+def print_columns_weird(df):
+    arr = df.to_numpy()
     for i in range(len(arr)):
         try:
             cur = np.array(arr[i], dtype=float)
@@ -32,6 +32,7 @@ def foo(df):
             for c_i, x in enumerate(arr[0]):
                 if not isinstance(x, (float, int)):
                     print(x, type(x), df.columns[c_i])
+        break
 
 
 if __name__ == '__main__':

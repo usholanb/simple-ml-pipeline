@@ -58,6 +58,7 @@ class DefaultTrainer(BaseTrainer):
             wrapper = registry.get_wrapper_class('torch_wrapper')\
                 (self.configs, self.label_types)
         self.wrapper = wrapper
+        print(f'model: {wrapper.name}')
         return wrapper
 
     def model_path(self) -> AnyStr:
