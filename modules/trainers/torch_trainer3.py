@@ -24,7 +24,7 @@ class TorchTrainer3:
     def train(self) -> None:
         epochs = self.configs.get('trainer').get('epochs')
         for epoch in range(epochs):
-            with Timeit(f'epoch # {epoch} / {epochs}'):
+            with Timeit(f'epoch # {epoch} / {epochs}', len(self.train_loader)):
                 train_results = self.train_loop(epoch)
                 self.log_metrics(train_results)
             if (epoch + 1) % self.configs.get('trainer').get('log_valid_every', 10) == 0:
@@ -82,7 +82,7 @@ class TorchTrainer3:
         self.model.train()
         self.model.before_epoch_train()
         for batch_i, batch in enumerate(self.train_loader):
-            # with Timeit(f'batch_i # {batch_i} / {len(self.train_loader)}'):
+            with Timeit(f'batch_i # {batch_i} / {len(self.train_loader)}', len(self.train_loader)):
                 all_data = {
                     'epoch': epoch,
                     'batch_i': batch_i,

@@ -324,8 +324,9 @@ class Timeit:
     """ to compute epoch time """
     original_start = None
 
-    def __init__(self, to_print):
+    def __init__(self, to_print, iter_n: None):
         self.start = None
+        self.iter_n = iter_n
         self.to_print = to_print
 
     def __enter__(self):
@@ -335,5 +336,8 @@ class Timeit:
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         now = time()
-        print(f'{self.to_print}:   time: {round(now - self.start, 2)},    '
-              f'total training time: {round(now - Timeit.original_start, 2)}')
+        iter_time = round(now - self.start, 2)
+        expected = round(self.iter_n * iter_time, 2)
+        print(f'{self.to_print}:   time: {iter_time},    '
+              f'total training time: {round(now - Timeit.original_start, 2)},'
+              f' expected for all {self.iter_n} iters: {expected}')

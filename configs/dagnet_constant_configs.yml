@@ -3,7 +3,7 @@ dataset:
 
   data_loaders:
     train:
-      batch_size: 64
+      batch_size: 128
       shuffle: true
       num_workers: 4
       multiprocessing_context: spawn

@@ -54,8 +54,8 @@ class BasketDataset(Dataset):
         # 'goals' shape (seq_len, batch*n_agents)
         traj_abs, goals = BasketDataset._read_files(self.data_dir)
 
-        traj_abs = traj_abs[:, :640, :]
-        goals = goals[:, :640]
+        # traj_abs = traj_abs[:, :640, :]
+        # goals = goals[:, :640]
 
         assert traj_abs.shape[0] == self.seq_len and goals.shape[0] == self.seq_len
         #assert self.seq_len <= traj_abs.shape[0] and self.seq_len <= goals.shape[0]
