@@ -5,10 +5,9 @@ includes:
 dataset:
   name: csv_dataset
   label_type: regression  # classification or regression
-  input_path: data/regression.csv
-  output_path: processed_data/regression
+  input_path: data/Summary of Weather.csv
   # index or name of the labels column in the input data
-  label: GPA
+  label: Precip
   shuffle: 1 # can be (0, false null) OR (anything else, which means true)
    # if "split_ratio" doesn't sum to 1, then valid + test will be 1 - train
   split_ratio:
@@ -20,5 +19,4 @@ dataset:
 
 #Pick Transformers(defined in modules/transformers/) or create your own
 #defined: norm, ohe
-features_list:
-  SAT: norm
+#features_list:

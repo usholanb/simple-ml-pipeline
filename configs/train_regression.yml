@@ -26,8 +26,8 @@ trainer:
 
 
 dataset:
-  input_path: processed_data/Summary of Weather
+  input_path: processed_data/regression
 
-#features_list:
-
+features_list:
+  - SAT
 
