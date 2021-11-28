@@ -16,13 +16,14 @@ dataset:
     valid: 0.1
     test: 0.1
 
+to_all_features: []
 
 
 #Pick Transformers(defined in modules/transformers/) or create your own
 #defined: norm, ohe
 features_list:
-  Loan_end_year: [ ]
-  Loan_start_year: [ ]
+#  Loan_end_year: [ ]
+#  Loan_start_year: [ ]
   On Loan: [ ]
   Team: [ohe]
   a_w: [ohe ]

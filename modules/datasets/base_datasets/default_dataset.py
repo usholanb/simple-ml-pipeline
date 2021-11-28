@@ -50,12 +50,13 @@ class DefaultDataset(BaseDataset):
     def apply_transformers(self, data_x: pd.DataFrame) -> pd.DataFrame:
         setup_imports()
         transformers = {}
+        common_transformers = self.configs.get('to_all_features', [])
         processed_data = pd.DataFrame()
         all_features = {f: [] for f in data_x.columns}
         for feature, t_name_list in self.configs.get('features_list', all_features).items():
             t_name_list = t_name_list if isinstance(t_name_list, list) else [t_name_list]
             feature_to_process = data_x[feature].values
-            for t_name in t_name_list:
+            for t_name in t_name_list + common_transformers:
                 if t_name not in transformers:
                     t_obj = registry.get_transformer_class(t_name)()
                     transformers[t_name] = t_obj

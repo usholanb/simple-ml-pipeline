@@ -7,13 +7,14 @@ model:
 
 # inputs go to __init__ of the model (sklearn RFC model in this case)
 special_inputs:
-  normalize: true
+  normalize: false
 
 
 
 
 trainer:
     name: sklearn_trainer
+    normalization: z_score
     label_type: regression
     save: 1
     tune:

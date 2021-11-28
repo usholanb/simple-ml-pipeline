@@ -1,4 +1,4 @@
-import sklearn
+import sys
 import numpy as np
 from modules.trainers.default_trainer import DefaultTrainer
 from utils.common import setup_imports
@@ -12,7 +12,7 @@ class SKLearnTrainer(DefaultTrainer):
         """ trains sklearn model with dataset """
         setup_imports()
         data = self.prepare_train()
-        wrapper = self.get_wrapper()
+        wrapper = self.get_wrapper(data['train_x'])
         wrapper.fit(data['train_x'], data['train_y'])
         valid_pred = wrapper.predict(data['valid_x'])
         train_pred = wrapper.predict(data['train_x'])
@@ -20,15 +20,6 @@ class SKLearnTrainer(DefaultTrainer):
         train_metrics = self.metrics_to_log_dict(data['train_y'], train_pred, 'train')
         self.log_metrics({**valid_metrics, **train_metrics})
         self.print_metrics(data)
-
-    def get_loss(self):
-        if hasattr(torch.nn, self.configs.get('trainer').get('loss')):
-            criterion = getattr(torch.nn, self.loss_name)()
-        else:
-            setup_imports()
-            criterion = registry.get_loss_class(
-                self.configs.get('trainer').get('loss'))(self.configs)
-        return criterion
 
 
 
