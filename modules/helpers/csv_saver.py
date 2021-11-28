@@ -28,8 +28,8 @@ class CSVSaver:
 
     @classmethod
     def save_file(cls, path, df):
-        full_path = cls.add_csv_gz(path)
-        df.to_csv(full_path, index=False,  compression='gzip')
-        print(f'saved {full_path}')
+        path = cls.add_csv_gz(path)
+        df.to_csv(path, index=False,  compression='gzip')
+        print(f'saved {path}')
 
 

@@ -23,9 +23,6 @@ def preprocessing(configs: Dict) -> None:
     dataset.collect()
     CSVSaver().save(dataset.data, configs)
     print(f'{Namer.dataset_name(configs.get("dataset"))} is ready')
-    print('If you need, you can copy these features to train config to pick'
-          ' the features that you want to train on')
-    print(yaml.dump(dataset.data.columns.tolist()))
 
 
 if __name__ == '__main__':

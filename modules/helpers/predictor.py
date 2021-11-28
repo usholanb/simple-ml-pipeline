@@ -5,6 +5,8 @@ from utils.common import unpickle_obj
 from utils.constants import CLASSIFIERS_DIR, PREDICTIONS_DIR, PROCESSED_DATA_DIR
 from copy import deepcopy
 
+from utils.registry import registry
+
 
 class Predictor:
     """ uses all wrappers pointed in prediction config to
@@ -28,10 +30,28 @@ class Predictor:
                 output_dataset[f'{model_name_tag}'] = probs
         return output_dataset
 
-    def save_probs(self, output_dataset) -> None:
+    def save_metrics(self, split, split_name, dataset_name):
+        y_true_index = self.configs.get('static_columns').get('FINAL_LABEL_INDEX')
+        y_true = split.iloc[:, y_true_index].values
+        metrics_values = {}
+        for metric_name in self.configs.get('metrics'):
+            metric = registry.get_metric_class(metric_name)()
+            models_values = {}
+            for tag, model_name in self.configs.get('models').items():
+                model_name_tag = f'{model_name}_{tag}'
+                y_outputs = split[model_name_tag].values
+                values = metric.compute_metric(y_true, y_outputs)
+                models_values[model_name_tag] = values
+            metrics_values[metric_name] = models_values
+        df = pd.DataFrame(metrics_values)
+        # df.to_csv(f'{PREDICTIONS_DIR}/{dataset_name}_{split_name}_metrics.csv', compression='gzip')
+        CSVSaver.save_file(f'{PREDICTIONS_DIR}/{dataset_name}_{split_name}', df)
+
+    def save_results(self, output_dataset) -> None:
         for split_name in output_dataset['split'].unique():
             split = output_dataset.loc[output_dataset['split'] == split_name]
             dataset_path = self.configs.get('dataset').get('input_path')
-            dataset_name = dataset_path.split('_output.csv')[0].split('/')[1]
+            dataset_name = dataset_path.split('/')[1]
             CSVSaver.save_file(f'{PREDICTIONS_DIR}/{dataset_name}_{split_name}', split)
+            self.save_metrics(split, split_name, dataset_name)
 

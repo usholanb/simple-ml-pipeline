@@ -83,6 +83,8 @@ class DefaultDataset(BaseDataset):
         data_x, data_y = label_processor.process_labels(data)
         data_x = self.apply_transformers(data_x)
         self.data = pd.concat([data_y, data_x], axis=1)
+        print('If you need, you can copy these features to train config to pick'
+              ' the features that you want to train on')
         print(yaml.dump(data_x.columns.tolist()))
 
     def shuffle(self, data: pd.DataFrame) -> pd.DataFrame:

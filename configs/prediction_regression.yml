@@ -2,10 +2,12 @@ includes:
   - configs/constant_configs.yml
 
 dataset:
-  input_path: processed_data/regression
+  input_path: processed_data/merged_df_uan2
 
 
 models:
   uan: dense_net_regression
-  uan2: linear_regression
+  uan2: svr
 
+
+metrics: [mse]

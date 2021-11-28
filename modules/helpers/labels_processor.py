@@ -8,28 +8,38 @@ class LabelsProcessor:
         self.configs = configs
         self.label_i = self.configs.get('static_columns').get('FINAL_LABEL_NAME_INDEX')
         self.label_index_i = self.configs.get('static_columns').get('FINAL_LABEL_INDEX')
-        self.label_name = self.configs.get('dataset').get('label')
+
+    def get_label_name(self, data: pd.DataFrame) -> AnyStr:
+        target = self.configs.get('dataset').get('label')
+        if isinstance(target, str):
+            label_name = target
+        elif isinstance(target, int):
+            label_name = data.columns[target]
+        else:
+            raise TypeError('label must be int or str')
+        return label_name
 
     def process_labels(self, data: pd.DataFrame):
         """
         data is all data
         return: restructured data, if classification label index is added
         """
+        label_name = self.get_label_name(data)
         label_type = self.configs.get('dataset').get('label_type')
         assert label_type in ['classification', 'regression'], \
             'dataset.label_type must be ether classification or regression'
         y_end_index = len(self.configs.get('static_columns'))
         if label_type == 'classification':
-            label_types = data[self.label_name].unique()
+            label_types = data[label_name].unique()
             label_types = dict([(v, k) for (k, v) in enumerate(sorted(label_types))])
-            labels = data.iloc[:, data.columns.tolist().index(self.label_name)].tolist()
+            labels = data.iloc[:, data.columns.tolist().index(label_name)].tolist()
             labels_idx = [label_types[l] for l in labels]
-            data.insert(loc=self.label_index_i, column=f'{self.label_name}_index', value=labels_idx)
+            data.insert(loc=self.label_index_i, column=f'{label_name}_index', value=labels_idx)
             if isinstance(data.iloc[0, self.label_index_i], float):
                 data.iloc[:, self.label_index_i] = data.iloc[:, self.label_index_i].astype('int32')
-            data = LabelsProcessor.reset_label_index(data, self.label_name, self.label_i)
+            data = LabelsProcessor.reset_label_index(data, label_name, self.label_i)
         else:
-            data = LabelsProcessor.reset_label_index(data, self.label_name, self.label_index_i)
+            data = LabelsProcessor.reset_label_index(data, label_name, self.label_index_i)
             data.insert(loc=self.label_i, column='dummy column', value=None)
         data_x = data.iloc[:, y_end_index:]
         data_y = data.iloc[:, :y_end_index]

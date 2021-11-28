@@ -2,15 +2,16 @@ includes:
   - configs/constant_configs.yml
 
 model:
-  name: sklearn.svm.SVR
+  name: sklearn.linear_model.Lasso
   tag: uan2
 
 # inputs go to __init__ of the model (sklearn RFC model in this case)
 special_inputs:
-  max_iter: 1000
-  kernel: rbf
-  degree: 1
-  tol: 0.0000001
+  normalize: true
+  max_iter: 10000
+#  kernel: rbf
+#  degree: 1
+#  tol: 0.0000001
 
 
 

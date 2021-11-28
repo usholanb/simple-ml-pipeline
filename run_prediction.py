@@ -18,7 +18,7 @@ def prediction(configs: Dict):
     dataset = CSVSaver().load(configs)
     predictor = Predictor(configs, dataset)
     output_dataset = predictor.predict()
-    predictor.save_probs(output_dataset)
+    predictor.save_results(output_dataset)
 
 
 if __name__ == '__main__':
