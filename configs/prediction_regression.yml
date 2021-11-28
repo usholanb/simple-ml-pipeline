@@ -7,7 +7,8 @@ dataset:
 
 models:
   uan: dense_net_regression
-  uan2: svr
+  uan2: linear_regression
+  uan3: xgb_regressor
 
 
 metrics: [mse]

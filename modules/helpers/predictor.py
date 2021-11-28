@@ -44,8 +44,8 @@ class Predictor:
                 models_values[model_name_tag] = values
             metrics_values[metric_name] = models_values
         df = pd.DataFrame(metrics_values)
-        # df.to_csv(f'{PREDICTIONS_DIR}/{dataset_name}_{split_name}_metrics.csv', compression='gzip')
-        CSVSaver.save_file(f'{PREDICTIONS_DIR}/{dataset_name}_{split_name}', df)
+        CSVSaver.save_file(f'{PREDICTIONS_DIR}/{dataset_name}_{split_name}_metrics',
+                           df, index=True, compression=None)
 
     def save_results(self, output_dataset) -> None:
         for split_name in output_dataset['split'].unique():

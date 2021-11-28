@@ -19,17 +19,25 @@ class CSVSaver:
         return pd.read_csv(cls.add_csv_gz(f'{input_path}'),  compression='gzip')
 
     @classmethod
+    def add_csv(cls, path):
+        return f'{path}.csv'
+
+    @classmethod
     def add_csv_gz(cls, path):
-        return f'{path}.csv.gz'
+        path = cls.add_csv(path)
+        return f'{path}.gz'
 
     @classmethod
     def raw_to_processed(cls, path: AnyStr) -> AnyStr:
         return cls.add_csv_gz(f'processed_{path}')
 
     @classmethod
-    def save_file(cls, path, df):
-        path = cls.add_csv_gz(path)
-        df.to_csv(path, index=False,  compression='gzip')
+    def save_file(cls, path, df, compression='gzip', index=False):
+        if compression == 'gzip':
+            path = cls.add_csv_gz(path)
+        else:
+            path = cls.add_csv(path)
+        df.to_csv(path, index=index,  compression=compression)
         print(f'saved {path}')
 
 

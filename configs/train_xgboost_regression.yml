@@ -2,14 +2,13 @@ includes:
   - configs/constant_configs.yml
 
 model:
-  name: sklearn.linear_model.LinearRegression
-  tag: uan2
+  name: xgboost.XGBRegressor
+  tag: uan3
 
 # inputs go to __init__ of the model (sklearn RFC model in this case)
 special_inputs:
-  normalize: true
-
-
+  n_estimators: 100
+  num_parallel_tree: 10
 
 
 trainer:

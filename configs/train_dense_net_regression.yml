@@ -30,8 +30,8 @@ trainer:
     resources_per_trial:
       cpu: 2
       gpu: 0
-#  metrics:
-#    - mse_loss
+  metrics:
+    - mse
 
   grid_metric:
     name: train_MSELoss
