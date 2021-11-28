@@ -21,12 +21,15 @@ class SKLearnTrainer(DefaultTrainer):
         self.log_metrics({**valid_metrics, **train_metrics})
         self.print_metrics(data)
 
-    def get_loss(self, y_true: np.ndarray, y_pred: np.ndarray) -> float:
-        if len(y_pred.shape) == 1:
-            y_pred_2d = np.zeros((len(y_pred), len(self.label_types)))
-            y_pred_2d[np.arange((len(y_pred))), y_pred] = 1
-            y_pred = y_pred_2d
-        return sklearn.metrics.log_loss(y_true, y_pred, labels=self.label_types)
+    def get_loss(self):
+        if hasattr(torch.nn, self.configs.get('trainer').get('loss')):
+            criterion = getattr(torch.nn, self.loss_name)()
+        else:
+            setup_imports()
+            criterion = registry.get_loss_class(
+                self.configs.get('trainer').get('loss'))(self.configs)
+        return criterion
+
 
 
 

@@ -9,13 +9,13 @@ model:
 
 # must be same names as parameters of the actual optimizer
 optim:
-  lr: 0.01
+  lr: 0.001
   weight_decay: 0.0001
 
 
 # this inputs will go to your specific model __init__
 special_inputs:
-  lr: 0.001
+  layers: [30, 30, 30]
 
 
   
