@@ -62,7 +62,11 @@ class DefaultDataset(BaseDataset):
                     transformers[t_name] = t_obj
                 else:
                     t_obj = transformers[t_name]
-                feature_to_process = t_obj.apply(feature_to_process)
+                try:
+                    feature_to_process = t_obj.apply(feature_to_process)
+                except Exception as e:
+                    # print([e for e in feature_to_process if isinstance(e, float)])
+                    raise TypeError(f'feature {feature} could not be transformed: {e}')
             if len(feature_to_process.shape) == 1:
                 processed_data[feature] = feature_to_process
             elif len(feature_to_process.shape) == 2:
@@ -86,7 +90,7 @@ class DefaultDataset(BaseDataset):
         self.data = pd.concat([data_y, data_x], axis=1)
         print('If you need, you can copy these features to train config to pick'
               ' the features that you want to train on')
-        print(yaml.dump(data_x.columns.tolist()))
+        print(yaml.dump({k: [] for k in data_x.columns.tolist()}))
 
     def shuffle(self, data: pd.DataFrame) -> pd.DataFrame:
         if self.configs.get('dataset').get('shuffle', True):

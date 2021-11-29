@@ -45,7 +45,7 @@ class DefaultTrainer(BaseTrainer):
         self.configs['features_list'] = f_list
         return data
 
-    def get_wrapper(self, examples) -> BaseWrapper:
+    def get_wrapper(self) -> BaseWrapper:
         wrapper_class = registry.get_wrapper_class(
             self.configs.get('model').get('name'))
 
@@ -58,7 +58,6 @@ class DefaultTrainer(BaseTrainer):
             wrapper = registry.get_wrapper_class('torch_wrapper')\
                 (self.configs, self.label_types)
         self.wrapper = wrapper
-        self.wrapper.fit_scaler(examples)
         print(f'model: {wrapper.name}')
         return wrapper
 

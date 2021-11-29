@@ -18,7 +18,7 @@ class DefaultWrapper(BaseWrapper):
         self.label_types = label_types
         self.clf = self.get_classifier(configs.get('special_inputs', {}))
         self._features_list = self.configs.get('features_list', [])
-        self.scaler = self.get_normalization_class()
+        # self.scaler = self.get_normalization_class()
 
     @property
     def name(self) -> AnyStr:
@@ -37,35 +37,34 @@ class DefaultWrapper(BaseWrapper):
         examples = examples.values.astype(float)
         if len(examples.shape) == 1:
             examples = examples.reshape((1, -1))
-        examples = self.scaler.transform(examples)
         return examples
 
-    def get_normalization_class(self):
-        scaler_class = DummyScaler
-        normalization = self.configs.get('trainer').get('normalization', None)
-        if normalization.startswith('sklearn') and normalization is not None\
-                and '.' in normalization:
-            module = '.'.join(normalization.split('.')[:-1])
-            module = sys.modules.get(module)
-            class_name = normalization.split('.')[-1]
-            scaler_class = getattr(module, class_name)
-        elif normalization == 'z_score':
-            scaler_class = ZScore
-        return scaler_class
-
-    def fit_scaler(self, examples):
-        scaler = self.scaler()
-        scaler.fit(examples)
-        self.scaler = scaler
+    # def get_normalization_class(self):
+    #     scaler_class = DummyScaler
+    #     normalization = self.configs.get('trainer').get('normalization', None)
+    #     if normalization.startswith('sklearn') and normalization is not None\
+    #             and '.' in normalization:
+    #         module = '.'.join(normalization.split('.')[:-1])
+    #         module = sys.modules.get(module)
+    #         class_name = normalization.split('.')[-1]
+    #         scaler_class = getattr(module, class_name)
+    #     elif normalization == 'z_score':
+    #         scaler_class = ZScore
+    #     return scaler_class
+    #
+    # def fit_scaler(self, examples):
+    #     scaler = self.scaler()
+    #     scaler.fit(examples)
+    #     self.scaler = scaler
 
 
 class DummyScaler:
 
-    def fit(self):
+    def fit(self, examples):
         pass
 
-    def transform(self, e):
-        return e
+    def transform(self, examples):
+        return examples
 
 
 

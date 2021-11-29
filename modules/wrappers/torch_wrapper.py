@@ -17,10 +17,6 @@ class TorchWrapper(DefaultWrapper):
         super().__init__(configs, label_types)
         self.output_function = self.get_output_function()
 
-    @abstractmethod
-    def forward(self, examples):
-        """ outputs forward """
-
     def get_classifier(self, inputs: Dict):
         return registry.get_model_class(
             self.configs.get('model').get('name')

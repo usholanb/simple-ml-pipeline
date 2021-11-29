@@ -12,7 +12,7 @@ class SKLearnTrainer(DefaultTrainer):
         """ trains sklearn model with dataset """
         setup_imports()
         data = self.prepare_train()
-        wrapper = self.get_wrapper(data['train_x'])
+        wrapper = self.get_wrapper()
         wrapper.fit(data['train_x'], data['train_y'])
         valid_pred = wrapper.predict(data['valid_x'])
         train_pred = wrapper.predict(data['train_x'])
