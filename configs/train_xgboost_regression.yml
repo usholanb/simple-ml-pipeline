@@ -7,8 +7,13 @@ model:
 
 # inputs go to __init__ of the model (sklearn RFC model in this case)
 special_inputs:
-  n_estimators: 100
-  num_parallel_tree: 10
+  booster: [dart]
+  n_estimators: [300]
+  max_depth: [30]
+  num_parallel_tree: [5]
+  eta: [0.3]
+  subsample: [0.1]
+  colsample_bytree: [1.]
 
 
 trainer:

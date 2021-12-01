@@ -2,19 +2,17 @@ includes:
   - configs/constant_configs.yml
 
 model:
-  name: sklearn.linear_model.LinearRegression
+  name: sklearn.linear_model.Lasso
   tag: uan2
 
 # inputs go to __init__ of the model (sklearn RFC model in this case)
-special_inputs:
-  normalize: false
+#special_inputs:
 
 
 
 
 trainer:
     name: sklearn_trainer
-    normalization: z_score
     label_type: regression
     save: 1
     tune:

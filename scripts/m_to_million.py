@@ -13,7 +13,7 @@ def m_to_million(v):
     else:
         m = 1e-6
     v = float(v.replace('M', '').replace('K', ''))
-    return int(v * m)
+    return float(v * m)
 
 
 def remove_ending(v):

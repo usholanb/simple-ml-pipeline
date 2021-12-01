@@ -10,7 +10,7 @@ class DenseNetModel(BaseTorchModel):
     def __init__(self, special_inputs):
         super(DenseNetModel, self).__init__()
         self.__dict__.update(special_inputs)
-        self.set_layers()
+        self.layers = self.set_layers()
 
     def forward(self, x) -> Dict:
         """
@@ -19,9 +19,9 @@ class DenseNetModel(BaseTorchModel):
         example:
             {'outputs': something, ...}
         """
-        x = F.relu(self.layer1(x))
-        x = F.relu(self.layer2(x))
-        outputs = self.layer3(x).flatten()
+        for layer in self.layers[:-1]:
+            x = F.relu(layer(x))
+        outputs = self.layers[-1](x).flatten()
         return outputs
 
     def predict(self, x):

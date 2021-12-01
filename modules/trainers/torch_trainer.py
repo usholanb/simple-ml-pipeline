@@ -1,5 +1,5 @@
 from modules.trainers.default_trainer import DefaultTrainer
-from utils.common import setup_imports
+from utils.common import setup_imports, Timeit
 from utils.registry import registry
 import torch
 import pandas as pd
@@ -43,32 +43,34 @@ class TorchTrainer(DefaultTrainer):
             self.configs['special_inputs'] = {}
         self.get_wrapper()
         optimizer = self.get_optimizer(self.wrapper)
+        epochs = self.configs.get('trainer').get('epochs', 10)
+        every = self.configs.get('trainer').get('log_valid_every', 10)
+        for i in range(epochs):
+            with Timeit(f'epoch #: {i}', i, epochs, every):
+                self.wrapper.train()
+                optimizer.zero_grad()
+                train_outputs = self.wrapper.forward(data['train_x'])
+                loss = self.criterion(train_outputs, data['train_y'])
+                loss.backward()
+                optimizer.step()
 
-        for i in range(self.configs.get('trainer').get('epochs', 10)):
-            self.wrapper.train()
-            optimizer.zero_grad()
-            train_outputs = self.wrapper.forward(data['train_x'])
-            loss = self.criterion(train_outputs, data['train_y'])
-            loss.backward()
-            optimizer.step()
+                if (i + 1) % every == 0:
+                    with torch.no_grad():
+                        self.wrapper.eval()
+                        valid_metrics, train_metrics = {}, {}
+                        valid_preds = self.wrapper.predict(data['valid_x'])
+                        train_preds = self.wrapper.predict(data['train_x'])
+                        valid_metrics.update(self.metrics_to_log_dict(
+                        data['valid_y'], valid_preds, 'valid'))
+                        train_metrics.update(self.metrics_to_log_dict(
+                            data['train_y'], train_preds, 'train'))
 
-            if (i + 1) % self.configs.get('trainer').get('log_valid_every', 10) == 0:
-                with torch.no_grad():
-                    self.wrapper.eval()
-                    valid_metrics, train_metrics = {}, {}
-                    valid_preds = self.wrapper.predict(data['valid_x'])
-                    train_preds = self.wrapper.predict(data['train_x'])
-                    valid_metrics.update(self.metrics_to_log_dict(
-                    data['valid_y'], valid_preds, 'valid'))
-                    train_metrics.update(self.metrics_to_log_dict(
-                        data['train_y'], train_preds, 'train'))
+                        valid_outputs = self.wrapper.forward(data['valid_x'])
+                        valid_loss = self.criterion(valid_outputs, data['valid_y'])
+                        valid_metrics.update({f'valid_{self.loss_name}': valid_loss.item()})
+                        train_metrics.update({f'train_{self.loss_name}': loss.item()})
 
-                    valid_outputs = self.wrapper.forward(data['valid_x'])
-                    valid_loss = self.criterion(valid_outputs, data['valid_y'])
-                    valid_metrics.update({f'valid_{self.loss_name}': valid_loss.item()})
-                    train_metrics.update({f'train_{self.loss_name}': loss.item()})
-
-                    self.log_metrics({**valid_metrics, **train_metrics})
+                        self.log_metrics({**valid_metrics, **train_metrics})
 
         with torch.no_grad():
             self.print_metrics(data)

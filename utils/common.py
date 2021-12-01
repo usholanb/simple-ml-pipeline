@@ -16,6 +16,7 @@ import ray
 
 from utils.constants import DATA_DIR, CONFIGS_DIR, PREDICTIONS_DIR, TRAIN_RESULTS_DIR, PROJECT_DIR
 import numpy as np
+from time import time
 
 
 def load_config(path: AnyStr, previous_includes: List = None):
@@ -279,3 +280,29 @@ def to_snake_case(name):
 
 def to_camel_case(name):
     return ''.join(word.title() for word in name.split('_'))
+
+
+class Timeit:
+    """ to compute epoch time """
+    original_start = None
+
+    def __init__(self, to_print, iter, iter_n=None, every=1):
+        self.iter = iter
+        self.every = every
+        self.start = None
+        self.iter_n = iter_n
+        self.to_print = to_print
+
+    def __enter__(self):
+        self.start = time()
+        Timeit.original_start = Timeit.original_start \
+            if Timeit.original_start is not None else self.start
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if self.iter % self.every == 1:
+            now = time()
+            iter_time = now - self.start
+            expected = self.iter_n * iter_time
+            print(f'{self.to_print}:   time: {iter_time},    '
+                  f'total training time: {round(now - Timeit.original_start, 2)},'
+                  f' expected for all {self.iter_n} iters: {round(expected, 2)}')

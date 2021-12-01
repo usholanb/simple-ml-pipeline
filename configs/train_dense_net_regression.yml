@@ -10,13 +10,14 @@ model:
 
 # must be same names as parameters of the actual optimizer
 optim:
-  lr: 0.001
-  weight_decay:  0.0001
-
+#  lr: [0.01, 0.0001, 0.00001]
+#  weight_decay:  [0.01, 0.001, 0.0001, 0.00001]
+  lr: 0.00001
+  weight_decay: 0.01
 
 # this inputs will go to your specific model __init__
-#special_inputs:
-
+special_inputs:
+  layers_sizes: 0
 
 
 trainer:
@@ -24,8 +25,8 @@ trainer:
   optim: Adam
   loss: MSELoss
   save: 1
-  epochs: 10000
-  log_valid_every: 500
+  epochs: 100000
+  log_valid_every: 10000
   tune:
     resources_per_trial:
       cpu: 2
@@ -34,7 +35,7 @@ trainer:
     - mse
 
   grid_metric:
-    name: train_MSELoss
+    name: valid_MSELoss
     mode: min
 
 

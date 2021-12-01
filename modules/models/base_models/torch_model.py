@@ -16,15 +16,30 @@ class BaseTorchModel(nn.Module, BaseModel):
 
     def set_layers(self):
         index = 1
-        layers = getattr(self, 'layers', [10, 10, 10])
-        assert len(layers) > 1, 'number of layers defined in config file ' \
-                                'in special_inputs mut be at least 1+'
-        setattr(self, f'layer{index}', nn.Linear(self.input_dim, layers[0]))
-        index += 1
-        for layer_size in layers[1:-1]:
-            setattr(self, f'layer{index}', nn.Linear(layer_size, layers[index]))
+        layers_sizes = getattr(self, 'layers_sizes', [10, 10, 10])
+        # assert len(layers_sizes) > 1, 'number of layers defined in config file ' \
+        #                         'in special_inputs mut be at least 1+'
+        if layers_sizes == 0 or len(layers_sizes) == 0:
+            layer1 = nn.Linear(self.input_dim, len(self.label_types))
+            layers = [layer1]
+            setattr(self, f'layer{index}', layer1)
+        elif len(layers_sizes) > 0:
+            layer1 = nn.Linear(self.input_dim, layers_sizes[0])
+            layers = [layer1]
+            setattr(self, f'layer{index}', layer1)
             index += 1
-        setattr(self, f'layer{index}', nn.Linear(layers[-1], len(self.label_types)))
+            for layer_size in layers[1:-1]:
+                layer = nn.Linear(layer_size[index], layers_sizes[index])
+                setattr(self, f'layer{index}', layer)
+                layers.append(layer)
+                index += 1
+            last_layer = nn.Linear(layers_sizes[-1], len(self.label_types))
+            setattr(self, f'layer{index}', last_layer)
+            layers.append(last_layer)
+        else:
+            layers = []
+        return layers
+
 
 
 
