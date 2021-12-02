@@ -33,6 +33,7 @@ def train_one(configs: Dict, dataset: pd.DataFrame, save: bool = False) -> None:
 
 def train(configs: Dict) -> None:
     dataset = CSVSaver().load(configs)
+    print(f'dataset size : {dataset.shape}')
     grid = add_grid_search_parameters(configs)
     sync_config = tune.SyncConfig(sync_to_driver=False)
     config_copy = deepcopy(configs)

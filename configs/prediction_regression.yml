@@ -2,7 +2,7 @@ includes:
   - configs/constant_configs.yml
 
 dataset:
-  input_path: processed_data/merged_df_uan2
+  input_path: processed_data/merged_df_v42
 
 
 models:

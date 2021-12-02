@@ -10,11 +10,7 @@ class DenseNetModel(BaseTorchModel):
     def __init__(self, special_inputs):
         super(DenseNetModel, self).__init__()
         self.__dict__.update(special_inputs)
-        self.layer1 = nn.Linear(self.input_dim, 10)
-        self.layer2 = nn.Linear(10, 10)
-        self.layer3 = nn.Linear(10, len(self.label_types))
-        self.output_function = nn.LogSoftmax(dim=1)
-        self.prediction_function = nn.Softmax(dim=1)
+        self.layers = self.set_layers()
 
     def forward(self, x) -> Dict:
         """
@@ -23,9 +19,10 @@ class DenseNetModel(BaseTorchModel):
         example:
             {'outputs': something, ...}
         """
-        x = F.relu(self.layer1(x))
-        x = F.relu(self.layer2(x))
-        outputs = self.output_function(self.layer3(x))
+        for layer in self.layers[:-1]:
+            x = F.relu(layer(x))
+        outputs = self.layers[-1](x).flatten()
+        outputs = self.output_function(outputs)
         return outputs
 
     def predict(self, x):

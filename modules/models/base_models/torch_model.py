@@ -28,8 +28,8 @@ class BaseTorchModel(nn.Module, BaseModel):
             layers = [layer1]
             setattr(self, f'layer{index}', layer1)
             index += 1
-            for layer_size in layers[1:-1]:
-                layer = nn.Linear(layer_size[index], layers_sizes[index])
+            for layer_size in layers_sizes[:-1]:
+                layer = nn.Linear(layer_size, layers_sizes[index - 1])
                 setattr(self, f'layer{index}', layer)
                 layers.append(layer)
                 index += 1

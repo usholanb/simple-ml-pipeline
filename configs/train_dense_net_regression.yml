@@ -10,14 +10,13 @@ model:
 
 # must be same names as parameters of the actual optimizer
 optim:
-#  lr: [0.01, 0.0001, 0.00001]
-#  weight_decay:  [0.01, 0.001, 0.0001, 0.00001]
-  lr: 0.00001
-  weight_decay: 0.01
+  lr: 0.0001
+  weight_decay: 0.0001
 
 # this inputs will go to your specific model __init__
 special_inputs:
-  layers_sizes: 0
+  layers_sizes: [[10, 5]]
+
 
 
 trainer:
@@ -42,7 +41,7 @@ trainer:
 
 
 dataset:
-  input_path: processed_data/merged_df_uan2
+  input_path: processed_data/merged_df_v42
 
 
 features_list:

@@ -7,8 +7,8 @@ model:
 
 # inputs go to __init__ of the model (sklearn RFC model in this case)
 special_inputs:
-  booster: [dart]
-  n_estimators: [300]
+  booster: [gbtree, gblinear, dart]
+  n_estimators: [100, 300, 500]
   max_depth: [30]
   num_parallel_tree: [5]
   eta: [0.3]
@@ -33,7 +33,7 @@ trainer:
 
 
 dataset:
-  input_path: processed_data/merged_df_uan2
+  input_path: processed_data/merged_df_v42
 
 features_list:
 #  - Loan_end_year # problem

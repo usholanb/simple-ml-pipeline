@@ -227,8 +227,11 @@ def add_grid_search_parameters(configs: Dict) -> bool:
         global grid
         for k, v in par.items():
             if isinstance(v, list):
-                new_par[k] = tune.grid_search(v)
-                grid = True
+                if isinstance(v[0], list) and len(v) == 1:
+                    new_par[k] = v[0]
+                else:
+                    new_par[k] = tune.grid_search(v)
+                    grid = True
             else:
                 new_par[k] = v
         return new_par
@@ -299,7 +302,7 @@ class Timeit:
             if Timeit.original_start is not None else self.start
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        if self.iter % self.every == 1:
+        if self.iter > 0 and self.iter % self.every == 0:
             now = time()
             iter_time = now - self.start
             expected = self.iter_n * iter_time

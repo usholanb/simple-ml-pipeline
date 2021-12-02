@@ -6,8 +6,11 @@ model:
   tag: uan2
 
 # inputs go to __init__ of the model (sklearn RFC model in this case)
-#special_inputs:
-
+special_inputs:
+  alpha: 0.1
+  fit_intercept: true
+  max_iter: 10000
+  tol: 0.01
 
 
 
@@ -28,7 +31,7 @@ trainer:
 
 
 dataset:
-  input_path: processed_data/merged_df_uan2
+  input_path: processed_data/merged_df_v42
 
 features_list:
 
