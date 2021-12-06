@@ -1,19 +1,25 @@
+import math
+
 import pandas as pd
 import numpy as np
 import yaml
 from utils.constants import DATA_DIR
 
 
-def m_to_million(v):
+def m_to_million(v, feature):
     v = str(v)
     if 'M' in v:
-        m = 1
+        m = 1e6
     elif 'K' in v:
-        m = 1e-3
+        m = 1e3
     else:
-        m = 1e-6
+        m = 1
     v = float(v.replace('M', '').replace('K', ''))
-    return float(v * m)
+    v = float(v * m)
+    if feature == 'value':
+        return math.log10(v)
+    else:
+        return v
 
 
 def remove_ending(v):
@@ -39,12 +45,14 @@ def print_columns_weird(df):
 if __name__ == '__main__':
     df = pd.read_excel(f'{DATA_DIR}/merged_df_v4.xlsm', sheet_name='Sheet1')
     for money_f in ['wage', 'value', 'release_clause']:
-        df[money_f] = df[money_f].apply(lambda x: m_to_million(x))
+        df[money_f] = df[money_f].apply(lambda x: m_to_million(x, money_f))
     # for ending_f in ['height', 'weight']:
     #     df[ending_f] = df[ending_f].apply(lambda x: remove_ending(x))
 
     # remove where Team is nan
     df = df[df['Team'].notna()]
+    df.loc[df['Team'] == 'Real SociedadDec', 'Team'] = 'Real Sociedad'
+    df.loc[df['Team'] == 'Torino F.C.', 'Team'] = 'Toronto FC'
     print(yaml.dump({k: [] for k in df.columns.tolist()}))
 
     df.to_excel(f'{DATA_DIR}/merged_df_v42.xlsx', sheet_name='Sheet1')

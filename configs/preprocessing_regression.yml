@@ -27,7 +27,7 @@ features_list:
   Team: ['ohe']
   a_w: ['ohe']
   acceleration: ['min_max_scaler']
-  age: ['min_max_scaler']
+  age: ['min_max_scaler', 'square']
   aggression: ['min_max_scaler']
   agility: ['min_max_scaler']
   attacking: ['min_max_scaler']
