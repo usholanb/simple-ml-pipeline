@@ -15,7 +15,7 @@ optim:
 
 # this inputs will go to your specific model __init__
 special_inputs:
-  layers_sizes: [[10, 5]]
+  layers_sizes: [[10, 5, 10]]
 
 
 

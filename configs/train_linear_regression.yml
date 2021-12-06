@@ -2,15 +2,16 @@ includes:
   - configs/constant_configs.yml
 
 model:
-  name: sklearn.linear_model.Lasso
-  tag: uan2
+  name: sklearn.linear_model.LinearRegression
+  tag: uan4
+#  poly: 2
 
 # inputs go to __init__ of the model (sklearn RFC model in this case)
-special_inputs:
-  alpha: 0.1
-  fit_intercept: true
-  max_iter: 10000
-  tol: 0.01
+#special_inputs:
+#  alpha: 0.1
+#  fit_intercept: true
+#  max_iter: 10000
+#  tol: 0.01
 
 
 

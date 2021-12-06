@@ -11,7 +11,13 @@ class SKLearnWrapper(DefaultWrapper):
     """ Any neural net model in pytorch """
 
     def get_classifier(self, hps: Dict):
-        return get_outside_library(self.configs.get('model').get('name'))(**hps)
+        clf = get_outside_library(self.configs.get('model').get('name'))(**hps)
+        poly = self.configs.get('model').get('poly', None)
+        if poly is not None:
+            from sklearn.preprocessing import PolynomialFeatures
+            from sklearn.pipeline import make_pipeline
+            clf = make_pipeline(PolynomialFeatures(poly), clf)
+        return clf
 
     def predict_proba(self, examples: pd.DataFrame) -> np.ndarray:
         """ filters in needed features and makes prediction  """

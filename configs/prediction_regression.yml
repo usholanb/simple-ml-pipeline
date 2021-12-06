@@ -7,8 +7,9 @@ dataset:
 
 models:
   uan: dense_net_regression
-  uan2: linear_regression
+  uan2: lasso
   uan3: xgb_regressor
+  uan4: linear_regression
 
 
 metrics: [mse]
