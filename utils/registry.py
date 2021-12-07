@@ -30,6 +30,7 @@ class Registry:
         "transformer_name_mapping": {},
         "metric_name_mapping": {},
         "loss_name_mapping": {},
+        "predictor_name_mapping": {},
         "state": {},
     }
 
@@ -158,6 +159,15 @@ class Registry:
         return wrap
 
     @classmethod
+    def register_predictor(cls, name):
+
+        def wrap(func):
+            cls.add_this_to(func, name, 'predictor_name_mapping')
+            return func
+
+        return wrap
+
+    @classmethod
     def register(cls, name, obj):
         r"""Register an item to registry with key 'name'
         Args:
@@ -207,6 +217,10 @@ class Registry:
     @classmethod
     def get_trainer_class(cls, name):
         return cls.mapping["trainer_name_mapping"].get(name, None)
+
+    @classmethod
+    def get_predictor_class(cls, name):
+        return cls.mapping["predictor_name_mapping"].get(name, None)
 
     @classmethod
     def get(cls, name, default=None, no_warning=False):

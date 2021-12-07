@@ -105,6 +105,8 @@ def setup_imports() -> None:
     metric_pattern = os.path.join(metric_folder, "*.py")
     loss_folder = os.path.join(MODULES_DIR, "losses")
     loss_pattern = os.path.join(loss_folder, "*.py")
+    predictor_folder = os.path.join(MODULES_DIR, "predictors")
+    predictor_pattern = os.path.join(predictor_folder, "*.py")
 
 
     # importlib.import_module("utils.common.logger")
@@ -117,12 +119,13 @@ def setup_imports() -> None:
         + glob.glob(transformer_pattern, recursive=True)
         + glob.glob(metric_pattern, recursive=True)
         + glob.glob(loss_pattern, recursive=True)
+        + glob.glob(predictor_pattern, recursive=True)
 
     )
 
     for f in files:
         for key in ["/trainers", "/datasets", "/models", "/wrappers",
-                    "/transformers", "/metrics", "/losses"]:
+                    "/transformers", "/metrics", "/losses", "/predictors"]:
             if f.find(key) != -1:
                 splits = f.split(os.sep)
                 file_name = splits[-1]
@@ -195,9 +198,10 @@ def merge_dicts(dict1: Dict, dict2: Dict):
     return return_dict, duplicates
 
 
-def create_folder(folder_path: AnyStr) -> None:
+def create_folder(folder_path: AnyStr) -> AnyStr:
     if not os.path.exists(folder_path):
         os.makedirs(folder_path)
+    return folder_path
 
 
 def setup_directories() -> None:

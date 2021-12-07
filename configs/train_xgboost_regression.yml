@@ -1,19 +1,28 @@
 includes:
   - configs/constant_configs.yml
 
+
+dataset:
+  input_path: processed_data/merged_df_v62
+
+
 model:
   name: xgboost.XGBRegressor
   tag: uan3
 
-# inputs go to __init__ of the model (sklearn RFC model in this case)
+# inputs go to __init__ of the model (sklearn xgboost model in this case)
 special_inputs:
   booster: dart
-  n_estimators: 300
-  max_depth: 20
-  num_parallel_tree: [6]
-  eta: 0.4
-  subsample: 0.1
-  colsample_bytree: 0.2
+  n_estimators: [90, 100, 110]
+  max_depth: [8, 16, 32]
+#  n_estimators: 110
+#  max_depth: 32
+#  gamma: .01
+  num_parallel_tree: [4, 6, 8]
+#  eta: 0.4
+  learning_rate: [0.05, 0.1, 0.2]
+  subsample: [0.7, 0.8, 0.9]
+  colsample_bytree: [.1, .2, .3]
 
 
 trainer:
@@ -22,8 +31,9 @@ trainer:
     save: 1
     tune:
       resources_per_trial:
-        cpu: 2
+        cpu: 1
         gpu: 0
+      max_concurrent_trials: 54
 
     metrics: mse
 
@@ -31,9 +41,6 @@ trainer:
       name: valid_mse
       mode: min
 
-
-dataset:
-  input_path: processed_data/merged_df_v42
 
 features_list:
 #  - Loan_end_year # problem

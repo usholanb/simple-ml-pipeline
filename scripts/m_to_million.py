@@ -43,7 +43,8 @@ def print_columns_weird(df):
 
 
 if __name__ == '__main__':
-    df = pd.read_excel(f'{DATA_DIR}/merged_df_v4.xlsm', sheet_name='Sheet1')
+    f_name = 'merged_df_v6.xlsx'
+    df = pd.read_excel(f'{DATA_DIR}/{f_name}', sheet_name='Sheet1')
     for money_f in ['wage', 'value', 'release_clause']:
         df[money_f] = df[money_f].apply(lambda x: m_to_million(x, money_f))
     # for ending_f in ['height', 'weight']:
@@ -54,6 +55,7 @@ if __name__ == '__main__':
     df.loc[df['Team'] == 'Real SociedadDec', 'Team'] = 'Real Sociedad'
     df.loc[df['Team'] == 'Torino F.C.', 'Team'] = 'Toronto FC'
     print(yaml.dump({k: [] for k in df.columns.tolist()}))
-
-    df.to_excel(f'{DATA_DIR}/merged_df_v42.xlsx', sheet_name='Sheet1')
+    name, ext = f_name.split('.')
+    f_out_name = f'{name}2.{ext}'
+    df.to_excel(f'{DATA_DIR}/{f_out_name}', sheet_name='Sheet1')
     print_columns_weird(df)

@@ -1,6 +1,11 @@
 includes:
   - configs/constant_configs.yml
 
+
+dataset:
+  input_path: processed_data/merged_df_v62
+
+
 model:
   name: sklearn.linear_model.LinearRegression
   tag: uan4
@@ -30,9 +35,6 @@ trainer:
       name: valid_mse
       mode: min
 
-
-dataset:
-  input_path: processed_data/merged_df_v42
 
 features_list:
 

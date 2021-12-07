@@ -1,13 +1,14 @@
 import pandas as pd
 
 from modules.helpers.csv_saver import CSVSaver
-from utils.common import unpickle_obj
+from utils.common import unpickle_obj, create_folder
 from utils.constants import CLASSIFIERS_DIR, PREDICTIONS_DIR, PROCESSED_DATA_DIR
 from copy import deepcopy
 
 from utils.registry import registry
 
 
+@registry.register_predictor('predictor')
 class Predictor:
     """ uses all wrappers pointed in prediction config to
         make and save several prediction files """
@@ -15,6 +16,11 @@ class Predictor:
     def __init__(self, configs, dataset):
         self.configs = configs
         self.dataset = dataset
+
+    @property
+    def pred_dir(self):
+        dataset_name = self.configs.get('dataset').get('input_path').split('/')[-1]
+        return create_folder(f'{PREDICTIONS_DIR}/{dataset_name}')
 
     def predict(self) -> pd.DataFrame:
         output_dataset = deepcopy(self.dataset)
@@ -44,7 +50,7 @@ class Predictor:
                 models_values[model_name_tag] = values
             metrics_values[metric_name] = models_values
         df = pd.DataFrame(metrics_values)
-        CSVSaver.save_file(f'{PREDICTIONS_DIR}/{dataset_name}_{split_name}_metrics',
+        CSVSaver.save_file(f'{self.pred_dir}/{dataset_name}_{split_name}_metrics',
                            df, index=True, compression=None)
 
     def save_results(self, output_dataset) -> None:
@@ -52,6 +58,9 @@ class Predictor:
             split = output_dataset.loc[output_dataset['split'] == split_name]
             dataset_path = self.configs.get('dataset').get('input_path')
             dataset_name = dataset_path.split('/')[1]
-            CSVSaver.save_file(f'{PREDICTIONS_DIR}/{dataset_name}_{split_name}', split)
+            CSVSaver.save_file(f'{self.pred_dir}/{dataset_name}_{split_name}', split)
             self.save_metrics(split, split_name, dataset_name)
+
+    def save_graphs(self, output_dataset):
+        """ saves various project specific graphs """
 

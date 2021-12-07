@@ -10,3 +10,6 @@ data1 = pd.DataFrame(data= np.c_[data['data'], data['target']],
 
 data1.to_csv(f'{DATA_DIR}/toy_dataset.csv')
 
+from xgboost import XGBRegressor
+
+import matplotlib.ticker as mtick

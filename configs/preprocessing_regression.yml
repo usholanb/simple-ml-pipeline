@@ -6,7 +6,7 @@ dataset:
   name: xlsx_dataset
   sheet_name: Sheet1
   label_type: regression  # classification or regression
-  input_path: data/merged_df_v42
+  input_path: data/merged_df_v62
   # index or name of the labels column in the input data
   label: value
   shuffle: 1 # can be (0, false null) OR (anything else, which means true)

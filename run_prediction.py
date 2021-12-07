@@ -7,18 +7,21 @@ predictions/ folder
 """
 from typing import Dict
 from modules.helpers.csv_saver import CSVSaver
-from modules.helpers.predictor import Predictor
+from modules.predictors.base_predictors.predictor import Predictor
 from utils.flags import prediction_flags
 from utils.common import build_config, setup_imports, setup_directories
+from utils.registry import registry
 
 
 def prediction(configs: Dict):
     """ Prepares Dataset """
     setup_imports()
     dataset = CSVSaver().load(configs)
-    predictor = Predictor(configs, dataset)
+    predictor_name = configs.get('predictor', 'predictor')
+    predictor = registry.get_predictor_class(predictor_name)(configs, dataset)
     output_dataset = predictor.predict()
-    predictor.save_results(output_dataset)
+    # predictor.save_results(output_dataset)
+    predictor.save_graphs(output_dataset)
 
 
 if __name__ == '__main__':

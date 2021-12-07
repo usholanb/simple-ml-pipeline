@@ -1,6 +1,8 @@
 includes:
   - configs/constant_configs.yml
 
+dataset:
+  input_path: processed_data/merged_df_v62
 
 
 model:
@@ -24,7 +26,7 @@ trainer:
   optim: Adam
   loss: MSELoss
   save: 1
-  epochs: 100000
+  epochs: 1000
   log_valid_every: 10000
   tune:
     resources_per_trial:
@@ -38,15 +40,7 @@ trainer:
     mode: min
 
 
-
-
-dataset:
-  input_path: processed_data/merged_df_v42
-
-
 features_list:
-
-
   Loan_start_year: []
   On Loan: []
   Team_1: []

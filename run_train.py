@@ -18,6 +18,7 @@ from utils.registry import registry
 import pandas as pd
 from ray import tune
 from typing import Dict
+import time
 
 
 def train_one(configs: Dict, dataset: pd.DataFrame, save: bool = False) -> None:
@@ -60,8 +61,10 @@ def train(configs: Dict) -> None:
 
 
 if __name__ == '__main__':
+    start = time.time()
     setup_directories()
     parser = train_flags.parser
     args = parser.parse_args()
     config = build_config(args)
     train(config)
+    print(f'training took {round(time.time() - start, 2)} seconds')
