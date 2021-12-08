@@ -20,7 +20,7 @@ class PlayerEvaluationPredictor(Predictor):
         make and save several prediction files """
 
     def save_graphs(self, output_dataset):
-        x_step, y_step = 20e6, 2e6
+        x_step, y_step = 20e6, 10e6
 
 
         split = output_dataset[output_dataset['split'] == 'test']
@@ -65,13 +65,16 @@ class PlayerEvaluationPredictor(Predictor):
                     binsx.append(x_point)
 
                 locs, labels = plt.xticks()
-                plt.yticks(np.arange(0, max(y), step=y_step))
-                plt.xticks(np.arange(x_points[0], x_points[-1], step=x_step))
+                plt.yticks(np.arange(0, max(y) / 1e6, step=y_step/ 1e6))
+                plt.xticks(np.arange(x_points[0]/ 1e6, x_points[-1]/ 1e6, step=x_step/ 1e6))
+                plt.ticklabel_format(style='plain', useMathText=True)
+                x, y, binsx, binsy = [[e / 1e6 for e in l] for l in [x, y, binsx, binsy]]
                 plt.plot(x, y, 'b', label='rmse diff')
                 coeff = max(y) / max(binsy)
                 plt.plot(binsx, [e * coeff for e in binsy], 'r', label='distribution')
+                plt.legend()
                 plt.xlabel('value')
-                plt.ylabel(f'{f.__name__} of true prediction {model_name_tag}')
+                plt.ylabel(f'{f.__name__} true VS {model_name_tag}')
                 plt.title(f'{model_name_tag}')
                 plt.savefig(f'{self.pred_dir}/{model_name_tag}_{f.__name__}.png')
 
