@@ -65,6 +65,7 @@ class DefaultTrainer(BaseTrainer):
         return f'{CLASSIFIERS_DIR}/{Namer.wrapper_name(self.configs.get("model"))}.pkl'
 
     def save(self) -> None:
+        print(f'saved model {self.model_path()}')
         pickle_obj(self.wrapper, self.model_path())
 
     def log_metrics(self, results) -> None:
@@ -96,7 +97,7 @@ class DefaultTrainer(BaseTrainer):
         return results
 
     @staticmethod
-    def figure_feature_list(f_list, available_features) -> List:
+    def figure_feature_list(f_list: List, available_features: List) -> List:
         final_list = []
         for available_feature in available_features:
             for feature in f_list:

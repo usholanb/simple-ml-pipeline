@@ -1,8 +1,8 @@
 import math
-
+import sys
+import ruamel.yaml
 import pandas as pd
 import numpy as np
-import yaml
 from utils.constants import DATA_DIR
 
 
@@ -42,6 +42,18 @@ def print_columns_weird(df):
         break
 
 
+def seq(*l):
+    s = ruamel.yaml.comments.CommentedSeq(l)
+    s.fa.set_flow_style()
+    return s
+
+
+def dump_yaml(data):
+    yaml = ruamel.yaml.YAML()
+    yaml.indent(mapping=2, sequence=3, offset=1)
+    yaml.dump(data, sys.stdout)
+
+
 if __name__ == '__main__':
     f_name = 'merged_df_v6.xlsx'
     df = pd.read_excel(f'{DATA_DIR}/{f_name}', sheet_name='Sheet1')
@@ -54,8 +66,17 @@ if __name__ == '__main__':
     df = df[df['Team'].notna()]
     df.loc[df['Team'] == 'Real SociedadDec', 'Team'] = 'Real Sociedad'
     df.loc[df['Team'] == 'Torino F.C.', 'Team'] = 'Toronto FC'
-    print(yaml.dump({k: [] for k in df.columns.tolist()}))
+    with open(f'{DATA_DIR}/test.yaml', 'w') as f_out:
+        p_features = {k: seq('min_max_scaler') for k in df.columns.tolist()}
+        ohe_features = ['Team', 'a_w', 'bp', 'd_w', 'foot', 'nationality']
+        for feature_name in ohe_features:
+            p_features[feature_name] = seq('ohe')
+        for no_p_features in ['Team_encoded', 'nationality_encoded', 'name']:
+            p_features[no_p_features] = []
+        dump_yaml(p_features)
+
     name, ext = f_name.split('.')
     f_out_name = f'{name}2.{ext}'
     df.to_excel(f'{DATA_DIR}/{f_out_name}', sheet_name='Sheet1')
     print_columns_weird(df)
+

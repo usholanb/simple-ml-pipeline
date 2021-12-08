@@ -8,9 +8,9 @@ dataset:
 
 
 models:
-#  uan: dense_net_regression
+  uan: dense_net_regression
   uan3: xgb_regressor
-#  uan4: linear_regression
+  uan4: linear_regression
 
 
 metrics: [mse]

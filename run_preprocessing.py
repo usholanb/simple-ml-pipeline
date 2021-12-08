@@ -22,7 +22,8 @@ def preprocessing(configs: Dict) -> None:
         configs.get('dataset').get('name'))(configs)
     dataset.collect()
     CSVSaver().save(dataset.data, configs)
-    print(f'{Namer.dataset_name(configs.get("dataset"))} is ready')
+    print(f'{Namer.dataset_name(configs.get("dataset"))} is ready, dataset: {dataset.data.shape}')
+
 
 
 if __name__ == '__main__':

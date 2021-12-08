@@ -74,6 +74,7 @@ class PlayerEvaluationPredictor(Predictor):
                 plt.ylabel(f'{f.__name__} of true prediction {model_name_tag}')
                 plt.title(f'{model_name_tag}')
                 plt.savefig(f'{self.pred_dir}/{model_name_tag}_{f.__name__}.png')
+                plt.clf()
 
 
 
