@@ -22,12 +22,21 @@ class Predictor:
         dataset_name = self.configs.get('dataset').get('input_path').split('/')[-1]
         return create_folder(f'{PREDICTIONS_DIR}/{dataset_name}')
 
+    def print_important_features(self, wrapper):
+        d = {k: v for k, v in zip(wrapper._features_list, wrapper.clf.feature_importances_)}
+        l = sorted(d.items(), key=lambda x: x[1])
+        l = [(e1, e2) for (e1, e2) in l if
+                   'Team' not in e1 and 'nationality' not in e1 and 'bp_' not in e1 and 'foot.1' not in e1]
+        print(l)
+        return
+
     def predict(self) -> pd.DataFrame:
         output_dataset = deepcopy(self.dataset)
         for tag, model_name in self.configs.get('models').items():
             model_name_tag = f'{model_name}_{tag}'
             model_path = f'{CLASSIFIERS_DIR}/{model_name_tag}.pkl'
             wrapper = unpickle_obj(model_path)
+            self.print_important_features(wrapper)
             probs = wrapper.predict_proba(self.dataset)
             if len(wrapper.label_types) > 1:
                 for label, label_index in wrapper.label_types.items():

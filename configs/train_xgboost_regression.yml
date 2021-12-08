@@ -188,7 +188,7 @@ features_list:
   - nationality_56
   - nationality_57
   - nationality_58
-  - On Loan
+#  - On Loan
   - Loan_start_year
   - Loan_end_year
   - Team_1

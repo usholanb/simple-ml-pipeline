@@ -30,7 +30,7 @@ features_list:
   pot: [min_max_scaler]
   id: [min_max_scaler]
   foot: [ohe]
-  foot.1: [min_max_scaler]
+#  foot.1: [min_max_scaler]
   bov: [min_max_scaler]
   bp: [ohe]
   growth: [min_max_scaler]
