@@ -22,12 +22,10 @@ class PlayerEvaluationPredictor(Predictor):
         self.x_step = int(5e6)
         self.y_step = int(2e6)
         self.middle = int(80e6)
-
         self.scale = 1e-6
 
     def save_graphs(self, output_dataset):
         graph = MatPlotLibGraph(self.configs)
-
         x_ticks = self.get_x_ticks()
         for f in [
             self.get_abs_diff,
@@ -36,7 +34,6 @@ class PlayerEvaluationPredictor(Predictor):
         ]:
             self.plot_one_f(graph, f, x_ticks, output_dataset)
         self.one_hist(graph, x_ticks, output_dataset, self.pred_dir, 'distribution')
-
         # for feature_name in ['Loan_end_year']:
         #     graph.plot_hist(x_ticks, [split[feature_name].to_list()],
         #                     self.pred_dir, f'{feature_name}_{split_name}')
@@ -60,7 +57,7 @@ class PlayerEvaluationPredictor(Predictor):
                 label = f'{model_name_tag} {f.__name__}_{split_name}'
                 loss_y = []
                 for prev_x_point, x_point in zip(x_ticks[:-1], x_ticks[1:]):
-                    idx = np.where(np.logical_and(prev_x_point < true, true < x_point))[0]
+                    idx = np.where(np.logical_and(prev_x_point < true, true <= x_point))[0]
                     if len(idx) > 0:
                         loss_y.append(f(true[idx], pred[idx]))
                     else:
@@ -68,19 +65,17 @@ class PlayerEvaluationPredictor(Predictor):
                 ys.append(loss_y)
                 labels.append(label)
 
-        graph.plot_grid(x_ticks[:-1], ys, labels, self.pred_dir, 'value in millions', f'{f.__name__}')
+        graph.plot_step(x_ticks[:-1], ys, labels, self.pred_dir, 'value in millions', f'{f.__name__}')
 
     def get_x_ticks(self):
-        middle_point = int(self.middle / 1e6)
-        low_middle = 10
+        points = [10, 80, 200]
+        steps = [1, 5, 10]
         x_ticks = []
-        x_ticks.extend(list(range(0, low_middle,
-                                  1)))
-        x_ticks.extend(list(range(low_middle, middle_point,
-                                  int(self.x_step / 1e6))))
-        _x_step = self.x_step / 1e6
-        x_ticks.extend(list(range(middle_point, 200,
-                                  int(self.x_step / 1e6) * 2)))
+        current = 0
+        for p, s in zip(points, steps):
+            x_ticks.extend(list(range(current, p,
+                                      s)))
+            current = p
         return np.array(x_ticks)
 
     def get_abs_diff(self, t, p):

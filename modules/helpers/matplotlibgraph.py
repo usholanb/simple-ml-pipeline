@@ -9,7 +9,7 @@ class MatPlotLibGraph:
     def __init__(self, configs):
         self.configs = configs
 
-    def plot_grid(self, x, ys, lines_labels, save_folder, x_label, y_label):
+    def plot_step(self, x, ys, lines_labels, save_folder, x_label, y_label):
         figure(figsize=(50, 30), dpi=100)
         plt.locator_params(axis="y", nbins=10)
         plt.yticks(fontsize=30)
@@ -18,7 +18,7 @@ class MatPlotLibGraph:
         plt.ylabel(y_label, fontsize=50)
         plt.ticklabel_format(style='plain', useMathText=True)
         for y, line_label in zip(ys, lines_labels):
-            plt.step(x, y, label=line_label, linewidth=7.0)
+            plt.step(x, y, where='post', label=line_label, linewidth=7.0)
             plt.legend(fontsize=40, loc="upper left")
         plt.savefig(f'{save_folder}/{y_label}.png')
         plt.clf()
@@ -51,7 +51,7 @@ class MatPlotLibGraph:
             plt.ylabel('quantity', fontsize=50)
             y_ticks = []
             for prev_x_point, x_point in zip(_x_ticks[:-1], _x_ticks[1:]):
-                idx = np.where(np.logical_and(prev_x_point < true, true < x_point))[0]
+                idx = np.where(np.logical_and(prev_x_point < true, true <= x_point))[0]
                 if len(idx) > 0:
                     y_ticks.append(len(idx))
                 else:
