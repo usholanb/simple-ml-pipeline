@@ -27,32 +27,34 @@ class PlayerEvaluationPredictor(Predictor):
 
     def save_graphs(self, output_dataset):
         split = output_dataset[output_dataset['split'] == 'test']
-        true = (10 ** split['value']).values.astype(int)
+        true = (10 ** split['value']).values.astype(int) / 1e6
         graph = MatPlotLibGraph(self.configs)
 
-        x_ticks = self.get_x_ticks(true)
-        for f in [
-            self.get_abs_diff,
-            self.get_rmse,
-            self.get_mean_fraction,
-        ]:
-            self.plot_one_f(graph, f, x_ticks, split, true)
-        graph.plot_hist(true, self.pred_dir)
+        # x_ticks = self.get_x_ticks(true)
+        # for f in [
+        #     self.get_abs_diff,
+        #     self.get_rmse,
+        #     self.get_mean_fraction,
+        # ]:
+        #     self.plot_one_f(graph, f, x_ticks, split, true)
+        # graph.plot_hist(true, self.pred_dir, 'distribution')
+        for feature_name in ['Loan_end_year']:
+            graph.plot_hist([split[feature_name].to_list()],
+                            self.pred_dir, feature_name, ticks=False)
 
     def plot_one_f(self, graph, f, x_ticks, split, true):
-        _true = np.array(true) / 1e6
         ys, labels = [], []
         for tag, model_name in self.configs.get('models').items():
             model_name_tag = f'{model_name}_{tag}'
             loss_y = []
             for prev_x_point, x_point in zip(x_ticks[:-1], x_ticks[1:]):
-                idx = np.where(np.logical_and(prev_x_point < _true, _true < x_point))[0]
+                idx = np.where(np.logical_and(prev_x_point < true, true < x_point))[0]
                 if len(idx) > 0:
                     pred = (10 ** split[model_name_tag]).values.astype(int)[idx] / 1e6
-                    loss_y.append(f(_true[idx], pred))
+                    loss_y.append(f(true[idx], pred))
             ys.append(loss_y)
             labels.append(f'{model_name_tag} {f.__name__}')
-        graph.plot_lines(x_ticks, ys, labels, self.pred_dir, 'value in millions', f.__name__)
+        graph.plot_lines(x_ticks, ys[:-1], labels, self.pred_dir, 'value in millions', f.__name__)
 
     def get_x_ticks(self, true):
         middle_point = int(self.middle / 1e6)
@@ -60,7 +62,7 @@ class PlayerEvaluationPredictor(Predictor):
         x_ticks.extend(list(range(0, middle_point,
                                   int(middle_point / self.ticks_before_middle))))
         _x_step = self.x_step / 1e6
-        x_ticks.extend(list(range(middle_point, int(max(true) / 1e6),
+        x_ticks.extend(list(range(middle_point, int(max(true)),
                                   int(middle_point / self.ticks_before_middle) * 2)))
         return np.array(x_ticks)
 

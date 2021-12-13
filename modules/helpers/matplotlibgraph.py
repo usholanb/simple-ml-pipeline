@@ -17,15 +17,18 @@ class MatPlotLibGraph:
         plt.ylabel(y_label, fontsize=50)
         plt.ticklabel_format(style='plain', useMathText=True)
         for y, line_label in zip(ys, lines_labels):
-            plt.plot(x[:-1], y, label=line_label, linewidth=7.0)
+            plt.plot(x, y, label=line_label, linewidth=7.0)
             plt.legend(fontsize=40, loc="upper left")
         plt.savefig(f'{save_folder}/{y_label}.png')
         plt.clf()
 
-    def plot_hist(self, true, save_dir):
-        plt.xticks(list(range(0, int(max(true) / 1e6), int((max(true) / 1e6) / 20))), fontsize=30)
+    def plot_hist(self, true, save_dir, name, ticks=True):
+        figure(figsize=(50, 30), dpi=100)
+        if ticks:
+            plt.xticks(list(range(0, int(max(true)), int((max(true)) / 20))))
+        plt.xticks(fontsize=30)
         plt.yticks(fontsize=30)
-        plt.hist(true / 1e6, 50, density=True, facecolor='g')
-        plt.xlabel('value in millions', fontsize=50)
-        plt.ylabel('quantity of players', fontsize=50)
-        plt.savefig(f'{save_dir}/distribution.png')
+        plt.hist(true, 100, density=True, facecolor='g')
+        plt.xlabel(name, fontsize=50)
+        plt.ylabel('percentage', fontsize=50)
+        plt.savefig(f'{save_dir}/{name}.png')

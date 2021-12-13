@@ -6,6 +6,7 @@ from typing import List, AnyStr, Dict
 from pathlib import Path
 import copy
 import os
+from datetime import timedelta
 import importlib
 import glob
 from typing import AnyStr
@@ -270,14 +271,6 @@ def get_outside_library(model_name):
     return getattr(module, class_name)
 
 
-
-# def check_label_type(targets):
-#     empty_array = np.zeros(len(targets))
-#     np.mod(targets, 1, out=empty_array)
-#     mask = (empty_array == 0)
-#     return mask.all()
-
-
 def to_snake_case(name):
     name = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)
     name = re.sub('__([A-Z])', r'_\1', name)
@@ -309,7 +302,7 @@ class Timeit:
         if self.iter > 0 and self.iter % self.every == 0:
             now = time()
             iter_time = now - self.start
-            expected = self.iter_n * iter_time
+            expected = str(timedelta(seconds=self.iter_n * iter_time))
             print(f'{self.to_print}:   time: {iter_time},    '
                   f'total training time: {round(now - Timeit.original_start, 2)},'
-                  f' expected for all {self.iter_n} iters: {round(expected, 2)}')
+                  f' expected for all {self.iter_n} iters: {expected}')

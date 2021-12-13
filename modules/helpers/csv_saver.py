@@ -16,9 +16,9 @@ class CSVSaver:
     def load(cls, configs) -> pd.DataFrame:
         """ saves csv to output_csv which is local path """
         input_path = configs.get('dataset').get('input_path')
-        input_path = cls.add_csv_gz(input_path)
-        print(f'reading {input_path}')
-        return pd.read_csv(input_path,  compression='gzip')
+        gz_input_path = cls.add_csv_gz(input_path)
+        print(f'reading {gz_input_path}')
+        return pd.read_csv(gz_input_path,  compression='gzip')
 
     @classmethod
     def add_csv(cls, path):

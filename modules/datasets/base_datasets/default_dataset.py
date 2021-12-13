@@ -15,6 +15,10 @@ class DefaultDataset(BaseDataset):
 
     def split_df(self, ratio: float, df: pd.DataFrame)  \
             -> Tuple[pd.DataFrame, pd.DataFrame]:
+        # uniq = df['name'].unique()
+        # first_index = int(len(uniq) * ratio)
+        # return df.loc[df['name'].isin(uniq[:first_index])], \
+        #        df.loc[df['name'].isin(uniq[first_index:])]
         first_index = int(len(df) * ratio)
         return df.iloc[:first_index, :], df.iloc[first_index:, :]
 
