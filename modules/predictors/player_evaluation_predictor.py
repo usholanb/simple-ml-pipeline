@@ -30,14 +30,14 @@ class PlayerEvaluationPredictor(Predictor):
         true = (10 ** split['value']).values.astype(int) / 1e6
         graph = MatPlotLibGraph(self.configs)
 
-        # x_ticks = self.get_x_ticks(true)
-        # for f in [
-        #     self.get_abs_diff,
-        #     self.get_rmse,
-        #     self.get_mean_fraction,
-        # ]:
-        #     self.plot_one_f(graph, f, x_ticks, split, true)
-        # graph.plot_hist(true, self.pred_dir, 'distribution')
+        x_ticks = self.get_x_ticks(true)
+        for f in [
+            self.get_abs_diff,
+            self.get_rmse,
+            self.get_mean_fraction,
+        ]:
+            self.plot_one_f(graph, f, x_ticks, split, true)
+        graph.plot_hist(true, self.pred_dir, 'distribution')
         for feature_name in ['Loan_end_year']:
             graph.plot_hist([split[feature_name].to_list()],
                             self.pred_dir, feature_name, ticks=False)
@@ -54,7 +54,7 @@ class PlayerEvaluationPredictor(Predictor):
                     loss_y.append(f(true[idx], pred))
             ys.append(loss_y)
             labels.append(f'{model_name_tag} {f.__name__}')
-        graph.plot_lines(x_ticks, ys[:-1], labels, self.pred_dir, 'value in millions', f.__name__)
+        graph.plot_lines(x_ticks[:-1], ys, labels, self.pred_dir, 'value in millions', f.__name__)
 
     def get_x_ticks(self, true):
         middle_point = int(self.middle / 1e6)
