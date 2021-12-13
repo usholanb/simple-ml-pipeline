@@ -1,12 +1,27 @@
 import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib.pyplot import figure
+import seaborn as sea
 
 
 class MatPlotLibGraph:
 
     def __init__(self, configs):
         self.configs = configs
+
+    def plot_grid(self, x, ys, lines_labels, save_folder, x_label, y_label):
+        figure(figsize=(50, 30), dpi=100)
+        plt.locator_params(axis="y", nbins=10)
+        plt.yticks(fontsize=30)
+        plt.xticks(x, fontsize=30)
+        plt.xlabel(x_label, fontsize=50)
+        plt.ylabel(y_label, fontsize=50)
+        plt.ticklabel_format(style='plain', useMathText=True)
+        for y, line_label in zip(ys, lines_labels):
+            plt.step(x, y, label=line_label, linewidth=7.0)
+            plt.legend(fontsize=40, loc="upper left")
+        plt.savefig(f'{save_folder}/{y_label}.png')
+        plt.clf()
 
     def plot_lines(self, x, ys, lines_labels, save_folder, x_label, y_label):
         figure(figsize=(50, 30), dpi=100)
@@ -22,13 +37,34 @@ class MatPlotLibGraph:
         plt.savefig(f'{save_folder}/{y_label}.png')
         plt.clf()
 
-    def plot_hist(self, true, save_dir, name, ticks=True):
-        figure(figsize=(50, 30), dpi=100)
-        if ticks:
-            plt.xticks(list(range(0, int(max(true)), int((max(true)) / 20))))
-        plt.xticks(fontsize=30)
-        plt.yticks(fontsize=30)
-        plt.hist(true, 100, density=True, facecolor='g')
-        plt.xlabel(name, fontsize=50)
-        plt.ylabel('percentage', fontsize=50)
-        plt.savefig(f'{save_dir}/{name}.png')
+    def plot_hist(self, x_ticks, trues, save_dir, labels):
+        plt.clf()
+
+        figure(figsize=(50, 30))
+        ax = plt.subplot(111)
+        colors = ['b', 'r', 'y']
+        width = 0.9
+        x_ticks = np.array(x_ticks)
+        x_ticks_list = [x_ticks - width, x_ticks, x_ticks + width]
+        for true, label, c, _x_ticks in zip(trues, labels, colors, x_ticks_list):
+            plt.xlabel('value', fontsize=50)
+            plt.ylabel('quantity', fontsize=50)
+            y_ticks = []
+            for prev_x_point, x_point in zip(_x_ticks[:-1], _x_ticks[1:]):
+                idx = np.where(np.logical_and(prev_x_point < true, true < x_point))[0]
+                if len(idx) > 0:
+                    y_ticks.append(len(idx))
+                else:
+                    y_ticks.append(0)
+
+            ax.tick_params(axis='both', which='major', labelsize=30)
+            ax.tick_params(axis='both', which='minor', labelsize=8)
+
+            ax.bar(_x_ticks[:-1], y_ticks, align='center', width=width,
+                    color=c, label=f'{label} Total number : {len(true)}')
+            ax.legend(fontsize=40, loc="upper left")
+
+        plt.title(f'distribution')
+        plt.savefig(f'{save_dir}/distribution.png')
+
+
