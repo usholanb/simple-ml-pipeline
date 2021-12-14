@@ -9,13 +9,16 @@ class CSVSaver:
         """ saves csv to output_csv which is local path """
         input_path = configs.get('dataset').get('input_path')
         if isinstance(data, pd.DataFrame):
-            data.to_csv(cls.raw_to_processed(input_path.rstrip('.csv')),
-                        index=False, compression='gzip')
+            input_path = input_path.rstrip('.csv')
+            k_fold_tag = configs.get('dataset').get('k_fold_tag', '')
+            name = f"{cls.raw_to_processed(f'{input_path}{k_fold_tag}')}"
+            data.to_csv(name, index=False, compression='gzip')
 
     @classmethod
     def load(cls, configs) -> pd.DataFrame:
         """ saves csv to output_csv which is local path """
-        input_path = configs.get('dataset').get('input_path')
+        tag = configs.get('dataset').get('k_fold_tag', '')
+        input_path = f"{configs.get('dataset').get('input_path')}{tag}"
         gz_input_path = cls.add_csv_gz(input_path)
         print(f'reading {gz_input_path}')
         return pd.read_csv(gz_input_path,  compression='gzip')

@@ -12,12 +12,11 @@ from copy import deepcopy
 from modules.helpers.csv_saver import CSVSaver
 from modules.helpers.namer import Namer
 from utils.constants import TRAIN_RESULTS_DIR
-from utils.flags import train_flags
 from utils.common import build_config, setup_imports, setup_directories, add_grid_search_parameters
 from utils.registry import registry
 import pandas as pd
 from ray import tune
-from typing import Dict
+from typing import Dict, AnyStr
 import time
 
 
@@ -60,11 +59,18 @@ def train(configs: Dict) -> None:
     train_one(configs, dataset, save=configs.get('trainer').get('save'))
 
 
-if __name__ == '__main__':
+def run_train(k_fold_tag: AnyStr = ''):
+    print('started run_train')
     start = time.time()
     setup_directories()
-    parser = train_flags.parser
+    from utils.flags import all_flags
+    parser = all_flags['train'].parser
     args = parser.parse_args()
-    config = build_config(args)
-    train(config)
+    configs = build_config(args)
+    configs['dataset']['k_fold_tag'] = k_fold_tag
+    train(configs)
     print(f'training took {round(time.time() - start, 2)} seconds')
+
+
+if __name__ == '__main__':
+    run_train()

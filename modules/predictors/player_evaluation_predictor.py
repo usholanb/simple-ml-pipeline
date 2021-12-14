@@ -30,13 +30,11 @@ class PlayerEvaluationPredictor(Predictor):
         for f in [
             self.get_abs_diff,
             self.get_rmse,
+            self.get_abs_mean_fraction,
             self.get_mean_fraction,
         ]:
             self.plot_one_f(graph, f, x_ticks, output_dataset)
         self.one_hist(graph, x_ticks, output_dataset, self.pred_dir, 'distribution')
-        # for feature_name in ['Loan_end_year']:
-        #     graph.plot_hist(x_ticks, [split[feature_name].to_list()],
-        #                     self.pred_dir, f'{feature_name}_{split_name}')
 
     def one_hist(self, graph, x_ticks, output_dataset, pred_dir, name):
         labels, trues = [], []
@@ -50,7 +48,11 @@ class PlayerEvaluationPredictor(Predictor):
         ys, labels = [], []
         for tag, model_name in self.configs.get('models').items():
             model_name_tag = f'{model_name}_{tag}'
-            for split_name in ['train', 'test', 'valid']:
+            for split_name in [
+                'train',
+                'valid',
+                'test',
+            ]:
                 split = output_dataset[output_dataset['split'] == split_name]
                 pred = (10 ** split[model_name_tag]).values.astype(int) / 1e6
                 true = (10 ** split['value']).values.astype(int) / 1e6
@@ -82,9 +84,13 @@ class PlayerEvaluationPredictor(Predictor):
         """ """
         return np.absolute(t - p).sum() / len(t)
 
-    def get_mean_fraction(self, t, p):
+    def get_abs_mean_fraction(self, t, p):
         """ """
         return (np.absolute(t - p) / t).sum() / len(t)
+
+    def get_mean_fraction(self, t, p):
+        """ """
+        return ((t - p) / t).sum() / len(t)
 
     def get_rmse(self, t, p):
         """ """

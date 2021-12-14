@@ -45,10 +45,11 @@ class DefaultDataset(BaseDataset):
             train_df = self.shuffle(train_df)
         else:
             raise RuntimeError('at least train set file must exist')
+        limit = self.configs.get('dataset').get('limit', None)
         return {
-            'train': train_df,
-            'valid': valid_df,
-            'test': test_df,
+            'train': train_df.iloc[:limit],
+            'valid': valid_df.iloc[:limit],
+            'test': test_df.iloc[:limit],
         }
 
     def apply_transformers(self, data_x: pd.DataFrame) -> pd.DataFrame:

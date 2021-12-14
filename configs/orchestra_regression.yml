@@ -1,0 +1,23 @@
+includes:
+  - configs/constant_configs.yml
+
+
+k_fold: 10
+
+preprocessing: preprocessing_regression
+predictor: player_evaluation
+
+train:
+  - train_xgboost_regression
+
+prediction: prediction_regression
+
+dataset:
+  input_path: processed_data/merged_df_v62
+
+
+models:
+#  uan: dense_net_regression
+  uan3: xgb_regressor
+#  uan4: linear_regression
+

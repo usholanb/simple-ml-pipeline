@@ -62,7 +62,9 @@ class DefaultTrainer(BaseTrainer):
         return wrapper
 
     def model_path(self) -> AnyStr:
-        return f'{CLASSIFIERS_DIR}/{Namer.wrapper_name(self.configs.get("model"))}.pkl'
+        k_fold_tag = self.configs.get('dataset').get('k_fold_tag', '')
+        name = f'{Namer.wrapper_name(self.configs.get("model"))}{k_fold_tag}'
+        return f'{CLASSIFIERS_DIR}/{name}.pkl'
 
     def save(self) -> None:
         print(f'saved model {self.model_path()}')

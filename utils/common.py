@@ -217,6 +217,7 @@ def pickle_obj(obj, path: AnyStr) -> None:
 
 
 def unpickle_obj(path: AnyStr):
+    print(f'unpickling {path}')
     with open(path, 'rb') as f_out:
         obj = pickle.load(f_out)
     return obj

@@ -25,6 +25,17 @@ class Flags:
         """ Choose config file for example, use parser.add_argument """
 
 
+class CustomFlag(Flags):
+    def add_config_args(self, config_name) -> Flags:
+        self._parser.add_argument_group("Core Arguments")
+        self._parser.add_argument(
+            "--config-yml",
+            default=f'{CONFIGS_DIR}/{config_name}.yml',
+            help="path to config file starting from project home path",
+        )
+        return self
+
+
 class PreprocessingFlag(Flags):
 
     def add_core_args(self) -> None:
@@ -58,6 +69,20 @@ class PredictionFlags(Flags):
         )
 
 
-preprocessing_flags = PreprocessingFlag('dataset creation config file')
-train_flags = TrainFlags('trainer creation config file')
-prediction_flags = PredictionFlags('prediction config file')
+class OrchestraFlags(Flags):
+
+    def add_core_args(self) -> None:
+        self._parser.add_argument_group("Core Arguments")
+        self._parser.add_argument(
+            "--config-yml",
+            default=f'{CONFIGS_DIR}/orchestra_regression.yml',
+            help="path to config file starting from project home path",
+        )
+
+all_flags = {
+    'preprocessing': PreprocessingFlag('dataset creation config file'),
+    'train': TrainFlags('trainer creation config file'),
+    'prediction': PredictionFlags('prediction config file'),
+    'orchestra': OrchestraFlags('orchestra config file'),
+}
+
