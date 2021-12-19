@@ -27,8 +27,8 @@ class Predictor:
 
     def print_important_features(self, wrapper: DefaultWrapper) -> None:
         if self.configs.get('print_important_features', False):
-            d = {k: v for k, v in zip(wrapper.features_list, wrapper.clf.feature_importances_)}
-            print(sorted(d.items(), key=lambda x: -x[1]))
+            self.feature_importance = {k: v for k, v in zip(wrapper.features_list, wrapper.clf.feature_importances_)}
+            print(sorted(self.feature_importance.items(), key=lambda x: -x[1]))
 
     def predict(self) -> pd.DataFrame:
         output_dataset = deepcopy(self.dataset)

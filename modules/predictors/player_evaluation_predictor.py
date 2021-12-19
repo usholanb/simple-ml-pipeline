@@ -4,6 +4,7 @@ from modules.helpers.matplotlibgraph import MatPlotLibGraph
 from modules.predictors.base_predictors.predictor import Predictor
 from utils.registry import registry
 import numpy as np
+import csv
 import utils.small_functions as sf
 
 
@@ -21,11 +22,6 @@ class PlayerEvaluationPredictor(Predictor):
         self.split_names = self.configs.get('plots', {}).get('splits', [])
 
     def save_graphs(self, output_dataset: pd.DataFrame) -> None:
-        giggs = output_dataset.loc[output_dataset['value'].argmin()]
-        output_dataset = output_dataset[output_dataset['value'] > 6]
-        other_min = output_dataset.loc[output_dataset['value'].argmin()]
-        fs = output_dataset.columns.tolist()[6:-1]
-        print(sorted(zip(giggs.values[6: -1] - other_min.values[6: -1], fs), key=lambda x: x[1]))
         x_ticks = self.get_x_ticks()
         for f_name in self.configs.get('plots', {}).get('steps_func', []):
             f = getattr(sf, f_name)

@@ -2,3 +2,4 @@ ray
 tabulate
 scikit-learn
 xgboost
+dependency_injector

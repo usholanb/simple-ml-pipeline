@@ -56,8 +56,6 @@ class DefaultDataset(BaseDataset):
         processed_data = pd.DataFrame()
         all_features = {f: [] for f in data_x.columns}
         for feature, t_name_list in self.configs.get('features_list', all_features).items():
-            if feature == 'Loan_end_year':
-                print('asdasd')
             t_name_list = t_name_list if isinstance(t_name_list, list) else [t_name_list]
             feature_to_process = data_x[feature].values
             for t_name in t_name_list + common_transformers:

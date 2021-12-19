@@ -21,7 +21,7 @@ class MatPlotLibGraph:
             plt.step(x, y, where='post', label=line_label, linewidth=7.0)
             plt.legend(fontsize=40, loc="upper left")
             for xx, yy, qq in zip(x, y, quantity):
-                plt.text(xx, yy, qq, color='blue', fontweight='bold', fontsize=15)
+                plt.text(xx, yy, qq, color='blue', fontweight='bold', fontsize=10)
         plt.savefig(f'{save_folder}/{y_label}.png')
         plt.clf()
 

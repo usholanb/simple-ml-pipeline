@@ -30,7 +30,7 @@ def get_predictor(k_fold_tag: AnyStr) -> Predictor:
 
 def save_files(predictor: Predictor, output_dataset: pd.DataFrame) -> None:
     """ Prepares Dataset """
-    # predictor.save_results(output_dataset)
+    predictor.save_results(output_dataset)
     predictor.save_graphs(output_dataset)
 
 
