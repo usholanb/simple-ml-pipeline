@@ -4,7 +4,20 @@ includes:
 predictor: player_evaluation
 
 dataset:
-  input_path: processed_data/merged_df_v62
+  input_path: processed_data/no_GK_merged_df_v62
+
+print_important_features: true
+
+plots:
+  splits:
+    - train
+    - valid
+    - test
+  steps_func:
+    - get_abs_diff
+    - get_abs_mean_fraction
+    - get_mean_fraction
+    - get_rmse
 
 
 models:

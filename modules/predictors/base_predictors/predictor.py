@@ -1,6 +1,9 @@
+from typing import AnyStr, Dict
+
 import pandas as pd
 
 from modules.helpers.csv_saver import CSVSaver
+from modules.wrappers.base_wrappers.default_wrapper import DefaultWrapper
 from utils.common import unpickle_obj, create_folder
 from utils.constants import CLASSIFIERS_DIR, PREDICTIONS_DIR, PROCESSED_DATA_DIR
 from copy import deepcopy
@@ -13,7 +16,7 @@ class Predictor:
     """ uses all wrappers pointed in prediction config to
         make and save several prediction files """
 
-    def __init__(self, configs, dataset):
+    def __init__(self, configs: Dict, dataset: pd.DataFrame):
         self.configs = configs
         self.dataset = dataset
 
@@ -22,13 +25,10 @@ class Predictor:
         dataset_name = self.configs.get('dataset').get('input_path').split('/')[-1]
         return create_folder(f'{PREDICTIONS_DIR}/{dataset_name}')
 
-    def print_important_features(self, wrapper):
-        d = {k: v for k, v in zip(wrapper._features_list, wrapper.clf.feature_importances_)}
-        l = sorted(d.items(), key=lambda x: x[1])
-        # l = [(e1, e2) for (e1, e2) in l if
-        #            'Team' not in e1 and 'nationality' not in e1 and 'bp_' not in e1 and 'foot.1' not in e1]
-        print(l)
-        return
+    def print_important_features(self, wrapper: DefaultWrapper) -> None:
+        if self.configs.get('print_important_features', False):
+            d = {k: v for k, v in zip(wrapper.features_list, wrapper.clf.feature_importances_)}
+            print(sorted(d.items(), key=lambda x: -x[1]))
 
     def predict(self) -> pd.DataFrame:
         output_dataset = deepcopy(self.dataset)
@@ -37,7 +37,7 @@ class Predictor:
             model_name_tag = f'{model_name}_{tag}'
             model_path = f'{CLASSIFIERS_DIR}/{model_name_tag}{k_fold_tag}.pkl'
             wrapper = unpickle_obj(model_path)
-            # self.print_important_features(wrapper)
+            self.print_important_features(wrapper)
             probs = wrapper.predict_proba(self.dataset)
             if len(wrapper.label_types) > 1:
                 for label, label_index in wrapper.label_types.items():
@@ -47,7 +47,7 @@ class Predictor:
             output_dataset['k_fold'] = k_fold_tag
         return output_dataset
 
-    def save_metrics(self, split, split_name, dataset_name):
+    def save_metrics(self, split: pd.DataFrame, split_name: AnyStr, dataset_name: AnyStr) -> None:
         y_true_index = self.configs.get('static_columns').get('FINAL_LABEL_INDEX')
         y_true = split.iloc[:, y_true_index].values
         metrics_values = {}
@@ -64,7 +64,7 @@ class Predictor:
         CSVSaver.save_file(f'{self.pred_dir}/{dataset_name}_{split_name}_metrics',
                            df, index=True, compression=None)
 
-    def save_results(self, output_dataset) -> None:
+    def save_results(self, output_dataset: pd.DataFrame) -> None:
         for split_name in output_dataset['split'].unique():
             split = output_dataset.loc[output_dataset['split'] == split_name]
             dataset_path = self.configs.get('dataset').get('input_path')
@@ -72,6 +72,6 @@ class Predictor:
             CSVSaver.save_file(f'{self.pred_dir}/{dataset_name}_{split_name}', split)
             self.save_metrics(split, split_name, dataset_name)
 
-    def save_graphs(self, output_dataset):
+    def save_graphs(self, output_dataset: pd.DataFrame):
         """ saves various project specific graphs """
 

@@ -66,17 +66,30 @@ if __name__ == '__main__':
     df = df[df['Team'].notna()]
     df.loc[df['Team'] == 'Real SociedadDec', 'Team'] = 'Real Sociedad'
     df.loc[df['Team'] == 'Torino F.C.', 'Team'] = 'Toronto FC'
+    # remove goal keepers
+    df = df[df['bp'] != 'GK']
+    df.drop(['foot.1'])
+    target = 'value'
+
     with open(f'{DATA_DIR}/test.yaml', 'w') as f_out:
-        p_features = {k: seq('min_max_scaler') for k in df.columns.tolist()}
-        ohe_features = ['Team', 'a_w', 'bp', 'd_w', 'foot', 'nationality']
+        ohe_features = ['Team', 'a_w', 'bp', 'd_w', 'foot', 'nationality', 'id']
+        no_t_features = ['Team_encoded', 'nationality_encoded', 'name']
+        p_features = []
+
+        for feature_name in no_t_features:
+            p_features.append((feature_name, []))
+
         for feature_name in ohe_features:
-            p_features[feature_name] = seq('ohe')
-        for no_p_features in ['Team_encoded', 'nationality_encoded', 'name']:
-            p_features[no_p_features] = []
+            p_features.append((feature_name, seq('ohe')))
+
+        p_features.extend([(k, seq('min_max_scaler')) for k in df.columns.tolist() if \
+                           (k not in ohe_features and k not in no_t_features)])
+        p_features = dict(p_features)
+        del p_features[target]
         dump_yaml(p_features)
 
     name, ext = f_name.split('.')
     f_out_name = f'{name}2.{ext}'
-    df.to_excel(f'{DATA_DIR}/{f_out_name}', sheet_name='Sheet1')
+    df.to_excel(f'{DATA_DIR}/no_GK_{f_out_name}', sheet_name='Sheet1')
     print_columns_weird(df)
 

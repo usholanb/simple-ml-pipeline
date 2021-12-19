@@ -9,7 +9,7 @@ class MatPlotLibGraph:
     def __init__(self, configs):
         self.configs = configs
 
-    def plot_step(self, x, ys, lines_labels, save_folder, x_label, y_label):
+    def plot_step(self, x, ys, quantities, lines_labels, save_folder, x_label, y_label):
         figure(figsize=(50, 30), dpi=100)
         plt.locator_params(axis="y", nbins=10)
         plt.yticks(fontsize=30)
@@ -17,9 +17,11 @@ class MatPlotLibGraph:
         plt.xlabel(x_label, fontsize=50)
         plt.ylabel(y_label, fontsize=50)
         plt.ticklabel_format(style='plain', useMathText=True)
-        for y, line_label in zip(ys, lines_labels):
+        for y, quantity, line_label in zip(ys, quantities, lines_labels):
             plt.step(x, y, where='post', label=line_label, linewidth=7.0)
             plt.legend(fontsize=40, loc="upper left")
+            for xx, yy, qq in zip(x, y, quantity):
+                plt.text(xx, yy, qq, color='blue', fontweight='bold', fontsize=15)
         plt.savefig(f'{save_folder}/{y_label}.png')
         plt.clf()
 

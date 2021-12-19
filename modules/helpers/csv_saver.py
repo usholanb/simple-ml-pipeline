@@ -6,7 +6,7 @@ class CSVSaver:
 
     @classmethod
     def save(cls, data, configs) -> None:
-        """ saves csv to output_csv which is local path """
+        """ saves csv to processed_ + input_path which is local path """
         input_path = configs.get('dataset').get('input_path')
         if isinstance(data, pd.DataFrame):
             input_path = input_path.rstrip('.csv')
@@ -16,12 +16,13 @@ class CSVSaver:
 
     @classmethod
     def load(cls, configs) -> pd.DataFrame:
-        """ saves csv to output_csv which is local path """
+        """ loads csv from input_path which is local path"""
         tag = configs.get('dataset').get('k_fold_tag', '')
         input_path = f"{configs.get('dataset').get('input_path')}{tag}"
         gz_input_path = cls.add_csv_gz(input_path)
-        print(f'reading {gz_input_path}')
-        return pd.read_csv(gz_input_path,  compression='gzip')
+        dataset = pd.read_csv(gz_input_path,  compression='gzip')
+        print(f'reading {gz_input_path}, dataset: {dataset.shape}')
+        return dataset
 
     @classmethod
     def add_csv(cls, path):

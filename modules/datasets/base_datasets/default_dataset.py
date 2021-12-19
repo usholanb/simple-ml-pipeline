@@ -1,3 +1,4 @@
+import sys
 from typing import Dict, Tuple, AnyStr
 import pandas as pd
 from modules.datasets.base_datasets.base_dataset import BaseDataset
@@ -15,10 +16,6 @@ class DefaultDataset(BaseDataset):
 
     def split_df(self, ratio: float, df: pd.DataFrame)  \
             -> Tuple[pd.DataFrame, pd.DataFrame]:
-        # uniq = df['name'].unique()
-        # first_index = int(len(uniq) * ratio)
-        # return df.loc[df['name'].isin(uniq[:first_index])], \
-        #        df.loc[df['name'].isin(uniq[first_index:])]
         first_index = int(len(df) * ratio)
         return df.iloc[:first_index, :], df.iloc[first_index:, :]
 
@@ -59,6 +56,8 @@ class DefaultDataset(BaseDataset):
         processed_data = pd.DataFrame()
         all_features = {f: [] for f in data_x.columns}
         for feature, t_name_list in self.configs.get('features_list', all_features).items():
+            if feature == 'Loan_end_year':
+                print('asdasd')
             t_name_list = t_name_list if isinstance(t_name_list, list) else [t_name_list]
             feature_to_process = data_x[feature].values
             for t_name in t_name_list + common_transformers:
@@ -93,9 +92,24 @@ class DefaultDataset(BaseDataset):
         data_x, data_y = label_processor.process_labels(data)
         data_x = self.apply_transformers(data_x)
         self.data = pd.concat([data_y, data_x], axis=1)
+        f_list = self.get_features_order()
+        self.data = self.data[f_list]
+        print(yaml.dump({'features_list': f_list[len(self.configs.get('static_columns')):]}))
+
+    def get_features_order(self):
         print('If you need, you can copy these features to train config to pick'
               ' the features that you want to train on')
-        print(yaml.dump({'features_list': data_x.columns.tolist()}))
+        f_t = self.configs.get('features_list')
+
+        def sort_logit(f):
+            if f not in f_t:
+                return sys.maxsize
+            else:
+                return len(f_t[f])
+
+        f_list = sorted(self.data.columns.tolist()[len(self.configs.get('static_columns')):],
+                        key=lambda x: (sort_logit(x), str(x)))
+        return self.data.columns.tolist()[:len(self.configs.get('static_columns'))] + f_list
 
     def shuffle(self, data: pd.DataFrame) -> pd.DataFrame:
         if self.configs.get('dataset').get('shuffle', True):
