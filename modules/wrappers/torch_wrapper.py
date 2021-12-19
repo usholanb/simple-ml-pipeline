@@ -17,10 +17,18 @@ class TorchWrapper(DefaultWrapper):
         super().__init__(configs, label_types)
         self.output_function = self.get_output_function()
 
+<<<<<<< HEAD
     def get_classifier(self, inputs: Dict):
+=======
+    @abstractmethod
+    def forward(self, examples):
+        """ outputs forward """
+
+    def get_classifier(self, configs):
+>>>>>>> 169588be0edde844325bed9e9130a11ad5ee1132
         return registry.get_model_class(
             self.configs.get('model').get('name')
-        )(inputs)
+        )(configs)
 
     def predict_proba(self, examples: pd.DataFrame) -> np.ndarray:
         """ returns probabilities, is used in prediction step.

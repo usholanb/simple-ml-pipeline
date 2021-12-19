@@ -1,0 +1,51 @@
+includes:
+  - configs/constant_configs.yml
+  - configs/dagnet_constant_configs.yml
+
+
+model:
+  name: dagnet
+  tag: uan
+
+
+# must be same names as parameters of the actual optimizer
+optim:
+  lr: 0.0001
+
+
+trainer:
+  name: torch_trainer3
+  optim: Adam
+  loss: dagnet_loss
+  save: 1
+  epochs: 2
+  log_valid_every: 1
+
+  tune:
+    resources_per_trial:
+      cpu: 25
+      gpu: 1
+    verbose: 0
+
+  grid_metric:
+    name: valid_avg_loss
+    mode: min
+
+  num_samples: 1
+  resume: false
+  checkpoint: false
+
+
+
+
+#features_list:
+
+
+
+
+
+
+
+
+
+

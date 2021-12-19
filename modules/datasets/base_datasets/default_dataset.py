@@ -3,6 +3,7 @@ from typing import Dict, Tuple, AnyStr
 import pandas as pd
 from modules.datasets.base_datasets.base_dataset import BaseDataset
 from modules.helpers.labels_processor import LabelsProcessor
+from modules.helpers.namer import Namer
 from utils.common import setup_imports
 from utils.registry import registry
 import yaml
@@ -13,33 +14,42 @@ class DefaultDataset(BaseDataset):
     def __init__(self, configs):
         self.configs = configs
         self.data = None
+        self.split_i = self.configs.get('static_columns').get('FINAL_SPLIT_INDEX')
+
+    @property
+    def name(self):
+        return Namer().dataset_name(self.configs)
 
     def split_df(self, ratio: float, df: pd.DataFrame)  \
             -> Tuple[pd.DataFrame, pd.DataFrame]:
         first_index = int(len(df) * ratio)
         return df.iloc[:first_index, :], df.iloc[first_index:, :]
 
-    def split(self, input_paths: Dict) -> Dict:
+    def split(self, input_paths: Dict, shuffle: bool = True) -> Dict:
+        """
+        reads source and splits to train, valid and test
+        if valid or test is absense, train is split accordingly the split ratio
+        """
+
         r = self.configs.get('dataset').get('split_ratio')
         train, valid, test = r['train'], r['valid'], r['test']
         assert 'train' in input_paths, \
             "if only 1 file is input, it must be train, " \
             "if multiple given, at least one of them must be train"
         if 'valid' not in input_paths and 'test' not in input_paths:
-            data = self.shuffle(self.read_source(input_paths['train']))
+            data = self.shuffle(self.read_source(input_paths['train']), shuffle)
             train_df, valid_df = self.split_df(train, data)
             valid_df, test_df = self.split_df(valid / (valid + test), valid_df)
         elif 'valid' not in input_paths:
             train = train / (train + valid)
-            train_df = self.shuffle(self.read_source(input_paths['train']))
+            train_df = self.shuffle(self.read_source(input_paths['train']), shuffle)
             test_df = self.read_source(input_paths['test'])
             train_df, valid_df = self.split_df(train, train_df)
         elif 'test' not in input_paths:
             train = train / (train + test)
-            train_df = self.read_source(input_paths['train'])
+            train_df = self.shuffle(self.read_source(input_paths['train']), shuffle)
             valid_df = self.read_source(input_paths['valid'])
             train_df, test_df = self.split_df(train, train_df)
-            train_df = self.shuffle(train_df)
         else:
             raise RuntimeError('at least train set file must exist')
         limit = self.configs.get('dataset').get('limit', None)
@@ -109,9 +119,10 @@ class DefaultDataset(BaseDataset):
                         key=lambda x: (sort_logit(x), str(x)))
         return self.data.columns.tolist()[:len(self.configs.get('static_columns'))] + f_list
 
-    def shuffle(self, data: pd.DataFrame) -> pd.DataFrame:
-        if self.configs.get('dataset').get('shuffle', True):
-            data = data.sample(frac=1).reset_index(drop=True)
+    def shuffle(self, data: pd.DataFrame, shuffle: bool = True) -> pd.DataFrame:
+        if shuffle:
+            if self.configs.get('dataset').get('shuffle', True):
+                data = data.sample(frac=1).reset_index(drop=True)
         return data
 
     def concat_dataset(self, data: Dict) -> pd.DataFrame:

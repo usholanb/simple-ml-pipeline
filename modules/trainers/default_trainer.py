@@ -1,6 +1,3 @@
-import numpy as np
-import pandas as pd
-import importlib
 from ray import tune
 
 from modules.helpers.namer import Namer
@@ -14,7 +11,7 @@ from utils.registry import registry
 
 
 class DefaultTrainer(BaseTrainer):
-    def __init__(self, configs: Dict, dataset: pd.DataFrame):
+    def __init__(self, configs: Dict, dataset):
         self.configs = configs
         self.dataset = dataset
         self.split_i = self.configs.get('static_columns').get('FINAL_SPLIT_INDEX')
@@ -45,6 +42,7 @@ class DefaultTrainer(BaseTrainer):
         self.configs['features_list'] = f_list
         return data
 
+<<<<<<< HEAD
     def get_wrapper(self) -> BaseWrapper:
         wrapper_class = registry.get_wrapper_class(
             self.configs.get('model').get('name'))
@@ -65,6 +63,11 @@ class DefaultTrainer(BaseTrainer):
         k_fold_tag = self.configs.get('dataset').get('k_fold_tag', '')
         name = f'{Namer.wrapper_name(self.configs.get("model"))}{k_fold_tag}'
         return f'{CLASSIFIERS_DIR}/{name}.pkl'
+=======
+
+    def model_path(self) -> AnyStr:
+        return f'{CLASSIFIERS_DIR}/{Namer.model_name(self.configs.get("model"))}.pkl'
+>>>>>>> 169588be0edde844325bed9e9130a11ad5ee1132
 
     def save(self) -> None:
         print(f'saved model {self.model_path()}')
@@ -119,3 +122,9 @@ class DefaultTrainer(BaseTrainer):
         else:
             label_types = {self.label_name: self.dataset.columns[self.label_index_i]}
         return label_types
+
+    def get_dataset(self):
+        setup_imports()
+        dataset = registry.get_dataset_class(
+            self.configs.get('dataset').get('name'))(self.configs)
+        return dataset

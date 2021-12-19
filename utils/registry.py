@@ -38,8 +38,8 @@ class Registry:
     def add_this_to(cls, func, name, mapping_name):
         if name not in cls.mapping[mapping_name]:
             cls.mapping[mapping_name][name] = func
-        else:
-            raise KeyError(f'function {name} already defined in {mapping_name}')
+        # else:
+        #     raise KeyError(f'function {name} already defined in {mapping_name}')
 
     @classmethod
     def register_dataset(cls, name):

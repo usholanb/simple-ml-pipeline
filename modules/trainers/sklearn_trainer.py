@@ -1,6 +1,7 @@
 import sys
 import numpy as np
 from modules.trainers.default_trainer import DefaultTrainer
+from modules.wrappers.sklearn_wrapper import SKLearnWrapper
 from utils.common import setup_imports
 from utils.registry import registry
 
@@ -12,7 +13,7 @@ class SKLearnTrainer(DefaultTrainer):
         """ trains sklearn model with dataset """
         setup_imports()
         data = self.prepare_train()
-        wrapper = self.get_wrapper()
+        wrapper = self.get_wrapper(self.configs, self.label_types)
         wrapper.fit(data['train_x'], data['train_y'])
         valid_pred = wrapper.predict(data['valid_x'])
         train_pred = wrapper.predict(data['train_x'])
@@ -22,6 +23,10 @@ class SKLearnTrainer(DefaultTrainer):
         self.print_metrics(data)
 
 
+    def get_wrapper(self, *args, **kwargs) -> SKLearnWrapper:
+        self.wrapper = registry.get_wrapper_class('sklearn') \
+            (*args, **kwargs)
+        return self.wrapper
 
 
 

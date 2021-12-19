@@ -5,25 +5,28 @@ includes:
 
 
 dataset:
-  name: csv_dataset
+  name: dagnet_dataset
   label_type: classification  # classification or regression
 #  input_path:
 #    train: data/toy_dataset.csv
 #    test: data/toy_dataset2.csv
-<<<<<<< HEAD
-  input_path: data/iris.csv
-  output_path: processed_data/iris
-=======
-  input_path: data/toy_dataset.csv
->>>>>>> 169588be0edde844325bed9e9130a11ad5ee1132
+#  input_path: data/toy_dataset.csv
+
+  input_path:
+    train: train
+    valid: validation
+    test: test
+
   # index or name of the labels column in the input data
-  label: -1
+  label: target
   shuffle: 1 # can be (0, false null) OR (anything else, which means true)
    # if "split_ratio" doesn't sum to 1, then valid + test will be 1 - train
   split_ratio:
     train: 0.8
     valid: 0.1
     test: 0.1
+
+  n_agents: 10
 
 
 

@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Dict, AnyStr
 
 from torch import nn
 from abc import ABC, abstractmethod
@@ -7,24 +7,21 @@ from abc import ABC, abstractmethod
 class BaseModel(object):
 
     @abstractmethod
-    def forward(self, *args, **kwargs) -> Dict:
+    def forward(self, data):
         """
         passes inputs through the model
-        returns: dict that is feed to right to loss and must contain 'outputs'
-        example:
-            {'outputs': something, ...}
+        returns: anything that is feed to right to loss
         """
 
     @abstractmethod
-    def predict(self, examples):
+    def predict_proba(self, data):
         """
-        Used during train step - the output will be the input to metrics
+        Used during prediction step
+        """
 
-        returns:
-            probabilities of type (torch.FloatTensor, numpy.ndarray)
-            of size [N x K] where each cell corresponds to nth examples and
-            kth label probability
-        """
+    @abstractmethod
+    def model_path(self) -> AnyStr:
+        """ absolute path to the model """
 
 
 

@@ -1,7 +1,6 @@
 import numpy as np
 from typing import Callable
 from modules.transformers.base_transformers.base_transformer import BaseTransformer
-from utils.common import Singleton
 
 
 class DefaultTransformer(BaseTransformer):

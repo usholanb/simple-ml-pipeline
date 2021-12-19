@@ -1,5 +1,12 @@
 ray
+<<<<<<< HEAD
 tabulate
 scikit-learn
 xgboost
 dependency_injector
+=======
+ray[rllib]
+tabulate
+scikit-learn
+dependency-injector
+>>>>>>> 169588be0edde844325bed9e9130a11ad5ee1132

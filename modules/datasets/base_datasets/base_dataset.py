@@ -1,6 +1,5 @@
 from abc import ABC, abstractmethod
 from typing import Dict, AnyStr
-from dependency_injector.wiring import Provide, inject
 
 
 class BaseDataset(ABC):
@@ -19,7 +18,7 @@ class BaseDataset(ABC):
         """ reads any source to pandas """
 
     @abstractmethod
-    def split(self, all_data) -> Dict:
+    def split(self, input_paths: dict, shuffle: bool) -> Dict:
         """ splits the data according split_ratio in config file """
 
     @abstractmethod

@@ -7,7 +7,11 @@ output dataset is is processed_data/ folder
 """
 from modules.helpers.csv_saver import CSVSaver
 from modules.helpers.namer import Namer
+<<<<<<< HEAD
 from dependency_injector.wiring import Provide, inject
+=======
+from utils.flags import preprocessing_flags
+>>>>>>> 169588be0edde844325bed9e9130a11ad5ee1132
 from utils.common import build_config, setup_imports, setup_directories
 from utils.registry import registry
 from typing import Dict, AnyStr
@@ -21,7 +25,11 @@ def preprocessing(configs: Dict) -> None:
         configs.get('dataset').get('name'))(configs)
     dataset.collect()
     CSVSaver().save(dataset.data, configs)
+<<<<<<< HEAD
     print(f'{Namer.dataset_name(configs.get("dataset"))} is ready, dataset: {dataset.data.shape}')
+=======
+    print(f'{Namer.dataset_name(configs)} is ready')
+>>>>>>> 169588be0edde844325bed9e9130a11ad5ee1132
 
 
 def run_preprocessing(k_fold_tag: AnyStr = ''):

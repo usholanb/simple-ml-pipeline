@@ -2,7 +2,6 @@ import numpy as np
 import torch
 import inspect
 from modules.metrics.base_metrics.base_metric import BaseMetric
-from utils.common import Singleton
 
 
 class DefaultMetric(BaseMetric):

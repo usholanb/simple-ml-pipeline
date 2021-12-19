@@ -2,22 +2,12 @@ includes:
   - configs/constant_configs.yml
 
 
-
-
 dataset:
   name: csv_dataset
-  label_type: classification  # classification or regression
-#  input_path:
-#    train: data/toy_dataset.csv
-#    test: data/toy_dataset2.csv
-<<<<<<< HEAD
-  input_path: data/iris.csv
-  output_path: processed_data/iris
-=======
-  input_path: data/toy_dataset.csv
->>>>>>> 169588be0edde844325bed9e9130a11ad5ee1132
+  label_type: regression  # classification or regression
+  input_path: data/regression.csv
   # index or name of the labels column in the input data
-  label: -1
+  label: GPA
   shuffle: 1 # can be (0, false null) OR (anything else, which means true)
    # if "split_ratio" doesn't sum to 1, then valid + test will be 1 - train
   split_ratio:
@@ -30,7 +20,4 @@ dataset:
 #Pick Transformers(defined in modules/transformers/) or create your own
 #defined: norm, ohe
 features_list:
-  sepal width (cm): [norm]
-  petal length (cm): norm
-  petal width (cm): norm
-  sepal length (cm): norm
+  SAT: norm
