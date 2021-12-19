@@ -234,18 +234,12 @@ def add_grid_search_parameters(configs: Dict) -> bool:
         new_par = {}
         global grid
         for k, v in par.items():
-<<<<<<< HEAD
-            if isinstance(v, list):
+            if isinstance(v, list) and k != 'transformers':
                 if isinstance(v[0], list) and len(v) == 1:
                     new_par[k] = v[0]
                 else:
                     new_par[k] = tune.grid_search(v)
                     grid = True
-=======
-            if isinstance(v, list) and k != 'transformers':
-                new_par[k] = tune.grid_search(v)
-                grid = True
->>>>>>> 169588be0edde844325bed9e9130a11ad5ee1132
             else:
                 new_par[k] = v
         return new_par
@@ -282,8 +276,6 @@ def get_outside_library(model_name):
     return getattr(module, class_name)
 
 
-<<<<<<< HEAD
-=======
 def check_label_type(targets):
     empty_array = np.zeros(len(targets))
     np.mod(targets, 1, out=empty_array)
@@ -291,7 +283,6 @@ def check_label_type(targets):
     return mask.all()
 
 
->>>>>>> 169588be0edde844325bed9e9130a11ad5ee1132
 def to_snake_case(name):
     name = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)
     name = re.sub('__([A-Z])', r'_\1', name)
@@ -303,8 +294,6 @@ def to_camel_case(name):
     return ''.join(word.title() for word in name.split('_'))
 
 
-<<<<<<< HEAD
-=======
 def do_after_iter(iterable, func):
     for i in iter(iterable):
         func(i)
@@ -341,18 +330,13 @@ def get_transformers(configs):
             for t_name in ts]
 
 
->>>>>>> 169588be0edde844325bed9e9130a11ad5ee1132
 class Timeit:
     """ to compute epoch time """
     original_start = None
 
-<<<<<<< HEAD
     def __init__(self, to_print, iter, iter_n=None, every=1):
         self.iter = iter
         self.every = every
-=======
-    def __init__(self, to_print, iter_n=None):
->>>>>>> 169588be0edde844325bed9e9130a11ad5ee1132
         self.start = None
         self.iter_n = iter_n
         self.to_print = to_print
@@ -363,7 +347,7 @@ class Timeit:
             if Timeit.original_start is not None else self.start
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-<<<<<<< HEAD
+
         if self.iter > 0 and self.iter % self.every == 0:
             now = time()
             iter_time = now - self.start
@@ -371,11 +355,3 @@ class Timeit:
             print(f'{self.to_print}:   time: {iter_time},    '
                   f'total training time: {round(now - Timeit.original_start, 2)},'
                   f' expected for all {self.iter_n} iters: {expected}')
-=======
-        now = time()
-        iter_time = round(now - self.start, 2)
-        expected = round(self.iter_n * iter_time, 2)
-        print(f'{self.to_print}:   time: {iter_time},    '
-              f'total training time: {round(now - Timeit.original_start, 2)},'
-              f' expected for all {self.iter_n} iters: {expected}')
->>>>>>> 169588be0edde844325bed9e9130a11ad5ee1132

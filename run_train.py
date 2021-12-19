@@ -11,15 +11,10 @@ import os
 from copy import deepcopy
 from modules.containers.di_containers import TrainerContainer
 from modules.helpers.namer import Namer
-<<<<<<< HEAD
-from utils.constants import TRAIN_RESULTS_DIR
-from utils.common import build_config, setup_imports, setup_directories, add_grid_search_parameters
-=======
 from utils.constants import TRAIN_RESULTS_DIR, CLASSIFIERS_DIR
 from utils.flags import train_flags
 from utils.common import build_config, setup_imports, setup_directories, add_grid_search_parameters, get_data_loaders, \
     unpickle_obj
->>>>>>> 169588be0edde844325bed9e9130a11ad5ee1132
 from utils.registry import registry
 from ray import tune
 from typing import Dict, AnyStr

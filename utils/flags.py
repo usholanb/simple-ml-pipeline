@@ -42,12 +42,7 @@ class PreprocessingFlag(Flags):
         self._parser.add_argument_group("Core Arguments")
         self._parser.add_argument(
             "--config-yml",
-<<<<<<< HEAD
-            default=f'{CONFIGS_DIR}/preprocessing_regression.yml',
-=======
             default=f'{CONFIGS_DIR}/preprocessing_dagnet.yml',
->>>>>>> 169588be0edde844325bed9e9130a11ad5ee1132
-            help="path to config file starting from project home path",
         )
 
 
@@ -57,11 +52,7 @@ class TrainFlags(Flags):
         self._parser.add_argument_group("Core Arguments")
         self._parser.add_argument(
             "--config-yml",
-<<<<<<< HEAD
-            default=f'{CONFIGS_DIR}/train_xgboost_regression.yml',
-=======
             default=f'{CONFIGS_DIR}/train_dagnet.yml',
->>>>>>> 169588be0edde844325bed9e9130a11ad5ee1132
             help="path to config file starting from project home path",
         )
 
