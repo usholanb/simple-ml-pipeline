@@ -68,12 +68,12 @@ if __name__ == '__main__':
     df.loc[df['Team'] == 'Torino F.C.', 'Team'] = 'Toronto FC'
     # remove goal keepers
     df = df[df['bp'] != 'GK']
-    df.drop(['foot.1'])
+    df.drop(['foot.1'], axis=1)
     target = 'value'
 
     with open(f'{DATA_DIR}/test.yaml', 'w') as f_out:
-        ohe_features = ['Team', 'a_w', 'bp', 'd_w', 'foot', 'nationality', 'id']
-        no_t_features = ['Team_encoded', 'nationality_encoded', 'name']
+        ohe_features = ['Team', 'a_w', 'bp', 'd_w', 'foot', 'nationality']
+        no_t_features = ['Team_encoded', 'nationality_encoded', 'name', 'id']
         p_features = []
 
         for feature_name in no_t_features:
@@ -85,6 +85,7 @@ if __name__ == '__main__':
         p_features.extend([(k, seq('min_max_scaler')) for k in df.columns.tolist() if \
                            (k not in ohe_features and k not in no_t_features)])
         p_features = dict(p_features)
+        p_features['age'].insert(0, 'square')  # in paper they square age
         del p_features[target]
         dump_yaml(p_features)
 

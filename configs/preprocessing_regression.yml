@@ -23,21 +23,22 @@ to_all_features: []
 #Pick Transformers(defined in modules/transformers/) or create your own
 #defined: norm, ohe
 features_list:
+  Team_encoded: []
+  nationality_encoded: []
+  name: []
+  id: []
   Team: [ohe]
   a_w: [ohe]
   bp: [ohe]
   d_w: [ohe]
   foot: [ohe]
   nationality: [ohe]
-  Team_encoded: []
-  nationality_encoded: []
-  name: []
-  id: []
   total_stats: [min_max_scaler]
   base_stats: [min_max_scaler]
-  age: [min_max_scaler]
+  age: [square, min_max_scaler]
   ova: [min_max_scaler]
   pot: [min_max_scaler]
+  foot.1: [min_max_scaler]
   bov: [min_max_scaler]
   growth: [min_max_scaler]
   joined: [min_max_scaler]
@@ -95,6 +96,7 @@ features_list:
   On Loan: [min_max_scaler]
   Loan_start_year: [min_max_scaler]
   Loan_end_year: [min_max_scaler]
+
 
 
 

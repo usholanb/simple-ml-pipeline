@@ -14,11 +14,13 @@ import pickle
 import re
 import ray
 from time import time
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, Dataset, TensorDataset
 import torch
 import numpy as np
 from time import time
 
+from modules.helpers.csv_saver import CSVSaver
+from utils.constants import PROJECT_DIR
 from utils.registry import registry
 
 
@@ -302,18 +304,18 @@ def do_after_iter(iterable, func):
 
 def get_data_loaders(configs, specific=None):
     split_names = [specific] if specific is not None else ['train', 'valid', 'test']
-    dls = []
+    d_loaders = []
     for split_name in split_names:
-        hps = configs.get('dataset').get('data_loaders').get(split_name)
-        dl = get_data_loader(configs, split_name, hps)
-        dls.append(dl)
-
-    return dls
+        dl = get_data_loader(configs, split_name)
+        d_loaders.append(dl)
+    return d_loaders
 
 
-def get_data_loader(configs, split_name, hps):
-    dataset = registry.get_dataset_class(configs.get('dataset')
-                                         .get('name'))(configs, split_name)
+def get_data_loader(configs, split_name):
+    dataset_class = registry.get_dataset_class(configs.get('dataset').get('name'))
+
+    hps = configs.get('dataset').get('data_loaders').get(split_name)
+    dataset = dataset_class(configs, split_name)
     return DataLoader(dataset, **hps, collate_fn=dataset.collate)
 
 

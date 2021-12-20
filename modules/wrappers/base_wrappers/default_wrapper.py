@@ -13,10 +13,9 @@ from utils.common import is_outside_library, to_snake_case
 
 class DefaultWrapper(BaseWrapper):
 
-    def __init__(self, configs: Dict, label_types: List):
+    def __init__(self, configs: Dict):
         self.configs = configs
-        self.label_types = label_types
-        self.clf = self.get_classifier(configs.get('special_inputs', {}))
+        self.clf = self.get_classifier(configs)
         self._features_list = self.configs.get('features_list', [])
 
     @property
@@ -25,11 +24,12 @@ class DefaultWrapper(BaseWrapper):
 
     @property
     def name(self) -> AnyStr:
+        k_fold_tag = self.configs.get('dataset').get('k_fold_tag', '')
         m_configs = self.configs.get("model")
         name = m_configs.get("name")
         if is_outside_library(name):
             name = to_snake_case(name.split('.')[-1])
-        return f'{name}_{m_configs.get("tag")}'
+        return f'{name}_{m_configs.get("tag")}{k_fold_tag}'
 
     def filter_features(self, examples: pd.DataFrame) -> np.ndarray:
         """ picks certain features and converts to numpy"""

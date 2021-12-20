@@ -92,19 +92,6 @@ class BasketDataset(Dataset):
         # in bball the number of agents per scene is always the same
         return self.n_agents
 
-    # async def _get_slice(self, start, end, arr):
-    #     if len(arr.shape) == 3:
-    #         return arr[:, start:end, :]
-    #     else:
-    #         return arr[:, start:end]
-    #
-    # async def get_all_slices(self, start, end):
-    #     return [await self._get_slice(start, end, arr) async for arr in [
-    #         self.obs_traj, self.pred_traj,
-    #         self.obs_traj_rel, self.pred_traj_rel,
-    #         self.obs_goals, self.pred_goals
-    #     ]]
-
     def __getitem__(self, idx):
         start, end = self.seq_start_end[idx]
         out = [

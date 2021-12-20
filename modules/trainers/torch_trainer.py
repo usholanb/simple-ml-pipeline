@@ -1,10 +1,6 @@
 from modules.trainers.default_trainer import DefaultTrainer
-<<<<<<< HEAD
-from utils.common import setup_imports, Timeit
-=======
 from modules.wrappers.torch_wrapper import TorchWrapper
-from utils.common import setup_imports
->>>>>>> 169588be0edde844325bed9e9130a11ad5ee1132
+from utils.common import setup_imports, Timeit
 from utils.registry import registry
 import torch
 import pandas as pd

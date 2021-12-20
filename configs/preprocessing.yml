@@ -10,12 +10,8 @@ dataset:
 #  input_path:
 #    train: data/toy_dataset.csv
 #    test: data/toy_dataset2.csv
-<<<<<<< HEAD
   input_path: data/iris.csv
   output_path: processed_data/iris
-=======
-  input_path: data/toy_dataset.csv
->>>>>>> 169588be0edde844325bed9e9130a11ad5ee1132
   # index or name of the labels column in the input data
   label: -1
   shuffle: 1 # can be (0, false null) OR (anything else, which means true)

@@ -1,5 +1,7 @@
 from abc import ABC, abstractmethod
 
+from modules.wrappers.base_wrappers.base_wrapper import BaseWrapper
+
 
 class BaseTrainer(ABC):
 
@@ -10,3 +12,7 @@ class BaseTrainer(ABC):
     @abstractmethod
     def save(self) -> None:
         """ saves model """
+
+    @abstractmethod
+    def get_wrapper(self, *args, **kwargs) -> BaseWrapper:
+        """ returns a wrapper specified in config file """

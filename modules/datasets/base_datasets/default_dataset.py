@@ -70,7 +70,8 @@ class DefaultDataset(BaseDataset):
             feature_to_process = data_x[feature].values
             for t_name in t_name_list + common_transformers:
                 if t_name not in transformers:
-                    t_obj = registry.get_transformer_class(t_name)()
+                    print(f't_name: {t_name}')
+                    t_obj = registry.get_transformer_class(t_name)(self.configs)
                     transformers[t_name] = t_obj
                 else:
                     t_obj = transformers[t_name]

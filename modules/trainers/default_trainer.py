@@ -1,5 +1,6 @@
 from ray import tune
 
+from modules.helpers.csv_saver import CSVSaver
 from modules.helpers.namer import Namer
 from modules.trainers.base_trainer import BaseTrainer
 from typing import Dict, AnyStr, List
@@ -11,16 +12,12 @@ from utils.registry import registry
 
 
 class DefaultTrainer(BaseTrainer):
-    def __init__(self, configs: Dict, dataset):
+    def __init__(self, configs: Dict):
         self.configs = configs
-        self.dataset = dataset
         self.split_i = self.configs.get('static_columns').get('FINAL_SPLIT_INDEX')
         self.label_index_i = self.configs.get('static_columns').get('FINAL_LABEL_INDEX')
         self.label_i = self.configs.get('static_columns').get('FINAL_LABEL_NAME_INDEX')
-        self.label_name = self.dataset.columns[self.configs.get('static_columns').get('FINAL_LABEL_INDEX')]
         self.classification = self.configs.get('trainer').get('label_type') == 'classification'
-        self.label_types = self.set_label_types()
-        self.split_column = dataset.iloc[:, self.split_i]
         self.wrapper = None
 
     def prepare_train(self) -> Dict:
@@ -29,7 +26,7 @@ class DefaultTrainer(BaseTrainer):
         features_list = self.configs.get('features_list', [])
         if not features_list:
             print('features_list not specified')
-        f_list = DefaultTrainer.figure_feature_list(features_list, self.dataset.columns)
+        f_list = DefaultTrainer.figure_feature_list(features_list, self.dataset.columns.tolist())
         for split in ['train', 'valid', 'test']:
             data[f'{split}_y'] = \
                 self.dataset.loc[self.split_column == split].iloc[:, self.label_index_i].values
@@ -42,32 +39,8 @@ class DefaultTrainer(BaseTrainer):
         self.configs['features_list'] = f_list
         return data
 
-<<<<<<< HEAD
-    def get_wrapper(self) -> BaseWrapper:
-        wrapper_class = registry.get_wrapper_class(
-            self.configs.get('model').get('name'))
-
-        if wrapper_class is not None:
-            wrapper = wrapper_class(self.configs, self.label_types)
-        elif is_outside_library(self.configs.get('model').get('name')):
-            wrapper = registry.get_wrapper_class('sklearn')\
-                (self.configs, self.label_types)
-        else:
-            wrapper = registry.get_wrapper_class('torch_wrapper')\
-                (self.configs, self.label_types)
-        self.wrapper = wrapper
-        print(f'model: {wrapper.name}')
-        return wrapper
-
     def model_path(self) -> AnyStr:
-        k_fold_tag = self.configs.get('dataset').get('k_fold_tag', '')
-        name = f'{Namer.wrapper_name(self.configs.get("model"))}{k_fold_tag}'
-        return f'{CLASSIFIERS_DIR}/{name}.pkl'
-=======
-
-    def model_path(self) -> AnyStr:
-        return f'{CLASSIFIERS_DIR}/{Namer.model_name(self.configs.get("model"))}.pkl'
->>>>>>> 169588be0edde844325bed9e9130a11ad5ee1132
+        return f'{CLASSIFIERS_DIR}/{self.wrapper.name}.pkl'
 
     def save(self) -> None:
         print(f'saved model {self.model_path()}')
@@ -103,6 +76,11 @@ class DefaultTrainer(BaseTrainer):
 
     @staticmethod
     def figure_feature_list(f_list: List, available_features: List) -> List:
+        """ Specifying only name of the feature (w/o index for one hot encoded
+            features) is enough to allow them in dataset
+            f_list: specified in train config file for training,
+            available_features: actually inside dataset
+            Return: intersection of two lists"""
         final_list = []
         for available_feature in available_features:
             for feature in f_list:

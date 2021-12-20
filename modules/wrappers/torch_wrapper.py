@@ -1,11 +1,14 @@
 from abc import abstractmethod
-
 import numpy as np
 import pandas as pd
-from torch import nn
+import os
+from modules.helpers.namer import Namer
 from modules.wrappers.base_wrappers.default_wrapper import DefaultWrapper
 from typing import Dict, List
 import torch
+
+from utils.common import setup_imports, unpickle_obj
+from utils.constants import CLASSIFIERS_DIR
 from utils.registry import registry
 
 
@@ -13,22 +16,27 @@ from utils.registry import registry
 class TorchWrapper(DefaultWrapper):
     """ Any neural net model wrapper in pytorch """
 
-    def __init__(self, configs: Dict, label_types: List):
-        super().__init__(configs, label_types)
+    def __init__(self, configs: Dict):
+        super().__init__(configs)
         self.output_function = self.get_output_function()
 
-<<<<<<< HEAD
-    def get_classifier(self, inputs: Dict):
-=======
-    @abstractmethod
-    def forward(self, examples):
-        """ outputs forward """
-
     def get_classifier(self, configs):
->>>>>>> 169588be0edde844325bed9e9130a11ad5ee1132
-        return registry.get_model_class(
-            self.configs.get('model').get('name')
-        )(configs)
+        if configs.get('trainer', {}).get('resume', False):
+            name = Namer.model_name(configs.get('model'))
+            folder = CLASSIFIERS_DIR
+            model_path = f'{folder}/{name}.pkl'
+            if os.path.isfile(model_path):
+                model = unpickle_obj(model_path)
+                print(f'resumed {name}')
+            else:
+                raise ValueError(f'cannot resume model {name}'
+                                 f' - no checkpoint exist in folder {folder}')
+        else:
+            setup_imports()
+            model = registry.get_model_class(
+                configs.get('model').get('name')
+            )(configs)
+        return model
 
     def predict_proba(self, examples: pd.DataFrame) -> np.ndarray:
         """ returns probabilities, is used in prediction step.

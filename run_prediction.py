@@ -5,18 +5,10 @@ on the specified in the config dataset
 The predictions and probabilities are saved in the prediction files in
 predictions/ folder
 """
-<<<<<<< HEAD
-from typing import Dict, AnyStr
-
+from typing import AnyStr
 import pandas as pd
-
 from modules.helpers.csv_saver import CSVSaver
-from modules.predictors.base_predictors.predictor import Predictor
-=======
-from typing import Dict
 from modules.helpers.predictor import Predictor
-from utils.flags import prediction_flags
->>>>>>> 169588be0edde844325bed9e9130a11ad5ee1132
 from utils.common import build_config, setup_imports, setup_directories
 from utils.registry import registry
 
@@ -29,7 +21,6 @@ def get_predictor(k_fold_tag: AnyStr) -> Predictor:
     configs = build_config(args)
     configs['dataset']['k_fold_tag'] = k_fold_tag
     setup_imports()
-<<<<<<< HEAD
     dataset = CSVSaver().load(configs)
     predictor_name = configs.get('predictor', 'predictor')
     return registry.get_predictor_class(predictor_name)(configs, dataset)
@@ -46,10 +37,6 @@ def run_prediction(k_fold_tag: AnyStr = '') -> None:
     predictor = get_predictor(k_fold_tag)
     output_dataset = predictor.predict()
     save_files(predictor, output_dataset)
-=======
-    predictor = Predictor(configs)
-    predictor.predict()
->>>>>>> 169588be0edde844325bed9e9130a11ad5ee1132
 
 
 if __name__ == '__main__':

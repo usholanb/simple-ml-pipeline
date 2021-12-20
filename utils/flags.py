@@ -42,7 +42,7 @@ class PreprocessingFlag(Flags):
         self._parser.add_argument_group("Core Arguments")
         self._parser.add_argument(
             "--config-yml",
-            default=f'{CONFIGS_DIR}/preprocessing_dagnet.yml',
+            default=f'{CONFIGS_DIR}/preprocessing_regression.yml',
         )
 
 
