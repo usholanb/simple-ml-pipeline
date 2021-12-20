@@ -2,7 +2,7 @@ includes:
   - configs/constant_configs.yml
 
 
-k_fold: 10
+k_fold: 1
 
 preprocessing: preprocessing_regression
 predictor: player_evaluation

@@ -39,6 +39,8 @@ def run_prediction(k_fold_tag: AnyStr = ''):
     print('started run_prediction')
     predictor = get_predictor(k_fold_tag)
     output_dataset = get_output_dataset(predictor)
+    print('remove this line in run_prediction func in run_prediction!!!!!!!!!!!!!!')
+    output_dataset = output_dataset[output_dataset['value'] > 6]
     save_files(predictor, output_dataset)
 
 

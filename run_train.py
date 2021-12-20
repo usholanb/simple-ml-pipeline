@@ -33,6 +33,8 @@ def train_one(configs: Dict, dataset: pd.DataFrame, save: bool = False) -> None:
 
 def train(configs: Dict) -> None:
     dataset = CSVSaver().load(configs)
+    print('remove this line in train func in run_train!!!!!!!!!!!!!!')
+    dataset = dataset[dataset['value'] > 6]
     print(f'dataset size : {dataset.shape}')
     grid = add_grid_search_parameters(configs)
     sync_config = tune.SyncConfig(sync_to_driver=False)

@@ -64,16 +64,17 @@ if __name__ == '__main__':
 
     # remove where Team is nan
     df = df[df['Team'].notna()]
+    df = df[df['bp'] != 'GK']
     df.loc[df['Team'] == 'Real SociedadDec', 'Team'] = 'Real Sociedad'
     df.loc[df['Team'] == 'Torino F.C.', 'Team'] = 'Toronto FC'
-    with open(f'{DATA_DIR}/test.yaml', 'w') as f_out:
-        p_features = {k: seq('min_max_scaler') for k in df.columns.tolist()}
-        ohe_features = ['Team', 'a_w', 'bp', 'd_w', 'foot', 'nationality']
-        for feature_name in ohe_features:
-            p_features[feature_name] = seq('ohe')
-        for no_p_features in ['Team_encoded', 'nationality_encoded', 'name']:
-            p_features[no_p_features] = []
-        dump_yaml(p_features)
+
+    p_features = {k: seq('min_max_scaler') for k in df.columns.tolist()}
+    ohe_features = ['Team', 'a_w', 'bp', 'd_w', 'foot', 'nationality']
+    for feature_name in ohe_features:
+        p_features[feature_name] = seq('ohe')
+    for no_p_features in ['Team_encoded', 'nationality_encoded', 'name']:
+        p_features[no_p_features] = []
+    dump_yaml(p_features)
 
     name, ext = f_name.split('.')
     f_out_name = f'{name}2.{ext}'
