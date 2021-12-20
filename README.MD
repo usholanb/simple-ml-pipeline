@@ -5,7 +5,7 @@ CMLF is a Python framework to speed up the ML process starting from dataset coll
 ## Installation
 
 git clone https://gitlab.g42.ae/uplatform/experimentation-ml-pipeline.git
-
+pip install -r requirements.txt
 ## Usage
 
 All configs are intended to be tweaked for appropriate model/dataset

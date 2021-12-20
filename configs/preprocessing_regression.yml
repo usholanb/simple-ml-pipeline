@@ -6,7 +6,7 @@ dataset:
   name: xlsx_dataset
   sheet_name: Sheet1
   label_type: regression  # classification or regression
-  input_path: data/merged_df_v62
+  input_path: data/no_GK_merged_df_v62
   limit: null
   # index or name of the labels column in the input data
   label: value
@@ -23,17 +23,22 @@ to_all_features: []
 #Pick Transformers(defined in modules/transformers/) or create your own
 #defined: norm, ohe
 features_list:
+  Team: [ohe]
+  a_w: [ohe]
+  bp: [ohe]
+  d_w: [ohe]
+  foot: [ohe]
+  nationality: [ohe]
+  Team_encoded: []
+  nationality_encoded: []
   name: []
+  id: []
   total_stats: [min_max_scaler]
   base_stats: [min_max_scaler]
-  age: [square, min_max_scaler]
+  age: [min_max_scaler]
   ova: [min_max_scaler]
   pot: [min_max_scaler]
-  id: [min_max_scaler]
-  foot: [ohe]
-#  foot.1: [min_max_scaler]
   bov: [min_max_scaler]
-  bp: [ohe]
   growth: [min_max_scaler]
   joined: [min_max_scaler]
   wage: [min_max_scaler]
@@ -80,8 +85,6 @@ features_list:
   gk_reflexes: [min_max_scaler]
   w_f: [min_max_scaler]
   sm: [min_max_scaler]
-  a_w: [ohe]
-  d_w: [ohe]
   ir: [min_max_scaler]
   pac: [min_max_scaler]
   sho: [min_max_scaler]
@@ -89,12 +92,9 @@ features_list:
   dri: [min_max_scaler]
   defe: [min_max_scaler]
   phy: [min_max_scaler]
-  nationality: [ohe]
   On Loan: [min_max_scaler]
   Loan_start_year: [min_max_scaler]
   Loan_end_year: [min_max_scaler]
-  Team: [ohe]
-  nationality_encoded: []
 
 
 

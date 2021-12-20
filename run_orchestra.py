@@ -11,7 +11,7 @@ from modules.helpers.csv_saver import CSVSaver
 from modules.predictors.base_predictors.predictor import Predictor
 from run_preprocessing import run_preprocessing
 from run_train import run_train
-from run_prediction import run_prediction, get_output_dataset, save_files, get_predictor
+from run_prediction import run_prediction, save_files, get_predictor
 from utils.common import build_config, setup_imports, setup_directories
 from utils.flags import all_flags, CustomFlag
 from utils.registry import registry
@@ -34,7 +34,7 @@ def orchestra(configs: Dict):
         prediction_config = configs.get('prediction')
         flag = CustomFlag('prediction').add_config_args(prediction_config)
         all_flags['prediction'] = flag
-        output_dataset = get_output_dataset(get_predictor(k_fold_tag))
+        output_dataset = get_predictor(k_fold_tag).predict()
         output_datasets.append(output_dataset)
     all_folds = pd.concat(output_datasets)
     predictor_name = configs.get('predictor')
