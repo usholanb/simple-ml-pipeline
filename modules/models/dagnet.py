@@ -17,7 +17,16 @@ class DAGNet (BaseTorchModel):
     def __init__(self, configs):
         super(DAGNet, self).__init__(configs)
         self.d_dim = self.n_max_agents * 2
-        self.init_local_variables()
+        self.total_traj = None
+        self.ade_outer = None
+        self.fde_outer = None
+        self.ade = None
+        self.fde = None
+        self.loss = None
+        self.kld_loss = None
+        self.nll_loss = None
+        self.cross_entropy_loss = None
+        self.euclidean_loss = None
 
         # goal generator
         self.dec_goal = nn.Sequential(
@@ -105,17 +114,7 @@ class DAGNet (BaseTorchModel):
         # recurrence
         self.rnn = nn.GRU(self.h_dim + self.h_dim, self.rnn_dim, self.n_layers)
 
-    def init_local_variables(self):
-        self.total_traj = None
-        self.ade_outer = None
-        self.fde_outer = None
-        self.ade = None
-        self.fde = None
-        self.loss = None
-        self.kld_loss = None
-        self.nll_loss = None
-        self.cross_entropy_loss = None
-        self.euclidean_loss = None
+        # add all hooks()
 
     def _reparameterize(self, mean, log_var):
         logvar = torch.exp(log_var * 0.5).to(self.device)
@@ -288,84 +287,94 @@ class DAGNet (BaseTorchModel):
 
         return samples
 
-    def before_epoch_train(self):
-        self.loss = 0
-        self.kld_loss = 0
-        self.nll_loss = 0
-        self.cross_entropy_loss = 0
-        self.euclidean_loss = 0
+    def add_hooks(self):
 
-    def before_iteration_valid(self, all_data):
-        obs_traj, pred_traj_gt, obs_traj_rel, pred_traj_rel_gt, \
-        obs_goals_ohe, pred_goals_gt_ohe, seq_start_end, adj_out = all_data['transformed_batch']
-        all_data['forward_data'] = obs_traj, obs_traj_rel, obs_goals_ohe, seq_start_end, adj_out
+        def local_before_epoch_train(self):
+            self.loss = 0
+            self.kld_loss = 0
+            self.nll_loss = 0
+            self.cross_entropy_loss = 0
+            self.euclidean_loss = 0
+        self.hooks['before_epoch_train'].append(local_before_epoch_train)
 
-    def before_epoch_eval(self):
-        self.before_epoch_train()
-        self.total_traj = 0
-        self.ade_outer = []
-        self.fde_outer = []
-        self.ade = None
-        self.fde = None
+        def local_before_iteration_train(self, all_data):
+            obs_traj, pred_traj_gt, obs_traj_rel, pred_traj_rel_gt, \
+            obs_goals_ohe, pred_goals_gt_ohe, seq_start_end, adj_out = all_data['transformed_batch']
+            all_traj = torch.cat((obs_traj, pred_traj_gt), dim=0)
+            all_traj_rel = torch.cat((obs_traj_rel, pred_traj_rel_gt), dim=0)
+            all_goals_ohe = torch.cat((obs_goals_ohe, pred_goals_gt_ohe), dim=0)
+            all_data['forward_data'] = all_traj, all_traj_rel, all_goals_ohe, seq_start_end, adj_out
+        self.hooks['before_iteration_train'].append(local_before_iteration_train)
 
-    def before_iteration_train(self, all_data):
-        obs_traj, pred_traj_gt, obs_traj_rel, pred_traj_rel_gt, \
-        obs_goals_ohe, pred_goals_gt_ohe, seq_start_end, adj_out = all_data['transformed_batch']
-        all_traj = torch.cat((obs_traj, pred_traj_gt), dim=0)
-        all_traj_rel = torch.cat((obs_traj_rel, pred_traj_rel_gt), dim=0)
-        all_goals_ohe = torch.cat((obs_goals_ohe, pred_goals_gt_ohe), dim=0)
-        all_data['forward_data'] = all_traj, all_traj_rel, all_goals_ohe, seq_start_end, adj_out
+        def local_before_iteration_valid(self, all_data):
+            obs_traj, pred_traj_gt, obs_traj_rel, pred_traj_rel_gt, \
+            obs_goals_ohe, pred_goals_gt_ohe, seq_start_end, adj_out = all_data['transformed_batch']
+            all_data['forward_data'] = obs_traj, obs_traj_rel, obs_goals_ohe, seq_start_end, adj_out
+        self.hooks['before_iteration_valid'].append(local_before_iteration_valid)
 
-    def after_epoch_train(self, split_name, loader):
-        return {
-            f'{split_name}_avg_loss': self.loss / len(loader.dataset),
-            f'{split_name}_avg_kld_loss': self.kld_loss / len(loader.dataset),
-            f'{split_name}_avg_nll_loss': self.nll_loss / len(loader.dataset),
-            f'{split_name}_avg_cross_entropy_loss': self.cross_entropy_loss / len(loader.dataset),
-            f'{split_name}_mean_euclidean_loss': self.euclidean_loss / len(loader.dataset),
-        }
+        def local_before_epoch_valid(self):
+            self.before_epoch_train()
+            self.total_traj = 0
+            self.ade_outer = []
+            self.fde_outer = []
+            self.ade = None
+            self.fde = None
+        self.hooks['before_epoch_valid'].append(local_before_epoch_valid)
 
-    def after_epoch_valid(self, split_name, loader):
-        losses = self.after_epoch_train(split_name, loader)
-        ade = sum(self.ade_outer) / (self.total_traj * self.pred_len)
-        fde = sum(self.fde_outer) / self.total_traj
-        losses.update({
-            f'{split_name}_total_traj': self.total_traj,
-            f'{split_name}_ade': ade,
-            f'{split_name}_fde': fde,
-        })
-        self.init_local_variables()
-        return losses
+        def local_after_epoch_train(self, split_name, loader):
+            return {
+                f'{split_name}_avg_loss': self.loss / len(loader.dataset),
+                f'{split_name}_avg_kld_loss': self.kld_loss / len(loader.dataset),
+                f'{split_name}_avg_nll_loss': self.nll_loss / len(loader.dataset),
+                f'{split_name}_avg_cross_entropy_loss': self.cross_entropy_loss / len(loader.dataset),
+                f'{split_name}_mean_euclidean_loss': self.euclidean_loss / len(loader.dataset),
+            }
+        self.hooks['after_epoch_train'].append(local_after_epoch_train)
 
-    def end_iteration_train(self, all_data):
-        loss_outputs = all_data['loss_outputs']
-        self.loss += loss_outputs['loss'].item()
-        self.kld_loss += loss_outputs['kld_loss']
-        self.nll_loss += loss_outputs['nll_loss']
-        self.cross_entropy_loss += loss_outputs['cross_entropy_loss']
-        self.euclidean_loss += loss_outputs['euclidean_loss']
+        def local_after_epoch_valid(self, split_name, loader):
+            losses = self.after_epoch_train(split_name, loader)
+            ade = sum(self.ade_outer) / (self.total_traj * self.pred_len)
+            fde = sum(self.fde_outer) / self.total_traj
+            losses.update({
+                f'{split_name}_total_traj': self.total_traj,
+                f'{split_name}_ade': ade,
+                f'{split_name}_fde': fde,
+            })
+            self.init_local_variables()
+            return losses
+        self.hooks['after_epoch_valid'].append(local_after_epoch_valid)
 
-    def end_iteration_valid(self, all_data):
-        data, forward_data, outputs = all_data['batch'], all_data['forward_data'], all_data['outputs'],
-        obs_traj, obs_traj_rel, obs_goals_ohe, seq_start_end, adj_out = forward_data
-        obs_traj, pred_traj_gt, obs_traj_rel, pred_traj_rel_gt, \
-        obs_goals, pred_goals_gt, seq_start_end = data
-        ade, fde = [], []
-        self.total_traj += obs_traj.shape[1]
+        def local_end_iteration_train(self, all_data):
+            loss_outputs = all_data['loss_outputs']
+            self.loss += loss_outputs['loss'].item()
+            self.kld_loss += loss_outputs['kld_loss']
+            self.nll_loss += loss_outputs['nll_loss']
+            self.cross_entropy_loss += loss_outputs['cross_entropy_loss']
+            self.euclidean_loss += loss_outputs['euclidean_loss']
+        self.hooks['end_iteration_train'].append(local_end_iteration_train)
 
-        for _ in range(self.configs.get('trainer').get('num_samples')):
-            samples_rel = self.predict_proba(self.pred_len, outputs['h'], obs_traj[-1], obs_goals_ohe[-1], seq_start_end)
-            samples = relative_to_abs(samples_rel, obs_traj[-1])
+        def local_end_iteration_valid(self, all_data):
+            data, forward_data, outputs = all_data['batch'], all_data['forward_data'], all_data['outputs'],
+            obs_traj, obs_traj_rel, obs_goals_ohe, seq_start_end, adj_out = forward_data
+            obs_traj, pred_traj_gt, obs_traj_rel, pred_traj_rel_gt, \
+            obs_goals, pred_goals_gt, seq_start_end = data
+            ade, fde = [], []
+            self.total_traj += obs_traj.shape[1]
 
-            ade.append(average_displacement_error(samples, pred_traj_gt, mode='raw'))
-            fde.append(final_displacement_error(samples[-1, :, :], pred_traj_gt[-1, :, :], mode='raw'))
+            for _ in range(self.configs.get('trainer').get('num_samples')):
+                samples_rel = self.predict_proba(self.pred_len, outputs['h'], obs_traj[-1], obs_goals_ohe[-1], seq_start_end)
+                samples = relative_to_abs(samples_rel, obs_traj[-1])
 
-        ade_sum = evaluate_helper(ade, seq_start_end).item()
-        fde_sum = evaluate_helper(fde, seq_start_end).item()
+                ade.append(average_displacement_error(samples, pred_traj_gt, mode='raw'))
+                fde.append(final_displacement_error(samples[-1, :, :], pred_traj_gt[-1, :, :], mode='raw'))
 
-        self.ade_outer.append(ade_sum)
-        self.fde_outer.append(fde_sum)
+            ade_sum = evaluate_helper(ade, seq_start_end).item()
+            fde_sum = evaluate_helper(fde, seq_start_end).item()
 
+            self.ade_outer.append(ade_sum)
+            self.fde_outer.append(fde_sum)
+
+        self.hooks['end_iteration_valid'].append(local_end_iteration_valid)
 
 def evaluate_helper(error, seq_start_end):
     sum_ = 0

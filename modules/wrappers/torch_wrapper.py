@@ -1,4 +1,3 @@
-from abc import abstractmethod
 import numpy as np
 import pandas as pd
 import os
@@ -6,7 +5,6 @@ from modules.helpers.namer import Namer
 from modules.wrappers.base_wrappers.default_wrapper import DefaultWrapper
 from typing import Dict, List
 import torch
-
 from utils.common import setup_imports, unpickle_obj
 from utils.constants import CLASSIFIERS_DIR
 from utils.registry import registry
@@ -69,3 +67,34 @@ class TorchWrapper(DefaultWrapper):
 
     def parameters(self):
         return self.clf.parameters()
+
+    def before_iteration_train(self,  *args, **kwargs) -> None:
+        """ runs before optimizer.zero_grad() """
+        self.default_hooks(self.before_iteration_train.__name__, *args, **kwargs)
+
+    def before_iteration_valid(self,  *args, **kwargs):
+        self.default_hooks(self.before_iteration_valid.__name__, *args, **kwargs)
+
+    def end_iteration_train(self, *args, **kwargs):
+        self.default_hooks(self.end_iteration_train.__name__, *args, **kwargs)
+
+    def end_iteration_valid(self, *args, **kwargs):
+        self.default_hooks(self.end_iteration_valid.__name__, *args, **kwargs)
+
+    def before_epoch_train(self, *args, **kwargs):
+        self.default_hooks(self.before_epoch_train.__name__, *args, **kwargs)
+
+    def before_epoch_valid(self, *args, **kwargs):
+        self.default_hooks(self.before_epoch_valid.__name__, *args, **kwargs)
+
+    def after_epoch_train(self, *args, **kwargs):
+        self.default_hooks(self.after_epoch_train.__name__, *args, **kwargs)
+
+    def after_epoch_valid(self, *args, **kwargs):
+        self.default_hooks(self.after_epoch_valid.__name__, *args, **kwargs)
+
+    def default_hooks(self, name, *args, **kwargs):
+        hooks = self.clf.hooks[name]
+        for hook in hooks:
+            hook(self, *args, **kwargs)
+

@@ -70,7 +70,6 @@ class TorchTrainer3(DefaultTrainer):
                 transform(all_data, self.ts)
                 self.wrapper.before_iteration_train(all_data)
                 self.optimizer.zero_grad()
-
                 self.wrapper.forward(all_data)
                 self.criterion(all_data)
                 loss = all_data['loss_outputs']['loss']
@@ -85,7 +84,7 @@ class TorchTrainer3(DefaultTrainer):
 
     def test_loop(self, epoch: int = 0) -> Dict:
         self.wrapper.eval()
-        self.wrapper.before_epoch_eval()
+        self.wrapper.before_epoch_valid()
 
         with torch.no_grad():
             for batch_i, batch in enumerate(self.test_loader):
@@ -106,7 +105,7 @@ class TorchTrainer3(DefaultTrainer):
 
     def valid_loop(self, epoch: int = 0) -> Dict:
         self.wrapper.eval()
-        self.wrapper.before_epoch_eval()
+        self.wrapper.before_epoch_valid()
 
         with torch.no_grad():
             for batch_i, batch in enumerate(self.valid_loader):

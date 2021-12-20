@@ -24,7 +24,7 @@ class Predictor:
             model = unpickle_obj(model_path)
             model.to(self.device)
             model.eval()
-            model.before_epoch_eval()
+            model.before_epoch_valid()
             with torch.no_grad():
                 for batch_i, batch in enumerate(self.test_loader):
                     all_data = {
