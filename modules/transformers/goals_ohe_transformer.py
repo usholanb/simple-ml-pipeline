@@ -36,3 +36,4 @@ class GoalsOHETransformer(BaseTransformer):
         all_data['transformed_batch'] = obs_traj, pred_traj_gt, obs_traj_rel, pred_traj_rel_gt, \
             obs_goals_ohe, pred_goals_gt_ohe, seq_start_end
 
+        return all_data

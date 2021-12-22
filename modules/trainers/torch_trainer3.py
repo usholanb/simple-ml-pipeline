@@ -84,16 +84,17 @@ class TorchTrainer3(DefaultTrainer):
         for batch_i, batch in enumerate(loader):
             with Timeit(f'batch_i # {batch_i} / {len(loader)}',
                         epoch, len(loader)):
-                all_data = {
+                data = {
                     'epoch': epoch,
                     'batch_i': batch_i,
                     'batch': [x.to(TrainerContainer.device) for x in batch],
                     'split': split,
+                    'batch_size': loader.batch_size,
                 }
-                transform(all_data, self.ts)
-                self.train_forward(all_data)
-                self.compute_loss_train(all_data)
-                loss = all_data['loss_outputs']['loss']
+                data = transform(data, self.ts)
+                data = self.train_forward(data)
+                data = self.compute_loss_train(data)
+                loss = data['loss_outputs']['loss']
                 loss.backward()
                 torch.nn.utils.clip_grad_norm_(self.wrapper.parameters(),
                     self.configs.get('special_inputs', {}).get('clip', 10))
@@ -103,7 +104,6 @@ class TorchTrainer3(DefaultTrainer):
     @run_hooks
     def compute_loss_train(self, all_data):
         return self.criterion(all_data)
-
 
     @run_hooks
     def compute_loss_valid(self, all_data):
@@ -130,10 +130,10 @@ class TorchTrainer3(DefaultTrainer):
                     'batch': [x.to(TrainerContainer.device) for x in batch],
                     'split': split,
                 }
-                transform(all_data, self.ts)
-                self.valid_forward(all_data)
-                self.compute_loss_valid(all_data)
-        return inputs
+                all_data = transform(all_data, self.ts)
+                all_data = self.valid_forward(all_data)
+                all_data = self.compute_loss_valid(all_data)
+        return all_data
 
     def _log_metrics(self, results: Dict) -> None:
         if inside_tune():
@@ -143,12 +143,12 @@ class TorchTrainer3(DefaultTrainer):
             print(results)
 
     def __get_loss(self) -> torch.nn.Module:
-        if hasattr(torch.nn, self.configs.get('trainer').get('loss')):
-            criterion = getattr(torch.nn, self.loss_name)()
+        loss_name = self.configs.get('trainer').get('loss', '')
+        if hasattr(torch.nn, loss_name):
+            criterion = getattr(torch.nn, loss_name)()
         else:
             setup_imports()
-            criterion = registry.get_loss_class(
-                self.configs.get('trainer').get('loss'))(self.configs)
+            criterion = registry.get_loss_class(loss_name)(self.configs)
         return criterion
 
     def __get_optimizer(self, model) -> torch.optim.Optimizer:

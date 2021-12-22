@@ -330,19 +330,19 @@ class DAGNet (BaseTorchModel):
 
         self.register_pre_hook('valid_forward', __before_iteration_valid)
 
-        def __train_after_loss(self, all_data):
-            loss_outputs = all_data['loss_outputs']
+        def __train_after_loss(self, inputs, outputs):
+            loss_outputs = outputs['loss_outputs']
             self.loss += loss_outputs['loss'].item()
             self.kld_loss += loss_outputs['kld_loss']
             self.nll_loss += loss_outputs['nll_loss']
             self.cross_entropy_loss += loss_outputs['cross_entropy_loss']
             self.euclidean_loss += loss_outputs['euclidean_loss']
-            return all_data
+            return outputs
 
         self.register_post_hook('compute_loss_train', __train_after_loss)
 
-        def __valid_after_loss(self, all_data):
-            data, forward_data, outputs = all_data['batch'], all_data['forward_data'], all_data['outputs'],
+        def __valid_after_loss(self, inputs, outputs):
+            data, forward_data, outputs = outputs['batch'], outputs['forward_data'], outputs['outputs'],
             obs_traj, obs_traj_rel, obs_goals_ohe, seq_start_end, adj_out = forward_data
             obs_traj, pred_traj_gt, obs_traj_rel, pred_traj_rel_gt, \
             obs_goals, pred_goals_gt, seq_start_end = data
@@ -362,18 +362,18 @@ class DAGNet (BaseTorchModel):
 
             self.ade_outer.append(ade_sum)
             self.fde_outer.append(fde_sum)
-            return all_data
+            return outputs
 
         self.register_post_hook('compute_loss_valid', __valid_after_loss)
 
-        def __after_epoch_train(self, inputs):
-            epoch, split_name, loader = inputs
+        def __after_epoch_train(self, inputs, outputs):
+            epoch, split_name, loader = outputs
             return self.__get_train_losses(loader, split_name)
 
         self.register_post_hook('train_epoch', __after_epoch_train)
 
-        def __after_epoch_valid(self, inputs):
-            epoch, split_name, loader = inputs
+        def __after_epoch_valid(self, inputs, outputs):
+            epoch, split_name, loader = outputs
             losses = self.__get_train_losses(loader, split_name)
             ade = sum(self.ade_outer) / (self.total_traj * self.pred_len)
             fde = sum(self.fde_outer) / self.total_traj
@@ -382,7 +382,7 @@ class DAGNet (BaseTorchModel):
                 f'{split_name}_ade': ade,
                 f'{split_name}_fde': fde,
             })
-            return [losses, *inputs]
+            return [losses, *outputs]
         self.register_post_hook('eval_epoch', __after_epoch_valid)
 
     def __get_train_losses(self, loader, split_name):
@@ -599,7 +599,7 @@ def relative_to_abs(traj_rel, start_pos):
     Outputs:
     - input tensor (seq_len, batch, 2) filled with absolute coords
     """
-    rel_traj = traj_rel.permute(1, 0, 2)        # (seq_len, batch, 2) -> (batch, seq_len, 2)
+    rel_traj = traj_rel.permute(1, 0, 2)  # (seq_len, batch, 2) -> (batch, seq_len, 2)
     displacement = torch.cumsum(rel_traj, dim=1)
     start_pos = torch.unsqueeze(start_pos, dim=1)
     abs_traj = displacement + start_pos
@@ -607,7 +607,7 @@ def relative_to_abs(traj_rel, start_pos):
     return abs_traj.permute(1, 0, 2)
 
 
-def plot_traj(observed, predicted_gt, predicted, seq_start_end, writer, epch):
+def plot_traj(observed, predicted_gt, predicted, seq_start_end, writer, epoch):
     """
     Inputs:
     - predicted: tensor (pred_len, batch, 2) with predicted trajectories
@@ -615,7 +615,7 @@ def plot_traj(observed, predicted_gt, predicted, seq_start_end, writer, epch):
     - predicted_gt: tensor (pred_len, batch, 2) with predicted trajectories ground truth
     - seq_start_end: tensor (num_seq, 2) with temporal sequences start and end
     - writer: Tensorboard writer
-    - epch: current epoch
+    - epoch: current epoch
     """
 
     idx = random.randrange(0, len(seq_start_end))    # print only one (random) sequence in the batch
@@ -646,7 +646,7 @@ def plot_traj(observed, predicted_gt, predicted, seq_start_end, writer, epch):
         # draw predicted
         plt.plot(pred[:, idx, 0], pred[:, idx, 1], color='red')
 
-    writer.add_figure('Generations', fig, epch)
+    writer.add_figure('Generations', fig, epoch)
     fig.clf()
 
 

@@ -83,8 +83,6 @@ def compute_adjs_distsim(t_config, seq_start_end, obs_traj, pred_traj_gt):
         for t in range(0, t_config['obs_len'] + t_config['pred_len']):
             dists = distance_matrix(np.asarray(obs_and_pred_traj[t, start:end, :]),
                                     np.asarray(obs_and_pred_traj[t, start:end, :]))
-            #sum_dist = np.sum(dists)
-            #dists = np.divide(dists, sum_dist)
             sim = np.exp(-dists / t_config['sigma'])
             sim_t.append(torch.from_numpy(sim))
         adj_out.append(torch.stack(sim_t, 0))
@@ -137,20 +135,23 @@ class AdjTransformer(BaseTransformer):
         else:
             si = self.configs.get('special_inputs')
             seq_len = len(obs_traj) + len(pred_traj_gt)
-            assert seq_len == si.get('obs_len') + si.get('pred_len')
+            assert seq_len == si.get('obs_len') + si.get('pred_len'), \
+                f"seq_len: {seq_len}, obs_len: {si.get('obs_len')}," \
+                f" pred_len: {si.get('pred_len')}"
             if si.get('adjacency_type') == 0:
                 adj_out = compute_adjs(self.configs.get('special_inputs'), seq_start_end)
             elif si.get('adjacency_type') == 1:
-                adj_out = compute_adjs_distsim_v2(self.configs.get('special_inputs'), seq_start_end, obs_traj,
-                                                  pred_traj_gt)
+                adj_out = compute_adjs_distsim_v2(self.configs.get('special_inputs'),
+                                                  seq_start_end, obs_traj, pred_traj_gt)
             elif si.get('adjacency_type') == 2:
-                adj_out = compute_adjs_knnsim(self.configs.get('special_inputs'), seq_start_end,
-                                              obs_traj.detach().cpu(),
-                                              pred_traj_gt.detach().cpu())
+                adj_out = compute_adjs_knnsim(
+                    self.configs.get('special_inputs'), seq_start_end,
+                    obs_traj.detach().cpu(), pred_traj_gt.detach().cpu())
             adj.append(adj_out.cpu().float())
 
-        all_data['transformed_batch'] = obs_traj, pred_traj_gt, obs_traj_rel, pred_traj_rel_gt, \
-            obs_goals_ohe, pred_goals_gt_ohe, seq_start_end, adj_out
-
+        all_data['transformed_batch'] = (obs_traj, pred_traj_gt, obs_traj_rel,
+                                        pred_traj_rel_gt, obs_goals_ohe,
+                                         pred_goals_gt_ohe, seq_start_end, adj_out)
+        return all_data
 
 

@@ -1,4 +1,4 @@
-from typing import AnyStr, Dict, Callable, OrderedDict, Type
+from typing import AnyStr, Dict, Callable, OrderedDict, Type, List
 from torch import nn
 
 from modules.containers.di_containers import TrainerContainer
@@ -6,7 +6,7 @@ from modules.models.base_models.base_model import BaseModel
 from utils.constants import CLASSIFIERS_DIR
 
 
-global_hooks: Dict[AnyStr, Callable] = OrderedDict()
+global_hooks: Dict[AnyStr, List[Callable]] = OrderedDict()
 
 
 class BaseTorchModel(nn.Module, BaseModel):
@@ -61,22 +61,22 @@ class BaseTorchModel(nn.Module, BaseModel):
         return layers
 
 
-
-
 def run_hooks(func):
     def func_hook(self, inputs):
+        pre_inputs = inputs
         b_name = f'before_{func.__name__}'
         if b_name in global_hooks:
             pre_hooks = global_hooks[b_name]
             for hook in pre_hooks:
-                inputs = hook(self.wrapper.clf, inputs)
-        outputs = func(self, inputs)
+                pre_inputs = hook(self.wrapper.clf, pre_inputs)
+
+        outputs = func(self, pre_inputs)
 
         a_name = f'after_{func.__name__}'
         if a_name in global_hooks:
             post_hooks = global_hooks[a_name]
             for hook in post_hooks:
-                outputs = hook(self.wrapper.clf, outputs)
+                outputs = hook(self.wrapper.clf, inputs, outputs)
         return outputs
     return func_hook
 

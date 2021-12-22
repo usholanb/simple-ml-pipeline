@@ -66,5 +66,7 @@ class TorchWrapper(DefaultWrapper):
     def parameters(self):
         return self.clf.parameters()
 
+    def prepare_data(self, data):
+        return self.clf.prepare_data(data)
 
 

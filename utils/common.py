@@ -313,19 +313,20 @@ def get_data_loaders(configs, specific=None):
 
 def get_data_loader(configs, split_name):
     dataset_class = registry.get_dataset_class(configs.get('dataset').get('name'))
-    hps = configs.get('dataset').get('data_loaders', {}).get(split_name)
+    hps = configs.get('dataset').get('data_loaders', {}).get(split_name, {})
     dataset = dataset_class(configs, split_name)
     return DataLoader(dataset, **hps, collate_fn=dataset.collate)
 
 
 def transform(all_data, transformers):
     for t in transformers:
-        t.apply(all_data)
+        all_data = t.apply(all_data)
+    return all_data
 
 
 def get_transformers(configs):
     setup_imports()
-    ts = configs.get('special_inputs').get('transformers')
+    ts = configs.get('special_inputs').get('transformers', [])
     ts = ts if isinstance(ts, list) else [ts]
     return [registry.get_transformer_class(t_name)(configs)
             for t_name in ts]
@@ -335,7 +336,7 @@ class Timeit:
     """ to compute epoch time """
     original_start = None
 
-    def __init__(self, to_print, iter, iter_n=None, every=1):
+    def __init__(self, to_print, iter, iter_n=0, every=1):
         self.iter = iter
         self.every = every
         self.start = None

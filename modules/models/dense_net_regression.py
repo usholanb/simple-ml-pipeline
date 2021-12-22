@@ -6,9 +6,9 @@ from utils.registry import registry
 
 
 @registry.register_model('dense_net_regression')
-class DenseNetModel(BaseTorchModel):
+class DenseNetRegressionsModel(BaseTorchModel):
     def __init__(self, configs):
-        super(DenseNetModel, self).__init__(configs)
+        super(DenseNetRegressionsModel, self).__init__(configs)
         self.__dict__.update(configs.get('special_inputs', {}))
         self.layers = self.set_layers()
 
@@ -27,3 +27,6 @@ class DenseNetModel(BaseTorchModel):
     def predict(self, x):
         x = self.forward(x)
         return x
+
+
+

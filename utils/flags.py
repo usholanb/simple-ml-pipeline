@@ -53,6 +53,7 @@ class TrainFlags(Flags):
         self._parser.add_argument(
             "--config-yml",
             default=f'{CONFIGS_DIR}/train_dense_net_regression.yml',
+            # default=f'{CONFIGS_DIR}/train_dagnet.yml',
             help="path to config file starting from project home path",
         )
 
