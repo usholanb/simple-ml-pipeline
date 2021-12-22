@@ -24,9 +24,9 @@ class LocalModel(nn.Module):
 
 @registry.register_model('dynamic_net_regression')
 class DynamicNetRegression(BaseTorchModel):
-    def __init__(self, special_inputs):
-        super().__init__()
-        self.__dict__.update(special_inputs)
+    def __init__(self, configs):
+        super().__init__(configs)
+        self.__dict__.update(configs.get('special_inputs', {}))
         self.models = [LocalModel(self.input_dim)]
         self.boost_rate = nn.Parameter(torch.tensor(self.lr, requires_grad=True, device=self.device))
 

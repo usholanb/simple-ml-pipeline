@@ -1,6 +1,3 @@
-from enum import Enum
-from typing import Dict
-
 import torch
 import torch.nn as nn
 from modules.models.base_models.base_torch_model import BaseTorchModel

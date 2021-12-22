@@ -19,13 +19,14 @@ optim:
 
 
 # this inputs will go to your specific model __init__
-#special_inputs:
-
+special_inputs:
+  n_outputs: 3
 
 
 trainer:
   name: torch_trainer
   optim: Adam
+  label_type: classification
   loss: NLLLoss
   save: 1
   epochs: 10
