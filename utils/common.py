@@ -313,8 +313,7 @@ def get_data_loaders(configs, specific=None):
 
 def get_data_loader(configs, split_name):
     dataset_class = registry.get_dataset_class(configs.get('dataset').get('name'))
-
-    hps = configs.get('dataset').get('data_loaders').get(split_name)
+    hps = configs.get('dataset').get('data_loaders', {}).get(split_name)
     dataset = dataset_class(configs, split_name)
     return DataLoader(dataset, **hps, collate_fn=dataset.collate)
 

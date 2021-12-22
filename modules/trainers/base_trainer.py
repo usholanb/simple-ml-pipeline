@@ -14,5 +14,5 @@ class BaseTrainer(ABC):
         """ saves model """
 
     @abstractmethod
-    def get_wrapper(self, *args, **kwargs) -> BaseWrapper:
+    def _get_wrapper(self, *args, **kwargs) -> BaseWrapper:
         """ returns a wrapper specified in config file """

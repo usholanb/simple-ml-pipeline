@@ -20,15 +20,13 @@ class TorchWrapper(DefaultWrapper):
 
     def get_classifier(self, configs):
         if configs.get('trainer', {}).get('resume', False):
-            name = Namer.model_name(configs.get('model'))
-            folder = CLASSIFIERS_DIR
-            model_path = f'{folder}/{name}.pkl'
-            if os.path.isfile(model_path):
-                model = unpickle_obj(model_path)
-                print(f'resumed {name}')
+            if os.path.isfile(self.model_path):
+                model = unpickle_obj(self.model_path)
+                print(f'resumed {self.name}')
             else:
-                raise ValueError(f'cannot resume model {name}'
-                                 f' - no checkpoint exist in folder {folder}')
+                raise ValueError(f'cannot resume model {self.name}'
+                                 f' - no checkpoint exist in'
+                                 f' folder {CLASSIFIERS_DIR}')
         else:
             setup_imports()
             model = registry.get_model_class(
@@ -68,33 +66,5 @@ class TorchWrapper(DefaultWrapper):
     def parameters(self):
         return self.clf.parameters()
 
-    def before_iteration_train(self,  *args, **kwargs) -> None:
-        """ runs before optimizer.zero_grad() """
-        self.default_hooks(self.before_iteration_train.__name__, *args, **kwargs)
 
-    def before_iteration_valid(self,  *args, **kwargs):
-        self.default_hooks(self.before_iteration_valid.__name__, *args, **kwargs)
-
-    def end_iteration_train(self, *args, **kwargs):
-        self.default_hooks(self.end_iteration_train.__name__, *args, **kwargs)
-
-    def end_iteration_valid(self, *args, **kwargs):
-        self.default_hooks(self.end_iteration_valid.__name__, *args, **kwargs)
-
-    def before_epoch_train(self, *args, **kwargs):
-        self.default_hooks(self.before_epoch_train.__name__, *args, **kwargs)
-
-    def before_epoch_valid(self, *args, **kwargs):
-        self.default_hooks(self.before_epoch_valid.__name__, *args, **kwargs)
-
-    def after_epoch_train(self, *args, **kwargs):
-        self.default_hooks(self.after_epoch_train.__name__, *args, **kwargs)
-
-    def after_epoch_valid(self, *args, **kwargs):
-        self.default_hooks(self.after_epoch_valid.__name__, *args, **kwargs)
-
-    def default_hooks(self, name, *args, **kwargs):
-        hooks = self.clf.hooks[name]
-        for hook in hooks:
-            hook(self, *args, **kwargs)
 

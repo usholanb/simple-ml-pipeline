@@ -1,3 +1,4 @@
+from modules.helpers.csv_saver import CSVSaver
 from modules.trainers.default_trainer import DefaultTrainer
 from modules.wrappers.torch_wrapper import TorchWrapper
 from utils.common import setup_imports, Timeit
@@ -10,15 +11,15 @@ from typing import Dict
 @registry.register_trainer('torch_trainer')
 class TorchTrainer(DefaultTrainer):
 
-    def __init__(self, configs: Dict, dataset: pd.DataFrame):
-        super().__init__(configs, dataset)
+    def __init__(self, configs: Dict):
+        super().__init__(configs)
+        self.dataset = CSVSaver().load(configs)
         self.loss_name = self.configs.get('trainer').get('loss', 'NLLLoss')
         self.criterion = self.get_loss()
 
     def prepare_train(self) -> Dict:
         data = super().prepare_train()
         self.configs['special_inputs'].update({'input_dim': data['train_x'].shape[1]})
-        self.configs['special_inputs'].update({'label_types': self.label_types})
         torch_data = {}
         for split_name, split in data.items():
             if split_name.endswith('_y'):
@@ -37,11 +38,10 @@ class TorchTrainer(DefaultTrainer):
     def train(self) -> None:
         """ trains nn model with dataset """
         setup_imports()
-
         data = self.prepare_train()
         if 'special_inputs' not in self.configs:
             self.configs['special_inputs'] = {}
-        self.get_wrapper(self.configs, self.label_types)
+        self._get_wrapper(self.configs)
         optimizer = self.get_optimizer(self.wrapper)
         epochs = self.configs.get('trainer').get('epochs', 10)
         every = self.configs.get('trainer').get('log_valid_every', 10)
@@ -70,7 +70,7 @@ class TorchTrainer(DefaultTrainer):
                         valid_metrics.update({f'valid_{self.loss_name}': valid_loss.item()})
                         train_metrics.update({f'train_{self.loss_name}': loss.item()})
 
-                        self.log_metrics({**valid_metrics, **train_metrics})
+                        self._log_metrics({**valid_metrics, **train_metrics})
 
         with torch.no_grad():
             self.print_metrics(data)
@@ -107,7 +107,7 @@ class TorchTrainer(DefaultTrainer):
 
         return criterion
 
-    def get_wrapper(self, *args, **kwargs) -> TorchWrapper:
+    def _get_wrapper(self, *args, **kwargs) -> TorchWrapper:
         self.wrapper = registry.get_wrapper_class('torch_wrapper') \
             (*args, **kwargs)
         return self.wrapper

@@ -31,8 +31,8 @@ class DefaultDataset(BaseDataset):
         if valid or test is absense, train is split accordingly the split ratio
         """
 
-        r = self.configs.get('dataset').get('split_ratio')
-        train, valid, test = r['train'], r['valid'], r['test']
+        ratio = self.configs.get('dataset').get('split_ratio')
+        train, valid, test = ratio['train'], ratio['valid'], ratio['test']
         assert 'train' in input_paths, \
             "if only 1 file is input, it must be train, " \
             "if multiple given, at least one of them must be train"

@@ -2,6 +2,10 @@ includes:
   - configs/constant_configs.yml
 
 
+dataset:
+  input_path: processed_data/toy_dataset
+  name: csv_dataset
+
 
 model:
   name: dense_net
@@ -10,7 +14,7 @@ model:
 
 # must be same names as parameters of the actual optimizer
 optim:
-  lr: [0.01, 0.001]
+  lr: 0.01
   weight_decay: 0.00001
 
 
@@ -24,7 +28,7 @@ trainer:
   optim: Adam
   loss: NLLLoss
   save: 1
-  epochs: 100
+  epochs: 10
   log_valid_every: 10
   tune:
     resources_per_trial:
@@ -37,12 +41,6 @@ trainer:
   grid_metric:
     name: valid_precision
     mode: max
-
-
-
-
-dataset:
-  input_path: processed_data/toy_dataset
 
 
 features_list:

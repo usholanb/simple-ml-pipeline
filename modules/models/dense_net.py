@@ -7,10 +7,14 @@ from utils.registry import registry
 
 @registry.register_model('dense_net')
 class DenseNetModel(BaseTorchModel):
-    def __init__(self, special_inputs):
-        super(DenseNetModel, self).__init__()
-        self.__dict__.update(special_inputs)
+    def __init__(self, configs):
+        super(DenseNetModel, self).__init__(configs)
+        self.__dict__.update(configs.get('special_inputs'))
         self.layers = self.set_layers()
+
+    def set_layers(self):
+
+
 
     def forward(self, x) -> Dict:
         """

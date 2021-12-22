@@ -23,6 +23,14 @@ class BaseModel(object):
     def model_path(self) -> AnyStr:
         """ absolute path to the model """
 
+    @abstractmethod
+    def add_hooks(self):
+        """ add hooks before and after main trainer functions
+
+            For reference: look at your trainer functions
+                that are decorated with hooks
+         """
+
 
 
 

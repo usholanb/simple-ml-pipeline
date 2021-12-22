@@ -23,16 +23,16 @@ class SKLearnTrainer(DefaultTrainer):
         """ trains sklearn model with dataset """
         setup_imports()
         data = self.prepare_train()
-        wrapper = self.get_wrapper()
+        wrapper = self._get_wrapper()
         wrapper.fit(data['train_x'], data['train_y'])
         valid_pred = wrapper.predict(data['valid_x'])
         train_pred = wrapper.predict(data['train_x'])
         valid_metrics = self.metrics_to_log_dict(data['valid_y'], valid_pred, 'valid')
         train_metrics = self.metrics_to_log_dict(data['train_y'], train_pred, 'train')
-        self.log_metrics({**valid_metrics, **train_metrics})
+        self._log_metrics({**valid_metrics, **train_metrics})
         self.print_metrics(data)
 
-    def get_wrapper(self, *args, **kwargs) -> SKLearnWrapper:
+    def _get_wrapper(self, *args, **kwargs) -> SKLearnWrapper:
         name = self.configs.get('model').get('name')
         if is_outside_library(name):
             self.wrapper = registry.get_wrapper_class('sklearn')\

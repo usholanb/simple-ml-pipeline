@@ -28,14 +28,15 @@ class DefaultTrainer(BaseTrainer):
             print('features_list not specified')
         f_list = DefaultTrainer.figure_feature_list(features_list, self.dataset.columns.tolist())
         for split in ['train', 'valid', 'test']:
+            split_column = self.dataset.iloc[:, self.split_i]
             data[f'{split}_y'] = \
-                self.dataset.loc[self.split_column == split].iloc[:, self.label_index_i].values
+                self.dataset.loc[split_column == split].iloc[:, self.label_index_i].values
             if features_list:
                 data[f'{split}_x'] = \
-                    self.dataset.loc[self.split_column == split][f_list].values
+                    self.dataset.loc[split_column == split][f_list].values
             else:
                 data[f'{split}_x'] = \
-                    self.dataset.loc[self.split_column == split].iloc[:, len(self.configs.get('static_columns')):].values
+                    self.dataset.loc[split_column == split].iloc[:, len(self.configs.get('static_columns')):].values
         self.configs['features_list'] = f_list
         return data
 
@@ -46,7 +47,7 @@ class DefaultTrainer(BaseTrainer):
         print(f'saved model {self.model_path()}')
         pickle_obj(self.wrapper, self.model_path())
 
-    def log_metrics(self, results) -> None:
+    def _log_metrics(self, results) -> None:
         if inside_tune():
             tune.report(**results)
         else:

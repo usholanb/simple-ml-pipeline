@@ -19,7 +19,7 @@ class DagnetLoss(BaseLoss):
         self.CE_weight = si.get('CE_weight')
         self._lambda = si.get('_lambda')
 
-    def __call__(self, all_data: Dict) -> None:
+    def __call__(self, all_data: Dict) -> Dict:
         outputs = all_data['outputs']
         kld, nll, cross_entropy, euclidean_loss = \
             outputs['kld'], outputs['nll'], outputs['cross_entropy'], outputs['euclidean_loss']
@@ -32,4 +32,5 @@ class DagnetLoss(BaseLoss):
             'cross_entropy_loss': cross_entropy.item(),
             'euclidean_loss': euclidean_loss.item()
         }
+        return all_data
 

@@ -11,7 +11,7 @@ import os
 from copy import deepcopy
 from modules.helpers.namer import Namer
 from utils.constants import TRAIN_RESULTS_DIR, CLASSIFIERS_DIR
-from utils.common import build_config, setup_imports, setup_directories, add_grid_search_parameters, get_data_loaders, \
+from utils.common import build_config, setup_imports, setup_directories, add_grid_search_parameters, \
     unpickle_obj
 from utils.registry import registry
 from ray import tune

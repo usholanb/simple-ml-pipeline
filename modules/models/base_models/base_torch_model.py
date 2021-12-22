@@ -1,5 +1,4 @@
-from typing import AnyStr
-import torch
+from typing import AnyStr, Dict, Callable, OrderedDict, Type
 from torch import nn
 
 from modules.containers.di_containers import TrainerContainer
@@ -7,38 +6,50 @@ from modules.models.base_models.base_model import BaseModel
 from utils.constants import CLASSIFIERS_DIR
 
 
+global_hooks: Dict[AnyStr, Callable] = OrderedDict()
+
+
 class BaseTorchModel(nn.Module, BaseModel):
     """ Use and/or override torch functions if you need to """
 
     def __init__(self, configs):
         super().__init__()
-        self.hook_types = ['before_iteration_train', 'end_iteration_train',
-                           'before_iteration_valid', 'end_iteration_valid',
-                           'before_epoch_train', 'after_epoch_train',
-                           'before_epoch_valid', 'after_epoch_valid']
         self.device = TrainerContainer.device
         self.__dict__.update(configs.get('special_inputs'))
         self.configs = configs
-        self._hooks = {}
-        for hook_name in self.hook_types:
-            self.hooks[hook_name] = []
         self.add_hooks()
+
+    def register_pre_hook(self, func_name, hook):
+        self.register_hook(f'before_{func_name}', hook)
+
+    def register_hook(self, name, hook):
+        if name in global_hooks:
+            global_hooks[name].append(hook)
+        else:
+            global_hooks[name] = [hook]
+
+    def register_post_hook(self, func_name, hook):
+        self.register_hook(f'after_{func_name}', hook)
 
     def add_hooks(self):
         pass
 
-    @property
-    def hooks(self):
-        return self._hooks
 
-    @property
-    def model_name(self) -> AnyStr:
-        m = self.configs.get('model')
-        return f'{m.get("name")}_{m.get("tag")}'
+def run_hooks(func):
+    def func_hook(self, inputs):
+        b_name = f'before_{func.__name__}'
+        if b_name in global_hooks:
+            pre_hooks = global_hooks[b_name]
+            for hook in pre_hooks:
+                inputs = hook(self.wrapper.clf, inputs)
+        outputs = func(self, inputs)
 
-    def model_path(self) -> AnyStr:
-        return f'{CLASSIFIERS_DIR}/{self.model_name}.pkl'
-
-
+        a_name = f'after_{func.__name__}'
+        if a_name in global_hooks:
+            post_hooks = global_hooks[a_name]
+            for hook in post_hooks:
+                outputs = hook(self.wrapper.clf, outputs)
+        return outputs
+    return func_hook
 
 

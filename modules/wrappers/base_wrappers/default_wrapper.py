@@ -9,6 +9,7 @@ from modules.wrappers.base_wrappers.base_wrapper import BaseWrapper
 import importlib
 
 from utils.common import is_outside_library, to_snake_case
+from utils.constants import CLASSIFIERS_DIR
 
 
 class DefaultWrapper(BaseWrapper):
@@ -21,6 +22,10 @@ class DefaultWrapper(BaseWrapper):
     @property
     def features_list(self):
         return self._features_list
+
+    @property
+    def model_path(self) -> AnyStr:
+        return f'{CLASSIFIERS_DIR}/{self.name}.pkl'
 
     @property
     def name(self) -> AnyStr:
