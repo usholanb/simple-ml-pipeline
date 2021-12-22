@@ -27,9 +27,7 @@ dataset:
 
 # this inputs will go to your specific model __init__
 special_inputs:
-
   transformers: [goals_ohe, adj]
-
   CE_weight: 0.01
   adjacency_type: 1
   alpha: 0.2

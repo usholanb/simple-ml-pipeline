@@ -52,7 +52,7 @@ class TrainFlags(Flags):
         self._parser.add_argument_group("Core Arguments")
         self._parser.add_argument(
             "--config-yml",
-            default=f'{CONFIGS_DIR}/train_dense_net.yml',
+            default=f'{CONFIGS_DIR}/train_dense_net_regression.yml',
             help="path to config file starting from project home path",
         )
 
@@ -77,6 +77,7 @@ class OrchestraFlags(Flags):
             default=f'{CONFIGS_DIR}/orchestra_regression.yml',
             help="path to config file starting from project home path",
         )
+
 
 all_flags = {
     'preprocessing': PreprocessingFlag('dataset creation config file'),

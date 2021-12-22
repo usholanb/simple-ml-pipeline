@@ -1,6 +1,11 @@
 includes:
   - configs/constant_configs.yml
 
+
+dataset:
+  input_path: processed_data/toy_dataset
+
+
 model:
   name: sklearn.ensemble.RandomForestClassifier
   tag: uan2
@@ -19,15 +24,11 @@ trainer:
         cpu: 2
         gpu: 0
 
-    metrics: [accuracy, precision]
+    metrics: [accuracy, precision, mse]
 
     grid_metric:
       name: valid_precision
       mode: max
-
-
-dataset:
-  input_path: processed_data/toy_dataset
 
 
 features_list:

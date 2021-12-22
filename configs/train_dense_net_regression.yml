@@ -17,8 +17,9 @@ optim:
 
 # this inputs will go to your specific model __init__
 special_inputs:
-#  layers_sizes: [[10, 5, 10]]
-  layers_sizes: [[100, 100, 100]]
+#  layers_sizes: [[100, 100, 100]]  # the best
+  layers_sizes: [[10]]
+  n_outputs: 1
 
 
 
@@ -27,8 +28,8 @@ trainer:
   optim: Adam
   loss: MSELoss
   save: 1
-  epochs: 100000
-  log_valid_every: 10000
+  epochs: 1000
+  log_valid_every: 100
   tune:
     resources_per_trial:
       cpu: 8

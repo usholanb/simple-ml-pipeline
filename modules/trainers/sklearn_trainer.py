@@ -36,7 +36,7 @@ class SKLearnTrainer(DefaultTrainer):
         name = self.configs.get('model').get('name')
         if is_outside_library(name):
             self.wrapper = registry.get_wrapper_class('sklearn')\
-                (self.configs, self.label_types)
+                (self.configs)
         else:
             raise ValueError(f'{name} doesnt exist in sklearn')
         return self.wrapper
