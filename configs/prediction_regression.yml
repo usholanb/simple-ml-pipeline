@@ -3,8 +3,13 @@ includes:
 
 predictor: player_evaluation_predictor
 
+classification: false
+
 dataset:
   input_path: processed_data/no_GK_merged_df_v62
+
+trainer:
+  name: sklearn_trainer
 
 print_important_features: true
 
@@ -22,7 +27,8 @@ plots:
 
 models:
 #  uan: dense_net_regression
-  uan3: xgb_regressor
+#  uan3: xgb_regressor
+  small: xgb_regressor
 #  uan4: linear_regression
 
 

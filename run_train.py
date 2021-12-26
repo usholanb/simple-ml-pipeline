@@ -20,8 +20,6 @@ import time
 
 
 def train_one(configs: Dict, save: bool = False) -> None:
-    """ Prepares Dataset """
-
     setup_imports()
     trainer = registry.get_trainer_class(
         configs.get('trainer').get('name')

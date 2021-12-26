@@ -31,10 +31,9 @@ class TorchTrainer3(DefaultTrainer):
 
     def train(self) -> None:
         epochs = self.configs.get('trainer').get('epochs')
-        iters = len(self.train_loader)
         log_every = self.configs.get('trainer').get('log_valid_every', 10)
         for epoch in range(epochs):
-            with Timeit(f'epoch # {epoch} / {epochs}', epoch, iters):
+            with Timeit(f'epoch # {epoch} / {epochs}', epoch, epochs):
                 train_results = self.__train_loop(epoch)
                 self._log_metrics(train_results)
             if (epoch + 1) % log_every == 0:
@@ -79,7 +78,7 @@ class TorchTrainer3(DefaultTrainer):
     def train_epoch(self, inputs):
         epoch, split, loader = inputs
         for batch_i, batch in enumerate(loader):
-            with Timeit(f'batch_i # {batch_i} / {len(loader)}',
+            with Timeit(f'batch_i # {batch_i} / {len(loader.dataset)}',
                         epoch, len(loader)):
                 data = {
                     'epoch': epoch,
@@ -126,7 +125,6 @@ class TorchTrainer3(DefaultTrainer):
                     'batch': [x.to(TrainerContainer.device) for x in batch],
                     'split': split,
                 }
-                all_data = transform(all_data, self.ts)
                 all_data = self.valid_forward(all_data)
                 all_data = self.compute_loss_valid(all_data)
         return all_data

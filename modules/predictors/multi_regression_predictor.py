@@ -3,7 +3,7 @@ import pandas as pd
 import torch
 from modules.containers.di_containers import TrainerContainer
 from modules.helpers.matplotlibgraph import MatPlotLibGraph
-from modules.predictors.base_predictors.predictor import Predictor
+from modules.predictors.base_predictors.base_predictor import BasePredictor
 from utils.common import unpickle_obj, transform
 from utils.constants import CLASSIFIERS_DIR
 from utils.registry import registry
@@ -13,7 +13,7 @@ import utils.small_functions as sf
 
 
 @registry.register_predictor('multi_regression_predictor')
-class MultiRegressionPredictor(Predictor):
+class MultiRegressionPredictor(BasePredictor):
     """ uses all wrappers pointed in prediction config to
         make and save several prediction files
 

@@ -39,7 +39,7 @@ class TorchWrapper(DefaultWrapper):
             Uses only certain features that were used during training """
 
         examples = self.filter_features(examples)
-        return self.clf.get_train_probs(torch.FloatTensor(
+        return self.get_train_probs(torch.FloatTensor(
                     examples
                 )).detach().numpy()
 

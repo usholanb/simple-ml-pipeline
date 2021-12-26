@@ -13,17 +13,15 @@ class SKLearnTrainer(DefaultTrainer):
 
     def __init__(self, configs):
         super().__init__(configs)
-        self.dataset = CSVSaver().load(configs)
-        self.label_name = self.dataset.columns[self.configs.get('static_columns')
+        dataset = CSVSaver().load(configs)
+        self.data = self.prepare_train(dataset)
+        self.label_name = dataset.columns[self.configs.get('static_columns')
             .get('FINAL_LABEL_INDEX')]
-        self.split_column = self.dataset.iloc[:, self.split_i]
-        self.label_types = self.set_label_types()
-        self.dataset = CSVSaver().load(self.configs)
+        self.split_column = dataset.iloc[:, self.split_i]
 
     def train(self) -> None:
         """ trains sklearn model with dataset """
         setup_imports()
-        data = self.prepare_train()
         wrapper = self._get_wrapper()
         wrapper.fit(data['train_x'], data['train_y'])
         valid_pred = wrapper.get_train_probs(data['valid_x'])
@@ -31,7 +29,7 @@ class SKLearnTrainer(DefaultTrainer):
         valid_metrics = self.metrics_to_log_dict(data['valid_y'], valid_pred, 'valid')
         train_metrics = self.metrics_to_log_dict(data['train_y'], train_pred, 'train')
         self._log_metrics({**valid_metrics, **train_metrics})
-        self.print_metrics(data)
+        self.print_metrics(self.data)
 
     def _get_wrapper(self, *args, **kwargs) -> SKLearnWrapper:
         name = self.configs.get('model').get('name')

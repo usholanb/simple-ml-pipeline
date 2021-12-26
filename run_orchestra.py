@@ -8,7 +8,7 @@ predictions/ folder
 from typing import Dict
 import pandas as pd
 from modules.helpers.csv_saver import CSVSaver
-from modules.predictors.base_predictors.predictor import Predictor
+from modules.predictors.base_predictors.base_predictor import BasePredictor
 from run_preprocessing import run_preprocessing
 from run_train import run_train
 from run_prediction import run_prediction, save_files, get_predictor

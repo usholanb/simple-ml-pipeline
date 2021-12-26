@@ -36,37 +36,39 @@ class DAGNet(BaseTorchModel):
             nn.ReLU(),
             nn.Linear(self.h_dim, self.g_dim),
             nn.Softmax(dim=-1)
-        )
+        ).to(self.device)
 
         # goals graph
         if self.adjacency_type == 2 and self.top_k_neigh is None:
             raise Exception('Using KNN-similarity but top_k_neigh is not specified')
 
         if self.graph_model == 'gcn':
-            self.graph_goals = GCN(self.g_dim, self.graph_hid, self.g_dim)
+            self.graph_goals = GCN(self.g_dim, self.graph_hid, self.g_dim).to(self.device)
         elif self.graph_model == 'gat':
             assert self.n_heads is not None
             assert self.alpha is not None
-            self.graph_goals = GAT(self.g_dim, self.graph_hid, self.g_dim, self.alpha, self.n_heads)
+            self.graph_goals = GAT(self.g_dim, self.graph_hid, self.g_dim,
+                                   self.alpha, self.n_heads).to(self.device)
 
         # hiddens graph
         if self.adjacency_type == 2 and self.top_k_neigh is None:
             raise Exception('Using KNN-similarity but top_k_neigh is not specified')
         if self.graph_model == 'gcn':
-            self.graph_hiddens = GCN(self.rnn_dim, self.graph_hid, self.rnn_dim)
+            self.graph_hiddens = GCN(self.rnn_dim, self.graph_hid, self.rnn_dim).to(self.device)
         elif self.graph_model == 'gat':
             assert self.n_heads is not None
             assert self.alpha is not None
-            self.graph_hiddens = GAT(self.rnn_dim, self.graph_hid, self.rnn_dim, self.alpha, self.n_heads)
+            self.graph_hiddens = GAT(self.rnn_dim, self.graph_hid, self.rnn_dim,
+                                     self.alpha, self.n_heads).to(self.device)
 
         # interpolating original goals with refined goals from the first graph
         self.lg_goals = nn.Sequential(
             nn.Linear(self.g_dim + self.g_dim, self.g_dim),
             nn.Softmax(dim=-1)
-        )
+        ).to(self.device)
 
         # interpolating original hiddens with refined hiddens from the second graph
-        self.lg_hiddens = nn.Linear(self.rnn_dim + self.rnn_dim, self.rnn_dim)
+        self.lg_hiddens = nn.Linear(self.rnn_dim + self.rnn_dim, self.rnn_dim).to(self.device)
 
         # feature extractors
         self.phi_x = nn.Sequential(
@@ -74,14 +76,14 @@ class DAGNet(BaseTorchModel):
             nn.LeakyReLU(),
             nn.Linear(self.h_dim, self.h_dim),
             nn.LeakyReLU()
-        )
+        ).to(self.device)
 
         self.phi_z = nn.Sequential(
             nn.Linear(self.z_dim, self.h_dim),
             nn.LeakyReLU(),
             nn.Linear(self.h_dim, self.h_dim),
             nn.LeakyReLU()
-        )
+        ).to(self.device)
 
         # encoder
         self.enc = nn.Sequential(
@@ -89,9 +91,9 @@ class DAGNet(BaseTorchModel):
             nn.LeakyReLU(),
             nn.Linear(self.h_dim, self.h_dim),
             nn.LeakyReLU()
-        )
-        self.enc_mean = nn.Linear(self.h_dim, self.z_dim)
-        self.enc_logvar = nn.Linear(self.h_dim, self.z_dim)
+        ).to(self.device)
+        self.enc_mean = nn.Linear(self.h_dim, self.z_dim).to(self.device)
+        self.enc_logvar = nn.Linear(self.h_dim, self.z_dim).to(self.device)
 
         # prior
         self.prior = nn.Sequential(
@@ -99,9 +101,9 @@ class DAGNet(BaseTorchModel):
             nn.LeakyReLU(),
             nn.Linear(self.h_dim, self.h_dim),
             nn.LeakyReLU()
-        )
-        self.prior_mean = nn.Linear(self.h_dim, self.z_dim)
-        self.prior_logvar = nn.Linear(self.h_dim, self.z_dim)
+        ).to(self.device)
+        self.prior_mean = nn.Linear(self.h_dim, self.z_dim).to(self.device)
+        self.prior_logvar = nn.Linear(self.h_dim, self.z_dim).to(self.device)
 
         # decoder
         self.dec = nn.Sequential(
@@ -109,12 +111,12 @@ class DAGNet(BaseTorchModel):
             nn.LeakyReLU(),
             nn.Linear(self.h_dim, self.h_dim),
             nn.LeakyReLU()
-        )
-        self.dec_mean = nn.Linear(self.h_dim, self.x_dim)
-        self.dec_logvar = nn.Linear(self.h_dim, self.x_dim)
+        ).to(self.device)
+        self.dec_mean = nn.Linear(self.h_dim, self.x_dim).to(self.device)
+        self.dec_logvar = nn.Linear(self.h_dim, self.x_dim).to(self.device)
 
         # recurrence
-        self.rnn = nn.GRU(self.h_dim + self.h_dim, self.rnn_dim, self.n_layers)
+        self.rnn = nn.GRU(self.h_dim + self.h_dim, self.rnn_dim, self.n_layers).to(self.device)
 
         # add all hooks()
 
@@ -196,8 +198,11 @@ class DAGNet(BaseTorchModel):
         obs_traj, pred_traj_gt, obs_traj_rel, pred_traj_rel_gt, \
         obs_goals_ohe, pred_goals_gt_ohe, seq_start_end, adj_out = all_data['transformed_batch']
         seq_len = len(obs_traj) + len(pred_traj_gt)
-        samples_rel = self.predict(self.pred_len, h, obs_traj[-1],
-                                   obs_goals_ohe[-1], seq_start_end)
+        samples_rel = self.get_train_probs(
+            {
+                'valid_forward_data': [self.pred_len, h, obs_traj[-1], obs_goals_ohe[-1], seq_start_end]
+            }
+        )
 
         samples = relative_to_abs(samples_rel, obs_traj[-1])
         batch_traj = obs_traj.shape[1]  # num_seqs
@@ -211,13 +216,14 @@ class DAGNet(BaseTorchModel):
             'h': h,
             'euclidean_loss': euclidean_batch_loss,
         }
-        return all_data
+        return samples
 
-    def predict(self, samples_seq_len, h, x_abs_start, g_start, seq_start_end):
+    def get_train_probs(self, all_data):
+        samples_seq_len, h, x_abs_start, g_start, seq_start_end = all_data['valid_forward_data']
         _, batch_size, _ = h.shape
 
         g_t = g_start   # at start, the previous goal is the last goal from GT observation
-        x_t_abs = x_abs_start # at start, the curr abs pos of the agents come from the last abs pos from GT observations
+        x_t_abs = x_abs_start  # at start, the curr abs pos of the agents come from the last abs pos from GT observations
 
         samples = torch.zeros(samples_seq_len, batch_size, self.x_dim).to(self.device)
         d = torch.zeros(samples_seq_len, batch_size, self.n_max_agents * self.x_dim).to(self.device)
@@ -354,8 +360,9 @@ class DAGNet(BaseTorchModel):
             self.total_traj += obs_traj.shape[1]
 
             for _ in range(self.configs.get('trainer').get('num_samples')):
-                samples_rel = self.get_train_probs(self.pred_len, outputs['h'], obs_traj[-1],
-                                                   obs_goals_ohe[-1], seq_start_end)
+                samples_rel = self.get_train_probs(
+                    {'valid_forward_data': [self.pred_len, outputs['h'], obs_traj[-1],
+                                            obs_goals_ohe[-1], seq_start_end]})
                 samples = relative_to_abs(samples_rel, obs_traj[-1])
 
                 ade.append(average_displacement_error(samples, pred_traj_gt, mode='raw'))

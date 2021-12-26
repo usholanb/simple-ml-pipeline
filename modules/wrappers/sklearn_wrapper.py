@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Dict, Any
 import numpy as np
 import pandas as pd
 from modules.wrappers.base_wrappers.default_wrapper import DefaultWrapper
@@ -40,5 +40,7 @@ class SKLearnWrapper(DefaultWrapper):
         return result
 
     def fit(self, inputs, targets) -> None:
+        self.n_outputs = 1 if len(targets.shape) == 1 \
+            else targets.shape[1]
         self.clf.fit(inputs, targets)
 
