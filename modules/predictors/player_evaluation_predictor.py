@@ -1,20 +1,25 @@
+from copy import deepcopy
 from typing import AnyStr, Dict
 import pandas as pd
+
+from modules.helpers.csv_saver import CSVSaver
 from modules.helpers.matplotlibgraph import MatPlotLibGraph
 from modules.predictors.base_predictors.predictor import Predictor
+from utils.common import unpickle_obj
+from utils.constants import CLASSIFIERS_DIR
 from utils.registry import registry
 import numpy as np
 import csv
 import utils.small_functions as sf
 
 
-@registry.register_predictor('player_evaluation')
+@registry.register_predictor('player_evaluation_predictor')
 class PlayerEvaluationPredictor(Predictor):
     """ uses all wrappers pointed in prediction config to
         make and save several prediction files """
 
-    def __init__(self, configs: Dict, dataset: pd.DataFrame):
-        super().__init__(configs, dataset)
+    def __init__(self, configs: Dict):
+        super().__init__(configs)
         self.scale = 1e-6
         self.points = [10, 80, 200]
         self.steps = [1, 5, 10]
@@ -67,6 +72,19 @@ class PlayerEvaluationPredictor(Predictor):
                                       s)))
             current = p
         return np.array(x_ticks)
+
+    def predict(self):
+        output_dataset = deepcopy(self.dataset)
+        k_fold_tag = self.configs.get('dataset').get('k_fold_tag', '')
+        for tag, model_name in self.configs.get('models').items():
+            model_name_tag = f'{model_name}_{tag}'
+            model_path = f'{CLASSIFIERS_DIR}/{model_name_tag}{k_fold_tag}.pkl'
+            wrapper = unpickle_obj(model_path)
+            self.print_important_features(wrapper)
+            probs = wrapper.predict_proba(self.dataset)
+            output_dataset[f'{model_name_tag}'] = probs
+            output_dataset['k_fold'] = k_fold_tag
+        return output_dataset
 
 
 

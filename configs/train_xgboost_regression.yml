@@ -15,7 +15,7 @@ special_inputs:
   booster: dart
 #  n_estimators: [90, 100, 110]
 #  max_depth: [8, 16, 32]
-  n_estimators: 110
+  n_estimators: 11
   max_depth: 32
 #  gamma: .01
   num_parallel_tree: 6

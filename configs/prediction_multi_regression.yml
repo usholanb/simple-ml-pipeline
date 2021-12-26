@@ -1,12 +1,13 @@
 includes:
   - configs/constant_configs.yml
+  - configs/dagnet_constant_configs.yml
 
-predictor: player_evaluation_predictor
+predictor: multi_regression_predictor
 
 dataset:
-  input_path: processed_data/no_GK_merged_df_v62
+  input_path: processed_data/dagnet_dataset
 
-print_important_features: true
+print_important_features: false
 
 plots:
   splits:
@@ -21,9 +22,8 @@ plots:
 
 
 models:
-#  uan: dense_net_regression
-  uan3: xgb_regressor
-#  uan4: linear_regression
+  uan: dagnet
+#  uan: linear_regression
 
 
-metrics: [mse]
+metrics: [dagnet_loss]

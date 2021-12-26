@@ -58,8 +58,8 @@ class TorchTrainer(DefaultTrainer):
                     with torch.no_grad():
                         self.wrapper.eval()
                         valid_metrics, train_metrics = {}, {}
-                        valid_preds = self.wrapper.predict(data['valid_x'])
-                        train_preds = self.wrapper.predict(data['train_x'])
+                        valid_preds = self.wrapper.get_train_probs(data['valid_x'])
+                        train_preds = self.wrapper.get_train_probs(data['train_x'])
                         valid_metrics.update(self.metrics_to_log_dict(
                         data['valid_y'], valid_preds, 'valid'))
                         train_metrics.update(self.metrics_to_log_dict(
@@ -84,7 +84,7 @@ class TorchTrainer(DefaultTrainer):
         with torch.no_grad():
             for split_name in ['train', 'valid', 'test']:
                 split_y_str, split_x_str = f'{split_name}_y', f'{split_name}_x'
-                split_preds = self.wrapper.predict(data[split_x_str])
+                split_preds = self.wrapper.get_train_probs(data[split_x_str])
                 split_outputs = self.wrapper.forward(data[split_x_str])
                 metrics = self.metrics_to_log_dict(data[split_y_str], split_preds, split_name)
                 loss = self.criterion(split_outputs, data[split_y_str])

@@ -46,7 +46,6 @@ def train(configs: Dict) -> None:
             keep_checkpoints_num=1,
             checkpoint_score_attr=configs.get('trainer').get('grid_metric').get('name'),
             mode=configs.get('trainer').get('grid_metric').get('mode'),
-            # callbacks=[SaveModel()],
         )
         best_configs = analysis.get_best_config(
             metric=configs.get('trainer').get('grid_metric').get('name'),

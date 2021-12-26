@@ -2,7 +2,7 @@ import logging
 import sys
 import importlib.util as importlib_util
 import yaml
-from typing import List, AnyStr, Dict
+from typing import List, Dict, Type
 from pathlib import Path
 import copy
 import os
@@ -13,14 +13,11 @@ from typing import AnyStr
 import pickle
 import re
 import ray
-from time import time
-from torch.utils.data import DataLoader, Dataset, TensorDataset
-import torch
 import numpy as np
 from time import time
 
-from modules.helpers.csv_saver import CSVSaver
-from utils.constants import PROJECT_DIR
+from torch.utils.data import DataLoader
+
 from utils.registry import registry
 
 
@@ -302,22 +299,6 @@ def do_after_iter(iterable, func):
         return i
 
 
-def get_data_loaders(configs, specific=None):
-    split_names = [specific] if specific is not None else ['train', 'valid', 'test']
-    d_loaders = []
-    for split_name in split_names:
-        dl = get_data_loader(configs, split_name)
-        d_loaders.append(dl)
-    return d_loaders
-
-
-def get_data_loader(configs, split_name):
-    dataset_class = registry.get_dataset_class(configs.get('dataset').get('name'))
-    hps = configs.get('dataset').get('data_loaders', {}).get(split_name, {})
-    dataset = dataset_class(configs, split_name)
-    return DataLoader(dataset, **hps, collate_fn=dataset.collate)
-
-
 def transform(all_data, transformers):
     for t in transformers:
         all_data = t.apply(all_data)
@@ -357,3 +338,23 @@ class Timeit:
             print(f'{self.to_print}:   time: {iter_time},    '
                   f'total training time: {round(now - Timeit.original_start, 2)},'
                   f' expected for all {self.iter_n} iters: {expected}')
+
+
+def get_data_loaders(configs, specific=None):
+    split_names = [specific] if specific is not None else ['train', 'valid', 'test']
+    d_loaders = []
+    for split_name in split_names:
+        dl = get_data_loader(configs, split_name)
+        d_loaders.append(dl)
+    return d_loaders
+
+
+def get_data_loader(configs, split_name):
+    dataset_class = registry.get_dataset_class(configs.get('dataset').get('name'))
+    hps = configs.get('dataset').get('data_loaders', {}).get(split_name, {})
+    dataset = dataset_class(configs, split_name)
+    return DataLoader(dataset, **hps, collate_fn=dataset.collate)
+
+
+def df_type_is(df, dtype: Type) -> bool:
+    return (df == df.astype(dtype)).all()

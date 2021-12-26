@@ -18,6 +18,7 @@ class SKLearnTrainer(DefaultTrainer):
             .get('FINAL_LABEL_INDEX')]
         self.split_column = self.dataset.iloc[:, self.split_i]
         self.label_types = self.set_label_types()
+        self.dataset = CSVSaver().load(self.configs)
 
     def train(self) -> None:
         """ trains sklearn model with dataset """
@@ -25,8 +26,8 @@ class SKLearnTrainer(DefaultTrainer):
         data = self.prepare_train()
         wrapper = self._get_wrapper()
         wrapper.fit(data['train_x'], data['train_y'])
-        valid_pred = wrapper.predict(data['valid_x'])
-        train_pred = wrapper.predict(data['train_x'])
+        valid_pred = wrapper.get_train_probs(data['valid_x'])
+        train_pred = wrapper.get_train_probs(data['train_x'])
         valid_metrics = self.metrics_to_log_dict(data['valid_y'], valid_pred, 'valid')
         train_metrics = self.metrics_to_log_dict(data['train_y'], train_pred, 'train')
         self._log_metrics({**valid_metrics, **train_metrics})

@@ -56,7 +56,7 @@ class DefaultTrainer(BaseTrainer):
 
     def print_metrics(self, data: Dict) -> None:
         for split_name in ['train', 'valid', 'test']:
-            split_preds = self.wrapper.predict(data[f'{split_name}_x'])
+            split_preds = self.wrapper.get_train_probs(data[f'{split_name}_x'])
             s_metrics = self.get_split_metrics(data[f'{split_name}_y'], split_preds)
             s_metrics = "\n".join([f"{split_name}_{k}: {v}" for k, v in s_metrics.items()])
             print(f'{s_metrics}\n')
@@ -107,3 +107,4 @@ class DefaultTrainer(BaseTrainer):
         dataset = registry.get_dataset_class(
             self.configs.get('dataset').get('name'))(self.configs)
         return dataset
+

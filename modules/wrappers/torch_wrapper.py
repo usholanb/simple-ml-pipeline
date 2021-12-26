@@ -34,18 +34,18 @@ class TorchWrapper(DefaultWrapper):
             )(configs)
         return model
 
-    def predict_proba(self, examples: pd.DataFrame) -> np.ndarray:
+    def get_prediction_probs(self, examples: pd.DataFrame) -> np.ndarray:
         """ returns probabilities, is used in prediction step.
             Uses only certain features that were used during training """
 
         examples = self.filter_features(examples)
-        return self.clf.predict(torch.FloatTensor(
+        return self.clf.get_train_probs(torch.FloatTensor(
                     examples
                 )).detach().numpy()
 
-    def predict(self, examples: torch.FloatTensor) -> torch.Tensor:
+    def get_train_probs(self, examples: torch.FloatTensor) -> torch.Tensor:
         """ returned to metrics or predict_proba in prediction step """
-        return self.clf.predict(examples)
+        return self.clf.get_train_probs(examples)
 
     def forward(self, examples: torch.FloatTensor):
         """ returns outputs, not probs, is used in train """

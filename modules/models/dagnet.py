@@ -4,6 +4,7 @@ from torch.nn import functional as F
 from modules.containers.di_containers import TrainerContainer
 from modules.models.base_models.base_torch_model import BaseTorchModel
 from modules.transformers.adj_transformer import block_diag_irregular
+from utils.common import get_transformers, transform
 from utils.registry import registry
 import matplotlib.pyplot as plt
 import random
@@ -13,7 +14,7 @@ from scipy.spatial import distance_matrix
 
 
 @registry.register_model('dagnet')
-class DAGNet (BaseTorchModel):
+class DAGNet(BaseTorchModel):
     def __init__(self, configs):
         super(DAGNet, self).__init__(configs)
         self.d_dim = self.n_max_agents * 2
@@ -27,6 +28,7 @@ class DAGNet (BaseTorchModel):
         self.nll_loss = None
         self.cross_entropy_loss = None
         self.euclidean_loss = None
+        self.ts = get_transformers(self.configs)
 
         # goal generator
         self.dec_goal = nn.Sequential(
@@ -194,8 +196,8 @@ class DAGNet (BaseTorchModel):
         obs_traj, pred_traj_gt, obs_traj_rel, pred_traj_rel_gt, \
         obs_goals_ohe, pred_goals_gt_ohe, seq_start_end, adj_out = all_data['transformed_batch']
         seq_len = len(obs_traj) + len(pred_traj_gt)
-        samples_rel = self.predict_proba(self.pred_len, h, obs_traj[-1],
-                                         obs_goals_ohe[-1], seq_start_end)
+        samples_rel = self.predict(self.pred_len, h, obs_traj[-1],
+                                   obs_goals_ohe[-1], seq_start_end)
 
         samples = relative_to_abs(samples_rel, obs_traj[-1])
         batch_traj = obs_traj.shape[1]  # num_seqs
@@ -211,7 +213,7 @@ class DAGNet (BaseTorchModel):
         }
         return all_data
 
-    def predict_proba(self, samples_seq_len, h, x_abs_start, g_start, seq_start_end):
+    def predict(self, samples_seq_len, h, x_abs_start, g_start, seq_start_end):
         _, batch_size, _ = h.shape
 
         g_t = g_start   # at start, the previous goal is the last goal from GT observation
@@ -312,6 +314,7 @@ class DAGNet (BaseTorchModel):
         self.register_pre_hook('eval_epoch', __before_epoch_valid)
 
         def __before_iteration_train(self, all_data):
+            all_data = transform(all_data, self.ts)
             obs_traj, pred_traj_gt, obs_traj_rel, pred_traj_rel_gt, \
             obs_goals_ohe, pred_goals_gt_ohe, seq_start_end, adj_out = all_data['transformed_batch']
             all_traj = torch.cat((obs_traj, pred_traj_gt), dim=0)
@@ -328,6 +331,7 @@ class DAGNet (BaseTorchModel):
             all_data['forward_data'] = obs_traj, obs_traj_rel, obs_goals_ohe, seq_start_end, adj_out
             return all_data
 
+        self.register_pre_hook('valid_forward', __before_iteration_train)
         self.register_pre_hook('valid_forward', __before_iteration_valid)
 
         def __train_after_loss(self, inputs, outputs):
@@ -350,8 +354,8 @@ class DAGNet (BaseTorchModel):
             self.total_traj += obs_traj.shape[1]
 
             for _ in range(self.configs.get('trainer').get('num_samples')):
-                samples_rel = self.predict_proba(self.pred_len, outputs['h'], obs_traj[-1],
-                                                 obs_goals_ohe[-1], seq_start_end)
+                samples_rel = self.get_train_probs(self.pred_len, outputs['h'], obs_traj[-1],
+                                                   obs_goals_ohe[-1], seq_start_end)
                 samples = relative_to_abs(samples_rel, obs_traj[-1])
 
                 ade.append(average_displacement_error(samples, pred_traj_gt, mode='raw'))

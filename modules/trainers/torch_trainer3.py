@@ -1,15 +1,13 @@
 from typing import Dict, List
 import torch
-from pprint import pprint
 from ray import tune
+
 from modules.containers.di_containers import TrainerContainer
-import modules.models.base_models.base_torch_model
-from modules.models.base_models.base_torch_model import BaseTorchModel, global_hooks, run_hooks
+from modules.models.base_models.base_torch_model import run_hooks
 from modules.trainers.default_trainer import DefaultTrainer
 from modules.wrappers.base_wrappers.base_wrapper import BaseWrapper
 from modules.wrappers.torch_wrapper import TorchWrapper
 from utils.common import pickle_obj, setup_imports, inside_tune, transform, Timeit, get_transformers, get_data_loaders
-from utils.constants import CLASSIFIERS_DIR
 from utils.registry import registry
 
 
@@ -22,7 +20,6 @@ class TorchTrainer3(DefaultTrainer):
         self.train_loader, self.valid_loader, self.test_loader = \
             get_data_loaders(self.configs)
         self.criterion = self.__get_loss()
-        self.ts = get_transformers(self.configs)
         self.metric_val = None
         self.wrapper = self._get_wrapper(self.configs)
         self.optimizer = self.__get_optimizer(self.wrapper)
@@ -91,7 +88,6 @@ class TorchTrainer3(DefaultTrainer):
                     'split': split,
                     'batch_size': loader.batch_size,
                 }
-                data = transform(data, self.ts)
                 data = self.train_forward(data)
                 data = self.compute_loss_train(data)
                 loss = data['loss_outputs']['loss']
@@ -156,3 +152,5 @@ class TorchTrainer3(DefaultTrainer):
         optim_name = self.configs.get('trainer').get('optim', 'Adam')
         optim_func = getattr(optim, optim_name)
         return optim_func(model.parameters(), **self.configs.get('optim'))
+
+

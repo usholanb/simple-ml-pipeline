@@ -8,7 +8,7 @@ predictions/ folder
 from typing import AnyStr
 import pandas as pd
 from modules.helpers.csv_saver import CSVSaver
-from modules.helpers.predictor import Predictor
+from modules.predictors.base_predictors.predictor import Predictor
 from utils.common import build_config, setup_imports, setup_directories
 from utils.registry import registry
 
@@ -21,9 +21,8 @@ def get_predictor(k_fold_tag: AnyStr) -> Predictor:
     configs = build_config(args)
     configs['dataset']['k_fold_tag'] = k_fold_tag
     setup_imports()
-    dataset = CSVSaver().load(configs)
     predictor_name = configs.get('predictor', 'predictor')
-    return registry.get_predictor_class(predictor_name)(configs, dataset)
+    return registry.get_predictor_class(predictor_name)(configs)
 
 
 def save_files(predictor: Predictor, output_dataset: pd.DataFrame) -> None:

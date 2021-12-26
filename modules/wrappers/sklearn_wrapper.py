@@ -20,14 +20,18 @@ class SKLearnWrapper(DefaultWrapper):
             clf = make_pipeline(PolynomialFeatures(poly), clf)
         return clf
 
-    def predict_proba(self, examples: pd.DataFrame) -> np.ndarray:
-        """ filters in needed features and makes prediction  """
+    def get_prediction_probs(self, examples: pd.DataFrame) -> np.ndarray:
+        """ Returns probs
+            filters in needed features and makes prediction
+        """
         examples = self.filter_features(examples)
-        return self.predict(examples)
+        return self.get_train_probs(examples)
 
-    def predict(self, examples: np.ndarray) -> np.ndarray:
-        """ makes prediction on pandas examples of dim N X M
-                 where N is number of examples and M number of features """
+    def get_train_probs(self, examples: np.ndarray) -> np.ndarray:
+        """ Returns probs
+            makes prediction on pandas examples of dim N X M
+            where N is number of examples and M number of features
+        """
         if self.configs.get('trainer').get('label_type') == 'classification':
             result = np.zeros((len(examples), self.clf.n_outputs_))
             result[np.arange(len(examples)), self.clf.predict(examples).astype(int)] = 1

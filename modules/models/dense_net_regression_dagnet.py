@@ -2,14 +2,14 @@ from typing import Dict
 from torch import nn
 import torch.nn.functional as F
 from modules.models.base_models.base_torch_model import BaseTorchModel
-from modules.models.dense_net_regression import DenseNetRegressionsModel
+from modules.models.dense_net_regression import DenseNetRegressions
 from utils.registry import registry
 
 
 @registry.register_model('dense_net_regression_dagnet')
-class DenseNetRegressionsModelDagnet(DenseNetRegressionsModel):
+class DenseNetRegressionsDagnet(DenseNetRegressions):
     def __init__(self, configs):
-        super(DenseNetRegressionsModelDagnet, self).__init__(configs)
+        super(DenseNetRegressionsDagnet, self).__init__(configs)
         self.__dict__.update(configs.get('special_inputs', {}))
         self.layers = self.set_layers()
 
