@@ -387,11 +387,11 @@ class DAGNet (BaseTorchModel):
 
     def __get_train_losses(self, loader, split_name):
         return {
-            f'{split_name}_avg_loss': self.loss / len(loader.dataset),
-            f'{split_name}_avg_kld_loss': self.kld_loss / len(loader.dataset),
-            f'{split_name}_avg_nll_loss': self.nll_loss / len(loader.dataset),
-            f'{split_name}_avg_cross_entropy_loss': self.cross_entropy_loss / len(loader.dataset),
-            f'{split_name}_mean_euclidean_loss': self.euclidean_loss / len(loader.dataset),
+            f'{split_name}_avg_loss': self.loss / len(loader.data),
+            f'{split_name}_avg_kld_loss': self.kld_loss / len(loader.data),
+            f'{split_name}_avg_nll_loss': self.nll_loss / len(loader.data),
+            f'{split_name}_avg_cross_entropy_loss': self.cross_entropy_loss / len(loader.data),
+            f'{split_name}_mean_euclidean_loss': self.euclidean_loss / len(loader.data),
         }
 
 

@@ -2,10 +2,10 @@ includes:
   - configs/constant_configs.yml
 
 
-#dataset:
-#  input_path: processed_data/merged_df_v62
 dataset:
-  name: basket_dataset
+  input_path: processed_data/merged_df_v62
+#dataset:
+#  name: basket_dataset
 
   data_loaders:
 

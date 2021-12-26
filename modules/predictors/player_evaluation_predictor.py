@@ -1,20 +1,19 @@
 from typing import AnyStr, Dict
 import pandas as pd
 from modules.helpers.matplotlibgraph import MatPlotLibGraph
-from modules.predictors.base_predictors.predictor import Predictor
+from modules.predictors.base_predictors.base_predictor import BasePredictor
 from utils.registry import registry
 import numpy as np
-import csv
 import utils.small_functions as sf
 
 
 @registry.register_predictor('player_evaluation')
-class PlayerEvaluationPredictor(Predictor):
+class PlayerEvaluationPredictor(BasePredictor):
     """ uses all wrappers pointed in prediction config to
         make and save several prediction files """
 
-    def __init__(self, configs: Dict, dataset: pd.DataFrame):
-        super().__init__(configs, dataset)
+    def __init__(self, configs: Dict):
+        super().__init__(configs)
         self.scale = 1e-6
         self.points = [10, 80, 200]
         self.steps = [1, 5, 10]
@@ -28,7 +27,8 @@ class PlayerEvaluationPredictor(Predictor):
             self.plot_one_f(f, x_ticks, output_dataset)
         self.one_hist(x_ticks, output_dataset, 'distribution')
 
-    def one_hist(self, x_ticks: np.ndarray, output_dataset: pd.DataFrame, name: AnyStr) -> None:
+    def one_hist(self, x_ticks: np.ndarray, output_dataset: pd.DataFrame,
+                 name: AnyStr) -> None:
         labels, trues = [], []
         for split_name in self.split_names:
             split = output_dataset[output_dataset['split'] == split_name]
@@ -56,7 +56,8 @@ class PlayerEvaluationPredictor(Predictor):
                 ys.append(loss_y)
                 labels.append(label)
                 quantities.append(quantity)
-        self.graph.plot_step(x_ticks[:-1], ys, quantities, labels, self.pred_dir, 'value in millions', f'{f.__name__}')
+        self.graph.plot_step(x_ticks[:-1], ys, quantities, labels,
+                             self.pred_dir, 'value in millions', f'{f.__name__}')
 
     def get_x_ticks(self) -> np.ndarray:
 

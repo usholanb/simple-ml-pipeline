@@ -21,9 +21,8 @@ def get_predictor(k_fold_tag: AnyStr) -> Predictor:
     configs = build_config(args)
     configs['dataset']['k_fold_tag'] = k_fold_tag
     setup_imports()
-    dataset = CSVSaver().load(configs)
     predictor_name = configs.get('predictor', 'predictor')
-    return registry.get_predictor_class(predictor_name)(configs, dataset)
+    return registry.get_predictor_class(predictor_name)(configs)
 
 
 def save_files(predictor: Predictor, output_dataset: pd.DataFrame) -> None:
@@ -36,7 +35,7 @@ def run_prediction(k_fold_tag: AnyStr = '') -> None:
     print('started run_prediction')
     predictor = get_predictor(k_fold_tag)
     output_dataset = predictor.predict()
-    save_files(predictor, output_dataset)
+    # save_files(predictor, output_dataset)
 
 
 if __name__ == '__main__':

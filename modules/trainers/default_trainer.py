@@ -1,3 +1,5 @@
+import numpy as np
+import pandas as pd
 from ray import tune
 
 from modules.helpers.csv_saver import CSVSaver
@@ -20,23 +22,23 @@ class DefaultTrainer(BaseTrainer):
         self.classification = self.configs.get('trainer').get('label_type') == 'classification'
         self.wrapper = None
 
-    def prepare_train(self) -> Dict:
+    def prepare_train(self, dataset) -> Dict:
         """ splits data to train, test, valid and returns numpy array """
         data = {}
         features_list = self.configs.get('features_list', [])
         if not features_list:
             print('features_list not specified')
-        f_list = DefaultTrainer.figure_feature_list(features_list, self.dataset.columns.tolist())
+        f_list = DefaultTrainer.figure_feature_list(features_list, dataset.columns.tolist())
         for split in ['train', 'valid', 'test']:
-            split_column = self.dataset.iloc[:, self.split_i]
+            split_column = dataset.iloc[:, self.split_i]
             data[f'{split}_y'] = \
-                self.dataset.loc[split_column == split].iloc[:, self.label_index_i].values
+                dataset.loc[split_column == split].iloc[:, self.label_index_i]
             if features_list:
                 data[f'{split}_x'] = \
-                    self.dataset.loc[split_column == split][f_list].values
+                    dataset.loc[split_column == split][f_list]
             else:
                 data[f'{split}_x'] = \
-                    self.dataset.loc[split_column == split].iloc[:, len(self.configs.get('static_columns')):].values
+                    dataset.loc[split_column == split].iloc[:, len(self.configs.get('static_columns')):]
         self.configs['features_list'] = f_list
         return data
 
@@ -44,7 +46,7 @@ class DefaultTrainer(BaseTrainer):
         return f'{CLASSIFIERS_DIR}/{self.wrapper.name}.pkl'
 
     def save(self) -> None:
-        print(f'saved model {self.model_path()}')
+        print(f'saved model {self.model_path}')
         pickle_obj(self.wrapper, self.model_path())
 
     def _log_metrics(self, results) -> None:
@@ -57,15 +59,15 @@ class DefaultTrainer(BaseTrainer):
     def print_metrics(self, data: Dict) -> None:
         for split_name in ['train', 'valid', 'test']:
             split_preds = self.wrapper.predict(data[f'{split_name}_x'])
-            s_metrics = self.get_split_metrics(data[f'{split_name}_y'], split_preds)
+            s_metrics = self.get_split_metrics(data[f'{split_name}_y'].values, split_preds)
             s_metrics = "\n".join([f"{split_name}_{k}: {v}" for k, v in s_metrics.items()])
             print(f'{s_metrics}\n')
 
-    def metrics_to_log_dict(self, y_true, y_preds, split_name: AnyStr) -> Dict:
+    def metrics_to_log_dict(self, y_true: np.ndarray, y_preds: np.ndarray, split_name: AnyStr) -> Dict:
         metrics = self.get_split_metrics(y_true, y_preds)
         return dict([(f'{split_name}_{k}', v) for k, v in metrics.items()])
 
-    def get_split_metrics(self, y_true, y_outputs) -> Dict:
+    def get_split_metrics(self, y_true: np.ndarray, y_outputs: np.ndarray) -> Dict:
         setup_imports()
         metrics = self.configs.get('trainer').get('metrics', [])
         metrics = metrics if isinstance(metrics, list) else [metrics]
@@ -90,17 +92,17 @@ class DefaultTrainer(BaseTrainer):
                     final_list.append(available_feature)
         return final_list
 
-    def set_label_types(self) -> Dict:
-        """
-        saves labels types into the trainer and passes that to wrappers
-        :return: examples {'a': 0, 'b': 1}
-        """
-        if self.classification:
-            label_types = {str(v): index for index, v in
-                           enumerate(sorted(self.dataset.iloc[:, self.label_index_i].unique()))}
-        else:
-            label_types = {self.label_name: self.dataset.columns[self.label_index_i]}
-        return label_types
+    # def set_label_types(self) -> Dict:
+    #     """
+    #     saves labels types into the trainer and passes that to wrappers
+    #     :return: examples {'a': 0, 'b': 1}
+    #     """
+    #     if self.classification:
+    #         label_types = {str(v): index for index, v in
+    #                        enumerate(sorted(self.dataset.iloc[:, self.label_index_i].unique()))}
+    #     else:
+    #         label_types = {self.label_name: self.dataset.columns[self.label_index_i]}
+    #     return label_types
 
     def get_dataset(self):
         setup_imports()

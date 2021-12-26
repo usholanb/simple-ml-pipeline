@@ -18,6 +18,7 @@ class DefaultWrapper(BaseWrapper):
         self.configs = configs
         self.clf = self.get_classifier(configs)
         self._features_list = self.configs.get('features_list', [])
+        self.n_outputs = None
 
     @property
     def features_list(self):
@@ -36,13 +37,12 @@ class DefaultWrapper(BaseWrapper):
             name = to_snake_case(name.split('.')[-1])
         return f'{name}_{m_configs.get("tag")}{k_fold_tag}'
 
-    def filter_features(self, examples: pd.DataFrame) -> np.ndarray:
-        """ picks certain features and converts to numpy"""
+    def filter_features(self, examples: pd.DataFrame) -> pd.DataFrame:
+        """ picks certain features """
         if self._features_list:
             examples = examples[self._features_list]
         else:
             examples = examples.iloc[:, len(self.configs.get('static_columns')):]
-        examples = examples.values.astype(float)
         if len(examples.shape) == 1:
             examples = examples.reshape((1, -1))
         return examples

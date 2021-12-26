@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Dict, Any
 import numpy as np
 import pandas as pd
 from modules.wrappers.base_wrappers.default_wrapper import DefaultWrapper
@@ -25,9 +25,10 @@ class SKLearnWrapper(DefaultWrapper):
         examples = self.filter_features(examples)
         return self.predict(examples)
 
-    def predict(self, examples: np.ndarray) -> np.ndarray:
+    def predict(self, examples: pd.DataFrame) -> np.ndarray:
         """ makes prediction on pandas examples of dim N X M
                  where N is number of examples and M number of features """
+        examples = examples.values
         if self.configs.get('trainer').get('label_type') == 'classification':
             result = np.zeros((len(examples), self.clf.n_outputs_))
             result[np.arange(len(examples)), self.clf.predict(examples).astype(int)] = 1
@@ -36,5 +37,7 @@ class SKLearnWrapper(DefaultWrapper):
         return result
 
     def fit(self, inputs, targets) -> None:
+        self.n_outputs = 1 if len(targets.shape) == 1 \
+            else targets.shape[1]
         self.clf.fit(inputs, targets)
 
