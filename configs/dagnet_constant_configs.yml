@@ -53,6 +53,10 @@ special_inputs:
   mode: raw
   wrmp_epochs: 50
   _lambda: 0.01
+  input_dim: 100
+  n_outputs: 400
+  layers_sizes: [[10]]
+
 
 
 

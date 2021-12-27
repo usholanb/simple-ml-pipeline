@@ -1,6 +1,8 @@
 import logging
 import sys
 import importlib.util as importlib_util
+
+import torch
 import yaml
 from typing import List, Dict, Type
 from pathlib import Path
@@ -358,3 +360,10 @@ def get_data_loader(configs, split_name):
 
 def df_type_is(df, dtype: Type) -> bool:
     return (df == df.astype(dtype)).all()
+
+
+def std(vector, mean):
+    sum = torch.zeros(mean.shape).to(device)
+    for el in vector:
+        sum += el - mean
+    return torch.sqrt(torch.abs(sum) / len(vector))

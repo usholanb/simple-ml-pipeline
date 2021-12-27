@@ -12,6 +12,7 @@ class DenseNetRegressionsDagnet(DenseNetRegressions):
         super(DenseNetRegressionsDagnet, self).__init__(configs)
         self.__dict__.update(configs.get('special_inputs', {}))
         self.layers = self.set_layers()
+        self.to(self.device)
 
     def forward(self, inputs) -> Dict:
         """
@@ -20,29 +21,16 @@ class DenseNetRegressionsDagnet(DenseNetRegressions):
         example:
             {'outputs': something, ...}
         """
+        batch = inputs['x'][0].reshape(inputs['batch_size'], -1)
         for layer in self.layers[:-1]:
-            inputs = F.relu(layer(inputs['batch'][0].reshape(inputs['batch_size'], -1)))
-        outputs = self.layers[-1](inputs)
+            batch = F.relu(layer(batch))
+        outputs = self.layers[-1](batch)
         return outputs
 
     def predict(self, x):
         x = self.forward(x)
         return x
 
-    def add_hooks(self):
-
-        def after_train_forward(self, inputs, outputs):
-            return {
-                'true': inputs['batch'][1].reshape(inputs['batch_size'], -1),
-                'pred': outputs,
-                **inputs,
-            }
-
-        def after_compute_loss(self, inputs, outputs):
-            return {
-                'loss_outputs': {'loss': outputs}
-            }
-        self.register_post_hook('compute_loss_train', after_compute_loss)
-        self.register_post_hook('compute_loss_valid', after_compute_loss)
-        self.register_post_hook('train_forward', after_train_forward)
-        self.register_post_hook('valid_forward', after_train_forward)
+    def get_x_y(self, batch):
+        y = batch.pop(1)
+        return batch, y

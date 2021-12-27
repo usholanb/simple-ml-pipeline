@@ -144,35 +144,35 @@ class DAGNet(BaseTorchModel):
         timesteps, batch, features = traj.shape
 
         d = torch.zeros(timesteps, batch, features*self.n_max_agents).to(self.device)
-        h = torch.zeros(self.n_layers, batch, self.rnn_dim).to(self.device)
+        all_data['h'] = torch.zeros(self.n_layers, batch, self.rnn_dim).to(self.device)
 
         # an agent has to know all the xy abs positions of all the other agents in its sequence (for every timestep)
-        for idx, (start,end) in enumerate(seq_start_end):
+        for idx, (start, end) in enumerate(seq_start_end):
             n_agents = (end-start).item()
             d[:, start:end, :n_agents*2] = traj[:, start:end, :].reshape(timesteps, -1).unsqueeze(1).repeat(1,n_agents,1)
 
-        KLD = torch.zeros(1).to(self.device)
-        NLL = torch.zeros(1).to(self.device)
-        cross_entropy = torch.zeros(1).to(self.device)
+        all_data['KLD'] = torch.zeros(1).to(self.device)
+        all_data['NLL'] = torch.zeros(1).to(self.device)
+        all_data['cross_entropy'] = torch.zeros(1).to(self.device)
 
         for timestep in range(1, timesteps):
             x_t = traj_rel[timestep]
             d_t = d[timestep]
             g_t = goals_ohe[timestep]   # ground truth goal
             # refined goal must resemble real goal g_t
-            dec_goal_t = self.dec_goal(torch.cat([d_t, h[-1], goals_ohe[timestep-1]], 1))
+            dec_goal_t = self.dec_goal(torch.cat([d_t, all_data['h'][-1], goals_ohe[timestep-1]], 1))
             g_graph = self.graph_goals(dec_goal_t, adj_out[timestep])  # graph refinement
             g_combined = self.lg_goals(torch.cat((dec_goal_t, g_graph), dim=-1))     # combination
-            cross_entropy -= torch.sum(g_t * g_combined)
+            all_data['cross_entropy'] -= torch.sum(g_t * g_combined)
 
             # input feature extraction and encoding
             phi_x_t = self.phi_x(x_t)
-            enc_t = self.enc(torch.cat([phi_x_t, g_t, h[-1]], 1))
+            enc_t = self.enc(torch.cat([phi_x_t, g_t, all_data['h'][-1]], 1))
             enc_mean_t = self.enc_mean(enc_t)
             enc_logvar_t = self.enc_logvar(enc_t)
 
             # prior
-            prior_t = self.prior(torch.cat([g_t, h[-1]], 1))
+            prior_t = self.prior(torch.cat([g_t, all_data['h'][-1]], 1))
             prior_mean_t = self.prior_mean(prior_t)
             prior_logvar_t = self.prior_logvar(prior_t)
 
@@ -181,42 +181,33 @@ class DAGNet(BaseTorchModel):
 
             # z_t feature extraction and decoding
             phi_z_t = self.phi_z(z_t)
-            dec_t = self.dec(torch.cat([d_t, g_t, phi_z_t, h[-1]], 1))
+            dec_t = self.dec(torch.cat([d_t, g_t, phi_z_t, all_data['h'][-1]], 1))
             dec_mean_t = self.dec_mean(dec_t)
             dec_logvar_t = self.dec_logvar(dec_t)
 
             # agent vrnn recurrence
-            _, h = self.rnn(torch.cat([phi_x_t, phi_z_t], 1).unsqueeze(0), h)
+            _, all_data['h'] = self.rnn(torch.cat([phi_x_t, phi_z_t], 1).unsqueeze(0), all_data['h'])
 
-            KLD += self._kld(enc_mean_t, enc_logvar_t, prior_mean_t, prior_logvar_t)
-            NLL += self._nll_gauss(dec_mean_t, dec_logvar_t, x_t)
+            all_data['KLD'] += self._kld(enc_mean_t, enc_logvar_t, prior_mean_t, prior_logvar_t)
+            all_data['NLL'] += self._nll_gauss(dec_mean_t, dec_logvar_t, x_t)
 
             # hidden states refinement with graph
-            h_graph = self.graph_hiddens(h[-1].clone(), adj_out[timestep])  # graph refinement
-            h[-1] = self.lg_hiddens(torch.cat((h_graph, h[-1]), dim=-1)).unsqueeze(0)  # combination
+            h_graph = self.graph_hiddens(all_data['h'][-1].clone(), adj_out[timestep])  # graph refinement
+            all_data['h'][-1] = self.lg_hiddens(torch.cat((h_graph, all_data['h'][-1]), dim=-1)).unsqueeze(0)  # combination
 
         obs_traj, pred_traj_gt, obs_traj_rel, pred_traj_rel_gt, \
         obs_goals_ohe, pred_goals_gt_ohe, seq_start_end, adj_out = all_data['transformed_batch']
-        seq_len = len(obs_traj) + len(pred_traj_gt)
+
         samples_rel = self.get_train_probs(
             {
-                'valid_forward_data': [self.pred_len, h, obs_traj[-1], obs_goals_ohe[-1], seq_start_end]
+                'valid_forward_data': [self.pred_len, all_data['h'], obs_traj[-1], obs_goals_ohe[-1], seq_start_end]
             }
         )
 
         samples = relative_to_abs(samples_rel, obs_traj[-1])
-        batch_traj = obs_traj.shape[1]  # num_seqs
-        ade_traj = average_displacement_error(samples, pred_traj_gt)
 
-        euclidean_batch_loss = ade_traj / (batch_traj * seq_len)
-        all_data['outputs'] = {
-            'kld': KLD,
-            'nll': NLL,
-            'cross_entropy': cross_entropy,
-            'h': h,
-            'euclidean_loss': euclidean_batch_loss,
-        }
-        return samples
+        all_data['samples'] = samples
+        return all_data
 
     def get_train_probs(self, all_data):
         samples_seq_len, h, x_abs_start, g_start, seq_start_end = all_data['valid_forward_data']
@@ -340,7 +331,7 @@ class DAGNet(BaseTorchModel):
         self.register_pre_hook('valid_forward', __before_iteration_train)
         self.register_pre_hook('valid_forward', __before_iteration_valid)
 
-        def __train_after_loss(self, inputs, outputs):
+        def __after_compute_loss_train(self, inputs, outputs):
             loss_outputs = outputs['loss_outputs']
             self.loss += loss_outputs['loss'].item()
             self.kld_loss += loss_outputs['kld_loss']
@@ -349,9 +340,9 @@ class DAGNet(BaseTorchModel):
             self.euclidean_loss += loss_outputs['euclidean_loss']
             return outputs
 
-        self.register_post_hook('compute_loss_train', __train_after_loss)
+        self.register_post_hook('compute_loss_train', __after_compute_loss_train)
 
-        def __valid_after_loss(self, inputs, outputs):
+        def __after_compute_loss_valid(self, inputs, outputs):
             data, forward_data, outputs = outputs['batch'], outputs['forward_data'], outputs['outputs'],
             obs_traj, obs_traj_rel, obs_goals_ohe, seq_start_end, adj_out = forward_data
             obs_traj, pred_traj_gt, obs_traj_rel, pred_traj_rel_gt, \
@@ -375,7 +366,7 @@ class DAGNet(BaseTorchModel):
             self.fde_outer.append(fde_sum)
             return outputs
 
-        self.register_post_hook('compute_loss_valid', __valid_after_loss)
+        self.register_post_hook('compute_loss_valid', __after_compute_loss_valid)
 
         def __after_epoch_train(self, inputs, outputs):
             epoch, split_name, loader = outputs
@@ -659,120 +650,6 @@ def plot_traj(observed, predicted_gt, predicted, seq_start_end, writer, epoch):
 
     writer.add_figure('Generations', fig, epoch)
     fig.clf()
-
-
-def std(vector, mean):
-    sum = torch.zeros(mean.shape).to(device)
-    for el in vector:
-        sum += el - mean
-    return torch.sqrt(torch.abs(sum) / len(vector))
-
-
-
-######################### LOSSES ############################
-def average_displacement_error(pred_traj, pred_traj_gt, mode='sum'):
-    """
-    Input:
-    - pred_traj: Tensor of shape (seq_len, batch, 2). Predicted trajectories.
-    - pred_traj_gt: Tensor of shape (seq_len, batch, 2). Ground truth predictions.
-    Output:
-    - error: total sum of displacement errors across all sequences inside the batch
-    """
-
-    loss = pred_traj_gt.permute(1, 0, 2) - pred_traj.permute(1, 0, 2)
-    loss = loss ** 2
-    loss = torch.sqrt(torch.sum(loss, dim=2))
-    loss = torch.sum(loss, dim=1)
-
-    if mode == 'sum':
-        return torch.sum(loss)
-    elif mode == 'raw':
-        return loss
-
-
-def final_displacement_error(pred_pos, pred_pos_gt, mode='sum'):
-    """
-    Input:
-    - pred_pos: Tensor of shape (batch, 2). Predicted final positions.
-    - pred_pos_gt: Tensor of shape (batch, 2). Ground truth final positions.
-    Output:
-    - error: total sum of fde for all the sequences inside the batch
-    """
-
-    loss = (pred_pos - pred_pos_gt) ** 2
-    loss = torch.sqrt(torch.sum(loss, dim=1))
-
-    if mode == 'raw':
-        return loss
-    else:
-        return torch.sum(loss)
-
-
-def l2_loss(pred_traj, pred_traj_gt, loss_mask, mode='sum'):
-    """
-    :param pred_traj: Tensor of shape (seq_len, batch, 2). Predicted trajectory.
-    :param pred_traj_gt: Tensor of shape (seq_len, batch, 2). Groud truth
-    :param mode: Can be one of sum, average or raw
-    :return: l2 loss depending on mode
-    """
-
-    loss = (loss_mask.to(device).unsqueeze(dim=2) * (pred_traj_gt.permute(1, 0, 2) - pred_traj.permute(1, 0, 2)) ** 2)
-    if mode == 'sum':
-        return torch.sum(loss)
-    elif mode == 'average':
-        return torch.sum(loss) / torch.numel(loss_mask.data)
-    elif mode == 'raw':
-        return loss.sum(dim=2).sum(dim=1)
-
-
-def linear_velocity_acceleration(sequence, mode='mean', seconds_between_frames=0.2):
-    seq_len, batch, features = sequence.shape
-
-    velocity_x = torch.zeros((seq_len, batch)).to(device)
-    velocity_y = torch.zeros((seq_len, batch)).to(device)
-    for ped in range(batch):
-        velocity_x[1:, ped] = (sequence[1:, ped, 0] - sequence[:-1, ped, 0]) / seconds_between_frames     # space / time
-        velocity_y[1:, ped] = (sequence[1:, ped, 1] - sequence[:-1, ped, 1]) / seconds_between_frames     # space / time
-    velocity = torch.sqrt(torch.pow(velocity_x, 2) + torch.pow(velocity_y, 2))
-
-    acceleration_x = torch.zeros((seq_len, batch)).to(device)
-    acceleration_y = torch.zeros((seq_len, batch)).to(device)
-    acceleration = torch.zeros((seq_len, batch)).to(device)
-    acceleration_x[2:, :] = (velocity_x[2:, :] - velocity_x[1:-1, :]) / seconds_between_frames
-    acceleration_y[2:, :] = (velocity_y[2:, :] - velocity_y[1:-1, :]) / seconds_between_frames
-    acceleration_comp = torch.sqrt(torch.pow(acceleration_x, 2) + torch.pow(acceleration_y, 2))
-    acceleration[2:, :] = torch.abs((velocity[2:, :] - velocity[1:-1, :]) / seconds_between_frames)
-
-    # Linear velocity means
-    mean_velocity_x = velocity_x[1:].mean(dim=0)
-    mean_velocity_y = velocity_y[1:].mean(dim=0)
-    mean_velocity = velocity[1:].mean(dim=0)
-
-    # Linear acceleration means
-    mean_acceleration_x = acceleration_x[2:].mean(dim=0)
-    mean_acceleration_y = acceleration_y[2:].mean(dim=0)
-    mean_acceleration = acceleration[2:].mean(dim=0)
-
-    # Linear velocity standard deviations
-    std_velocity_x = std(velocity_x, mean_velocity_x)
-    std_velocity_y = std(velocity_y, mean_velocity_y)
-    sum_velocity = torch.sqrt(torch.pow(std_velocity_x, 2) + torch.pow(std_velocity_y, 2))
-    std_velocity = torch.sqrt(torch.abs(sum_velocity) / len(sequence))
-
-    # Linear acceleration standard deviations
-    std_acceleration_x = std(mean_acceleration_x, mean_acceleration_x)
-    std_acceleration_y = std(mean_acceleration_y, mean_acceleration_y)
-    sum_acceleration = torch.sqrt(torch.pow(std_acceleration_x, 2) + torch.pow(std_acceleration_y, 2))
-    std_acceleration = torch.sqrt(torch.abs(sum_acceleration) / len(sequence))
-
-    if mode == 'raw':
-        return mean_velocity, mean_acceleration, std_velocity_x, std_velocity_y
-    elif mode == 'mean':
-        # mode mean
-        return mean_velocity.mean(), mean_acceleration.mean(), std_velocity.mean(), \
-                std_acceleration.mean()
-    else:
-        raise(Exception("linear_velocity_acceleration(): wrong mode selected. Choices are ['raw', 'mean'].\n"))
 
 
 ######################### GOALS UTILITIES ############################

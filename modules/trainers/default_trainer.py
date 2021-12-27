@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 from ray import tune
 
+from modules.containers.di_containers import TrainerContainer
 from modules.helpers.csv_saver import CSVSaver
 from modules.helpers.namer import Namer
 from modules.trainers.base_trainer import BaseTrainer
@@ -21,6 +22,7 @@ class DefaultTrainer(BaseTrainer):
         self.label_i = self.configs.get('static_columns').get('FINAL_LABEL_NAME_INDEX')
         self.classification = self.configs.get('trainer').get('label_type') == 'classification'
         self.wrapper = None
+        self.device = TrainerContainer.device
 
     def prepare_train(self, dataset) -> Dict:
         """ splits data to train, test, valid and returns numpy array """

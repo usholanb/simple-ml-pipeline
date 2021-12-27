@@ -4,7 +4,7 @@ includes:
 
 
 model:
-  name: dagnet
+  name: dense_net_regression_dagnet
   tag: uan
 
 
@@ -16,7 +16,7 @@ optim:
 trainer:
   name: torch_trainer3
   optim: Adam
-  loss: dagnet_loss
+  loss: MSELoss
   save: 1
   epochs: 2
   log_valid_every: 1

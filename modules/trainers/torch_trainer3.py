@@ -74,22 +74,31 @@ class TorchTrainer3(DefaultTrainer):
         self.eval_epoch([epoch, 'valid', self.valid_loader])
         return ['valid', self.valid_loader]
 
+    def __get_x_y(self, batch, batch_size):
+        x, y = self.wrapper.clf.get_x_y(batch)
+        if hasattr(x, '__iter__'):
+            x = [e.to(self.device) for e in x]
+        else:
+            x = x.to(self.device)
+        return x, y.to(self.device).reshape(batch_size, -1)
+
     @run_hooks
     def train_epoch(self, inputs):
         epoch, split, loader = inputs
+        batch_size = loader.batch_size
         for batch_i, batch in enumerate(loader):
             with Timeit(f'batch_i # {batch_i} / {len(loader.dataset)}',
                         epoch, len(loader)):
+                x, y = self.__get_x_y(batch, batch_size)
                 data = {
                     'epoch': epoch,
                     'batch_i': batch_i,
-                    'batch': [x.to(TrainerContainer.device) for x in batch],
+                    'x': x,
                     'split': split,
-                    'batch_size': loader.batch_size,
+                    'batch_size': batch_size,
                 }
-                data = self.train_forward(data)
-                data = self.compute_loss_train(data)
-                loss = data['loss_outputs']['loss']
+                pred = self.train_forward(data)
+                loss = self.compute_loss_train(y, pred)
                 loss.backward()
                 torch.nn.utils.clip_grad_norm_(self.wrapper.parameters(),
                     self.configs.get('special_inputs', {}).get('clip', 10))
@@ -97,12 +106,12 @@ class TorchTrainer3(DefaultTrainer):
         return inputs
 
     @run_hooks
-    def compute_loss_train(self, all_data):
-        return self.criterion(all_data)
+    def compute_loss_train(self, y, pred):
+        return self.criterion(y, pred)
 
     @run_hooks
-    def compute_loss_valid(self, all_data):
-        return self.criterion(all_data)
+    def compute_loss_valid(self, y, pred):
+        return self.criterion(y, pred)
 
     @run_hooks
     def train_forward(self, all_data):
@@ -116,18 +125,20 @@ class TorchTrainer3(DefaultTrainer):
     @run_hooks
     def eval_epoch(self, inputs):
         epoch, split, loader = inputs
-
+        batch_size = loader.batch_size
         with torch.no_grad():
             for batch_i, batch in enumerate(loader):
+                x, y = self.__get_x_y(batch, batch_size)
                 all_data = {
                     'epoch': epoch,
                     'batch_i': batch_i,
-                    'batch': [x.to(TrainerContainer.device) for x in batch],
+                    'x': x,
                     'split': split,
+                    'batch_size': batch_size,
                 }
-                all_data = self.valid_forward(all_data)
-                all_data = self.compute_loss_valid(all_data)
-        return all_data
+                pred = self.valid_forward(all_data)
+                loss = self.compute_loss_valid(y, pred)
+        return inputs
 
     def _log_metrics(self, results: Dict) -> None:
         if inside_tune():

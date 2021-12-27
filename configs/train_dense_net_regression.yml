@@ -32,7 +32,7 @@ dataset:
 
 
 model:
-  name: dense_net_regression_dagnet
+  name: dense_net_regression
   tag: uan
 
 

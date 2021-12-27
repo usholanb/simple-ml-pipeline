@@ -15,7 +15,7 @@ class BaseTorchModel(nn.Module, BaseModel):
     def __init__(self, configs):
         super().__init__()
         self.device = TrainerContainer.device
-        self.__dict__.update(configs.get('special_inputs'))
+        self.__dict__.update(configs.get('special_inputs', {}))
         self.configs = configs
         self.add_hooks()
 
@@ -62,21 +62,21 @@ class BaseTorchModel(nn.Module, BaseModel):
 
 
 def run_hooks(func):
-    def func_hook(self, inputs):
-        pre_inputs = inputs
+    def func_hook(self, *args):
+        pre_inputs = args
         b_name = f'before_{func.__name__}'
         if b_name in global_hooks:
             pre_hooks = global_hooks[b_name]
             for hook in pre_hooks:
-                pre_inputs = hook(self.wrapper.clf, pre_inputs)
+                pre_inputs = hook(*pre_inputs)
 
-        outputs = func(self, pre_inputs)
+        outputs = func(self, *pre_inputs)
 
         a_name = f'after_{func.__name__}'
         if a_name in global_hooks:
             post_hooks = global_hooks[a_name]
             for hook in post_hooks:
-                outputs = hook(self.wrapper.clf, inputs, outputs)
+                outputs = hook(*args, *outputs)
         return outputs
     return func_hook
 
