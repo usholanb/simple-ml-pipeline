@@ -17,32 +17,9 @@ from utils.registry import registry
 class DefaultTrainer(BaseTrainer):
     def __init__(self, configs: Dict):
         self.configs = configs
-        self.split_i = self.configs.get('static_columns').get('FINAL_SPLIT_INDEX')
-        self.label_index_i = self.configs.get('static_columns').get('FINAL_LABEL_INDEX')
         self.label_i = self.configs.get('static_columns').get('FINAL_LABEL_NAME_INDEX')
-        self.classification = self.configs.get('trainer').get('label_type') == 'classification'
         self.wrapper = None
         self.device = TrainerContainer.device
-
-    def prepare_train(self, dataset) -> Dict:
-        """ splits data to train, test, valid and returns numpy array """
-        data = {}
-        features_list = self.configs.get('features_list', [])
-        if not features_list:
-            print('features_list not specified')
-        f_list = DefaultTrainer.figure_feature_list(features_list, dataset.columns.tolist())
-        for split in ['train', 'valid', 'test']:
-            split_column = dataset.iloc[:, self.split_i]
-            data[f'{split}_y'] = \
-                dataset.loc[split_column == split].iloc[:, self.label_index_i]
-            if features_list:
-                data[f'{split}_x'] = \
-                    dataset.loc[split_column == split][f_list]
-            else:
-                data[f'{split}_x'] = \
-                    dataset.loc[split_column == split].iloc[:, len(self.configs.get('static_columns')):]
-        self.configs['features_list'] = f_list
-        return data
 
     def model_path(self) -> AnyStr:
         return f'{CLASSIFIERS_DIR}/{self.wrapper.name}.pkl'
@@ -77,21 +54,6 @@ class DefaultTrainer(BaseTrainer):
             metric = registry.get_metric_class(metric_name)()
             results[metric_name] = metric.compute_metric(y_true, y_outputs)
         return results
-
-    @staticmethod
-    def figure_feature_list(f_list: List, available_features: List) -> List:
-        """ Specifying only name of the feature (w/o index for one hot encoded
-            features) is enough to allow them in dataset
-            f_list: specified in train config file for training,
-            available_features: actually inside dataset
-            Return: intersection of two lists"""
-        final_list = []
-        for available_feature in available_features:
-            for feature in f_list:
-                if feature == available_feature \
-                        or '_'.join(available_feature.split('_')[:-1]) == feature:
-                    final_list.append(available_feature)
-        return final_list
 
     def get_dataset(self):
         setup_imports()

@@ -1,11 +1,11 @@
-from modules.datasets.base_datasets.default_dataset import DefaultDataset
+from modules.readers.base_reader.default_reader import DefaultReader
 from utils.registry import registry
 import pandas as pd
 from typing import AnyStr
 
 
-@registry.register_dataset('csv_dataset')
-class CSVDataset(DefaultDataset):
+@registry.register_reader('csv_reader')
+class CSVReader(DefaultReader):
     """ Reads CSV files """
 
     def read_source(self, input_path: AnyStr) -> pd.DataFrame:

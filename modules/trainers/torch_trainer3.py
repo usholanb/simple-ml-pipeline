@@ -61,20 +61,20 @@ class TorchTrainer3(DefaultTrainer):
 
     def __train_loop(self, epoch: int = 0) -> List:
         self.wrapper.train()
-        self.train_epoch([epoch, 'train', self.train_loader])
-        return ['train', self.train_loader]
+        return self.train_epoch([epoch, 'train', self.train_loader])
 
     def __test_loop(self, epoch: int = 0) -> List:
         self.wrapper.eval()
-        self.eval_epoch([epoch, 'test', self.test_loader])
-        return ['train', self.test_loader]
+        return self.eval_epoch([epoch, 'test', self.test_loader])
 
     def __valid_loop(self, epoch: int = 0) -> List:
         self.wrapper.eval()
-        self.eval_epoch([epoch, 'valid', self.valid_loader])
-        return ['valid', self.valid_loader]
+        return self.eval_epoch([epoch, 'valid', self.valid_loader])
 
-    def __get_x_y(self, batch, batch_size):
+    def __get_x_y(self, batch, batch_size) -> Tuple[torch.Tensor, torch.Tensor]:
+        """ takes batch sample and splits to
+        x: inputs[batch_size, N_FEATURES]
+        y: labels: [batch_size: n_outputs] """
         x, y = self.wrapper.clf.get_x_y(batch)
         if hasattr(x, '__iter__'):
             x = [e.to(self.device) for e in x]
@@ -98,7 +98,7 @@ class TorchTrainer3(DefaultTrainer):
                     'batch_size': batch_size,
                 }
                 pred = self.train_forward(data)
-                loss = self.compute_loss_train(y, pred)
+                loss = self.compute_loss_train(y, pred, data)
                 loss.backward()
                 torch.nn.utils.clip_grad_norm_(self.wrapper.parameters(),
                     self.configs.get('special_inputs', {}).get('clip', 10))
@@ -106,11 +106,11 @@ class TorchTrainer3(DefaultTrainer):
         return inputs
 
     @run_hooks
-    def compute_loss_train(self, y, pred):
+    def compute_loss_train(self, y, pred, data, loss):
         return self.criterion(y, pred)
 
     @run_hooks
-    def compute_loss_valid(self, y, pred):
+    def compute_loss_valid(self, y, pred, data, loss):
         return self.criterion(y, pred)
 
     @run_hooks
@@ -138,7 +138,7 @@ class TorchTrainer3(DefaultTrainer):
                 }
                 pred = self.valid_forward(all_data)
                 loss = self.compute_loss_valid(y, pred)
-        return inputs
+        return loss
 
     def _log_metrics(self, results: Dict) -> None:
         if inside_tune():

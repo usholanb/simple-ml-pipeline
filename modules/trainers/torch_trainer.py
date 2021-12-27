@@ -1,7 +1,7 @@
 from modules.helpers.csv_saver import CSVSaver
 from modules.trainers.default_trainer import DefaultTrainer
 from modules.wrappers.torch_wrapper import TorchWrapper
-from utils.common import setup_imports, Timeit
+from utils.common import setup_imports, Timeit, prepare_torch_data
 from utils.registry import registry
 import torch
 import pandas as pd
@@ -13,27 +13,9 @@ class TorchTrainer(DefaultTrainer):
 
     def __init__(self, configs: Dict):
         super().__init__(configs)
-        self.data = self.prepare_train(CSVSaver().load(configs))
+        self.data = prepare_torch_data(configs, CSVSaver().load(configs))
         self.loss_name = self.configs.get('trainer').get('loss', 'NLLLoss')
         self.criterion = self.get_loss()
-
-    def prepare_train(self, dataset) -> Dict:
-        data = super().prepare_train(dataset)
-        self.configs['special_inputs'].update({'input_dim': data['train_x'].shape[1]})
-        torch_data = {}
-        for split_name, split in data.items():
-            if split_name.endswith('_y'):
-                split = torch.tensor(split)
-                if self.classification:
-                    split = split.long()
-                else:
-                    split = split.float()
-                torch_data[split_name] = split
-            else:
-                t = torch.tensor(split)
-                torch_data[split_name] = t.float()
-
-        return torch_data
 
     def train(self) -> None:
         """ trains nn model with dataset """

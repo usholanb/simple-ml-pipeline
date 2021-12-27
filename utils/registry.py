@@ -6,6 +6,8 @@ LICENSE file in the root directory of this source tree.
 
 # Copyright (c) Facebook, Inc. and its affiliates.
 # Borrowed from https://github.com/facebookresearch/pythia/blob/master/pythia/common/registry.py.
+from utils.constants import FOLDERS_NAMES
+
 """
 Registry is central source of truth. Inspired from Redux's concept of
 global store, Registry maintains mappings of various information to unique
@@ -20,17 +22,9 @@ Various decorators for registry different kind of classes with unique keys
 
 class Registry:
     r"""Class for registry object which acts as central source of truth."""
+    # Mappings to respective classes.
     mapping = {
-        # Mappings to respective classes.
-        "dataset_name_mapping": {},
-        "wrapper_name_mapping": {},
-        "logger_name_mapping": {},
-        "trainer_name_mapping": {},
-        "model_name_mapping": {},
-        "transformer_name_mapping": {},
-        "metric_name_mapping": {},
-        "loss_name_mapping": {},
-        "predictor_name_mapping": {},
+        **dict([(f"{name}_name_mapping", {}) for name in FOLDERS_NAMES]),
         "state": {},
     }
 
@@ -38,33 +32,26 @@ class Registry:
     def add_this_to(cls, func, name, mapping_name):
         if name not in cls.mapping[mapping_name]:
             cls.mapping[mapping_name][name] = func
-        # else:
-        #     raise KeyError(f'function {name} already defined in {mapping_name}')
 
     @classmethod
     def register_dataset(cls, name):
-        r"""Register a dataset to registry with key 'name'
-        Args:
-            name: Key with which the dataset will be registered.
-        Usage::
-            from ocpmodels.common.registry import registry
-            from ocpmodels.datasets import BaseDataset
-            @registry.register_dataset("qm9")
-            class QM9(BaseDataset):
-                ...
-        """
-
         def wrap(func):
-            cls.add_this_to(func, name, 'dataset_name_mapping')
+            cls.add_this_to(func, name, 'datasets_name_mapping')
             return func
+        return wrap
 
+    @classmethod
+    def register_reader(cls, name):
+        def wrap(func):
+            cls.add_this_to(func, name, 'readers_name_mapping')
+            return func
         return wrap
 
     @classmethod
     def register_wrapper(cls, name):
 
         def wrap(func):
-            cls.add_this_to(func, name, 'wrapper_name_mapping')
+            cls.add_this_to(func, name, 'wrappers_name_mapping')
             return func
 
         return wrap
@@ -73,7 +60,7 @@ class Registry:
     def register_transformer(cls, name):
 
         def wrap(func):
-            cls.add_this_to(func, name, 'transformer_name_mapping')
+            cls.add_this_to(func, name, 'transformers_name_mapping')
             return func
 
         return wrap
@@ -82,78 +69,44 @@ class Registry:
     def register_metric(cls, name):
 
         def wrap(func):
-            cls.add_this_to(func, name, 'metric_name_mapping')
+            cls.add_this_to(func, name, 'metrics_name_mapping')
             return func
 
         return wrap
 
     @classmethod
     def register_model(cls, name):
-        r"""Register a model to registry with key 'name'
-        Args:
-            name: Key with which the model will be registered.
-        Usage::
-            @registry.register_model("cgcnn")
-            class CGCNN():
-                ...
-        """
 
         def wrap(func):
-            cls.add_this_to(func, name, 'model_name_mapping')
+            cls.add_this_to(func, name, 'models_name_mapping')
             return func
 
         return wrap
 
     @classmethod
     def register_loss(cls, name):
-        r"""Register a model to registry with key 'name'
-        Args:
-            name: Key with which the model will be registered.
-        Usage::
-        """
         def wrap(func):
-            cls.add_this_to(func, name, 'loss_name_mapping')
+            cls.add_this_to(func, name, 'losses_name_mapping')
             return func
 
         return wrap
 
     @classmethod
     def register_logger(cls, name):
-        r"""Register a logger to registry with key 'name'
-        Args:
-            name: Key with which the logger will be registered.
-        Usage::
-            from ocpmodels.common.registry import registry
-            @registry.register_logger("tensorboard")
-            class WandB():
-                ...
-        """
-
         def wrap(func):
-            from ocpmodels.common.logger import Logger
 
             assert issubclass(
                 func, Logger
             ), "All loggers must inherit Logger class"
-            cls.add_this_to(func, name, 'logger_name_mapping')
+            cls.add_this_to(func, name, 'loggers_name_mapping')
             return func
 
         return wrap
 
     @classmethod
     def register_trainer(cls, name):
-        r"""Register a trainers to registry with key 'name'
-        Args:
-            name: Key with which the trainers will be registered.
-        Usage::
-            from ocpmodels.common.registry import registry
-            @registry.register_trainer("active_discovery")
-            class ActiveDiscoveryTrainer():
-                ...
-        """
-
         def wrap(func):
-            cls.add_this_to(func, name, 'trainer_name_mapping')
+            cls.add_this_to(func, name, 'trainers_name_mapping')
             return func
 
         return wrap
@@ -162,20 +115,13 @@ class Registry:
     def register_predictor(cls, name):
 
         def wrap(func):
-            cls.add_this_to(func, name, 'predictor_name_mapping')
+            cls.add_this_to(func, name, 'predictors_name_mapping')
             return func
 
         return wrap
 
     @classmethod
     def register(cls, name, obj):
-        r"""Register an item to registry with key 'name'
-        Args:
-            name: Key with which the item will be registered.
-        Usage::
-            from ocpmodels.common.registry import registry
-            registry.register("config", {})
-        """
         path = name.split(".")
         current = cls.mapping["state"]
 
@@ -188,39 +134,43 @@ class Registry:
 
     @classmethod
     def get_dataset_class(cls, name):
-        return cls.mapping["dataset_name_mapping"].get(name, None)
+        return cls.mapping["datasets_name_mapping"].get(name, None)
+
+    @classmethod
+    def get_reader_class(cls, name):
+        return cls.mapping["readers_name_mapping"].get(name, None)
 
     @classmethod
     def get_wrapper_class(cls, name):
-        return cls.mapping["wrapper_name_mapping"].get(name, None)
+        return cls.mapping["wrappers_name_mapping"].get(name, None)
 
     @classmethod
     def get_transformer_class(cls, name):
-        return cls.mapping["transformer_name_mapping"].get(name, None)
+        return cls.mapping["transformers_name_mapping"].get(name, None)
 
     @classmethod
     def get_metric_class(cls, name):
-        return cls.mapping["metric_name_mapping"].get(name, None)
+        return cls.mapping["metrics_name_mapping"].get(name, None)
 
     @classmethod
     def get_model_class(cls, name):
-        return cls.mapping["model_name_mapping"].get(name, None)
+        return cls.mapping["models_name_mapping"].get(name, None)
 
     @classmethod
     def get_loss_class(cls, name):
-        return cls.mapping["loss_name_mapping"].get(name, None)
+        return cls.mapping["losses_name_mapping"].get(name, None)
 
     @classmethod
     def get_logger_class(cls, name):
-        return cls.mapping["logger_name_mapping"].get(name, None)
+        return cls.mapping["loggers_name_mapping"].get(name, None)
 
     @classmethod
     def get_trainer_class(cls, name):
-        return cls.mapping["trainer_name_mapping"].get(name, None)
+        return cls.mapping["trainers_name_mapping"].get(name, None)
 
     @classmethod
     def get_predictor_class(cls, name):
-        return cls.mapping["predictor_name_mapping"].get(name, None)
+        return cls.mapping["predictors_name_mapping"].get(name, None)
 
     @classmethod
     def get(cls, name, default=None, no_warning=False):

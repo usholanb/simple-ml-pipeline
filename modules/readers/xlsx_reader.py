@@ -1,11 +1,11 @@
-from modules.datasets.base_datasets.default_dataset import DefaultDataset
+from modules.readers.base_reader.default_reader import DefaultReader
 from utils.registry import registry
 import pandas as pd
 from typing import AnyStr
 
 
-@registry.register_dataset('xlsx_dataset')
-class XLSXDataset(DefaultDataset):
+@registry.register_reader('xlsx_dataset')
+class XLSXReader(DefaultReader):
     """ Reads XLSM files """
 
     def read_source(self, input_path: AnyStr) -> pd.DataFrame:

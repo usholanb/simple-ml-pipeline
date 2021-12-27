@@ -1,10 +1,14 @@
-from typing import Dict, AnyStr
+from typing import Dict, AnyStr, Tuple
 
 from torch import nn
 from abc import ABC, abstractmethod
 
 
 class BaseModel(object):
+
+    @abstractmethod
+    def get_x_y(self, batch) -> Tuple:
+        """ splits x and y """
 
     @abstractmethod
     def forward(self, data):

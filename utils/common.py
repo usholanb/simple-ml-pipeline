@@ -20,6 +20,9 @@ from time import time
 
 from torch.utils.data import DataLoader
 
+from modules.datasets.pandas_dataset import PandasDataset
+from modules.helpers.csv_saver import CSVSaver
+from utils.constants import MODULES_DIR, FOLDERS_NAMES
 from utils.registry import registry
 
 
@@ -91,50 +94,20 @@ def setup_imports() -> None:
         return
     # Automatically load all of the modules, so that
     # they register with registry
-
-    UTILS_DIR = os.path.dirname(os.path.abspath(__file__))
-    MODULES_DIR = os.path.join(UTILS_DIR, "../modules")
-
-    trainer_folder = os.path.join(MODULES_DIR, "trainers")
-    trainer_pattern = os.path.join(trainer_folder, "**", "*.py")
-    datasets_folder = os.path.join(MODULES_DIR, "datasets")
-    datasets_pattern = os.path.join(datasets_folder, "*.py")
-    model_folder = os.path.join(MODULES_DIR, "models")
-    model_pattern = os.path.join(model_folder, "*.py")
-    wrapper_folder = os.path.join(MODULES_DIR, "wrappers")
-    wrapper_pattern = os.path.join(wrapper_folder, "*.py")
-    transformer_folder = os.path.join(MODULES_DIR, "transformers")
-    transformer_pattern = os.path.join(transformer_folder, "*.py")
-    metric_folder = os.path.join(MODULES_DIR, "metrics")
-    metric_pattern = os.path.join(metric_folder, "*.py")
-    loss_folder = os.path.join(MODULES_DIR, "losses")
-    loss_pattern = os.path.join(loss_folder, "*.py")
-    predictor_folder = os.path.join(MODULES_DIR, "predictors")
-    predictor_pattern = os.path.join(predictor_folder, "*.py")
-
-
-    # importlib.import_module("utils.common.logger")
-
-    files = (
-        glob.glob(datasets_pattern, recursive=True)
-        + glob.glob(model_pattern, recursive=True)
-        + glob.glob(trainer_pattern, recursive=True)
-        + glob.glob(wrapper_pattern, recursive=True)
-        + glob.glob(transformer_pattern, recursive=True)
-        + glob.glob(metric_pattern, recursive=True)
-        + glob.glob(loss_pattern, recursive=True)
-        + glob.glob(predictor_pattern, recursive=True)
-
-    )
+    folders = [os.path.join(MODULES_DIR, f) for f in FOLDERS_NAMES]
+    patterns = [os.path.join(f, "**", "*.py") for f in folders]
+    files = []
+    for p in patterns:
+        files.extend(glob.glob(p, recursive=True))
 
     for f in files:
-        for key in ["/trainers", "/datasets", "/models", "/wrappers",
-                    "/transformers", "/metrics", "/losses", "/predictors"]:
+        for key in [f'/{e}' for e in FOLDERS_NAMES]:
             if f.find(key) != -1:
                 splits = f.split(os.sep)
-                file_name = splits[-1]
-                module_name = file_name[: file_name.find(".py")]
-                importlib.import_module(f"modules.{key[1:]}.{module_name}")
+                if splits[-2] == key[1:]:
+                    file_name = splits[-1]
+                    module_name = file_name[: file_name.find(".py")]
+                    importlib.import_module(f"modules.{key[1:]}.{module_name}")
 
     experimental_folder = os.path.join(MODULES_DIR, "../experimental/")
     if os.path.exists(experimental_folder):
@@ -352,11 +325,79 @@ def get_data_loaders(configs, specific=None):
 
 
 def get_data_loader(configs, split_name):
-    dataset_class = registry.get_dataset_class(configs.get('dataset').get('name'))
+    name = configs.get('dataset').get('name')
+    input_path = configs.get('dataset').get('input_path')
+    dataset_class = registry.get_dataset_class(name)
     hps = configs.get('dataset').get('data_loaders', {}).get(split_name, {})
-    dataset = dataset_class(configs, split_name)
-    return DataLoader(dataset, **hps, collate_fn=dataset.collate)
+    if dataset_class is not None:
+        split = dataset_class(configs, split_name)
+        hps.update({'collate_fn': split.collate})
+    else:
+        print(f'no dataset class with name {name} is found\n'
+              f'will try to look for file with input_path: {input_path}')
+        data = prepare_train(configs, CSVSaver.load(configs), split_names=[split_name])
+        x, y = data[f'{split_name}_x'], data[f'{split_name}_y']
+        split = PandasDataset(x, y, configs, split_name)
+    return DataLoader(split, **hps)
 
+
+def prepare_train(configs, dataset, split_names=None) -> Dict:
+    """ splits data to train, test, valid and returns numpy array """
+    data = {}
+    split_names = ['train', 'valid', 'test'] if split_names is None else split_names
+    split_i = configs.get('static_columns').get('FINAL_SPLIT_INDEX')
+    label_index_i = configs.get('static_columns').get('FINAL_LABEL_INDEX')
+    features_list = configs.get('features_list', [])
+    if not features_list:
+        print('features_list not specified')
+    f_list = figure_feature_list(features_list, dataset.columns.tolist())
+    for split in split_names:
+        split_column = dataset.iloc[:, split_i]
+        data[f'{split}_y'] = \
+            dataset.loc[split_column == split].iloc[:, label_index_i]
+        if features_list:
+            data[f'{split}_x'] = \
+                dataset.loc[split_column == split][f_list]
+        else:
+            data[f'{split}_x'] = \
+                dataset.loc[split_column == split].iloc[:, len(configs.get('static_columns')):]
+    configs['features_list'] = f_list
+    return data
+
+
+def prepare_torch_data(configs, dataset) -> Dict:
+    data = prepare_train(configs, dataset)
+    configs['special_inputs'].update({'input_dim': data['train_x'].shape[1]})
+    torch_data = {}
+    classification = configs.get('trainer').get('label_type') == 'classification'
+    for split_name, split in data.items():
+        if split_name.endswith('_y'):
+            split = torch.tensor(split)
+            if classification:
+                split = split.long()
+            else:
+                split = split.float()
+            torch_data[split_name] = split
+        else:
+            t = torch.tensor(split)
+            torch_data[split_name] = t.float()
+
+    return torch_data
+
+
+def figure_feature_list(f_list: List, available_features: List) -> List:
+    """ Specifying only name of the feature (w/o index for one hot encoded
+        features) is enough to allow them in dataset
+        f_list: specified in train config file for training,
+        available_features: actually inside dataset
+        Return: intersection of two lists"""
+    final_list = []
+    for available_feature in available_features:
+        for feature in f_list:
+            if feature == available_feature \
+                    or '_'.join(available_feature.split('_')[:-1]) == feature:
+                final_list.append(available_feature)
+    return final_list
 
 def df_type_is(df, dtype: Type) -> bool:
     return (df == df.astype(dtype)).all()

@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Dict, Tuple
 from torch import nn
 import torch.nn.functional as F
 from modules.models.base_models.base_torch_model import BaseTorchModel
@@ -11,6 +11,9 @@ class DenseNetRegressions(BaseTorchModel):
         super(DenseNetRegressions, self).__init__(configs)
         self.__dict__.update(configs.get('special_inputs', {}))
         self.layers = self.set_layers()
+
+    def get_x_y(self, batch) -> Tuple:
+        return batch
 
     def forward(self, x) -> Dict:
         """

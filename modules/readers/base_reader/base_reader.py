@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from typing import Dict, AnyStr
 
 
-class BaseDataset(ABC):
+class BaseReader(ABC):
     """ To distinguish datasets between sports """
 
     @abstractmethod

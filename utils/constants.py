@@ -10,6 +10,17 @@ TRAIN_RESULTS_DIR = f'{PROJECT_DIR}/train_results'
 CLASSIFIERS_DIR = f'{PROJECT_DIR}/classifiers'
 PREDICTIONS_DIR = f'{PROJECT_DIR}/predictions'
 PROCESSED_DATA_DIR = f'{PROJECT_DIR}/processed_data'
-
+MODULES_DIR = f'{PROJECT_DIR}/modules'
+FOLDERS_NAMES = [
+    'datasets',
+    'losses',
+    'metrics',
+    'models',
+    'predictors',
+    'readers',
+    'trainers',
+    'transformers',
+    'wrappers',
+]
 
 

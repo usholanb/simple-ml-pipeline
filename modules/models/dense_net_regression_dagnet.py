@@ -1,4 +1,5 @@
 from typing import Dict
+import torch
 from torch import nn
 import torch.nn.functional as F
 from modules.models.base_models.base_torch_model import BaseTorchModel
@@ -13,6 +14,14 @@ class DenseNetRegressionsDagnet(DenseNetRegressions):
         self.__dict__.update(configs.get('special_inputs', {}))
         self.layers = self.set_layers()
         self.to(self.device)
+
+    def add_hooks(self):
+        def add_loss(y, pred, x, loss):
+            if not hasattr(self, 'kld'):
+                self.kld = torch.zeros(1).to(self.device)
+            self.kld += x['x'][4].mean()
+            return loss + self.kld
+        self.register_post_hook('compute_loss_train', add_loss)
 
     def forward(self, inputs) -> Dict:
         """

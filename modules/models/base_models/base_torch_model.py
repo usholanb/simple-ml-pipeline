@@ -76,7 +76,7 @@ def run_hooks(func):
         if a_name in global_hooks:
             post_hooks = global_hooks[a_name]
             for hook in post_hooks:
-                outputs = hook(*args, *outputs)
+                outputs = hook(*args, outputs)
         return outputs
     return func_hook
 
