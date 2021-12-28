@@ -1,12 +1,12 @@
-from typing import AnyStr, Dict, Callable, OrderedDict, Type, List
+from typing import AnyStr, Dict, Callable, OrderedDict, Type, List, Tuple
+import torch
 from torch import nn
-
+from abc import abstractmethod
 from modules.containers.di_containers import TrainerContainer
 from modules.models.base_models.base_model import BaseModel
-from utils.constants import CLASSIFIERS_DIR
 
 
-global_hooks: Dict[AnyStr, List[Callable]] = OrderedDict()
+global_hooks: Dict[AnyStr, List[Callable]] = {}
 
 
 class BaseTorchModel(nn.Module, BaseModel):
@@ -18,6 +18,27 @@ class BaseTorchModel(nn.Module, BaseModel):
         self.__dict__.update(configs.get('special_inputs', {}))
         self.configs = configs
         self.add_hooks()
+
+    @abstractmethod
+    def get_x_y(self, batch) -> Tuple:
+        """ splits original Dataloader batch to x and y,
+        where x.shape[0] == y.shape[0] is the number of examples"""
+
+    @abstractmethod
+    def forward(self, data: Dict) -> torch.Tensor:
+        """
+        data: contains x - the input, batch_size, epoch, iteration index
+
+        returns: outputs of size [batch_size x n_outputs]
+        """
+
+    @abstractmethod
+    def add_hooks(self):
+        """ add hooks before and after main trainer functions
+
+            For reference: look at your trainer functions
+                that are decorated with hooks
+         """
 
     def register_pre_hook(self, func_name, hook):
         self.register_hook(f'before_{func_name}', hook)
@@ -58,6 +79,7 @@ class BaseTorchModel(nn.Module, BaseModel):
             layers.append(last_layer)
         else:
             layers = []
+        layers = [l.to(self.device) for l in layers]
         return layers
 
 

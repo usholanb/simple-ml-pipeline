@@ -1,5 +1,5 @@
 from typing import Dict, Tuple
-from torch import nn
+import torch
 import torch.nn.functional as F
 from modules.models.base_models.base_torch_model import BaseTorchModel
 from utils.registry import registry
@@ -15,17 +15,11 @@ class DenseNetRegressions(BaseTorchModel):
     def get_x_y(self, batch) -> Tuple:
         return batch
 
-    def forward(self, x) -> Dict:
-        """
-        passes inputs through the model
-        returns: dict that is feed to right to loss and must contain 'outputs'
-        example:
-            {'outputs': something, ...}
-        """
+    def forward(self, data: Dict) -> torch.Tensor:
+        x = data['x']
         for layer in self.layers[:-1]:
             x = F.relu(layer(x))
-        outputs = self.layers[-1](x).flatten()
-        return outputs
+        return self.layers[-1](x)
 
     def predict(self, x):
         x = self.forward(x)

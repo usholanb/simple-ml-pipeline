@@ -1,4 +1,4 @@
-from typing import Dict, List
+from typing import Dict, List, Tuple
 import torch
 from ray import tune
 
@@ -71,25 +71,26 @@ class TorchTrainer3(DefaultTrainer):
         self.wrapper.eval()
         return self.eval_epoch([epoch, 'valid', self.valid_loader])
 
-    def __get_x_y(self, batch, batch_size) -> Tuple[torch.Tensor, torch.Tensor]:
+    def __get_x_y(self, batch) -> Tuple[torch.Tensor, torch.Tensor]:
         """ takes batch sample and splits to
         x: inputs[batch_size, N_FEATURES]
         y: labels: [batch_size: n_outputs] """
         x, y = self.wrapper.clf.get_x_y(batch)
-        if hasattr(x, '__iter__'):
+
+        if isinstance(x, (list, tuple)):
             x = [e.to(self.device) for e in x]
         else:
             x = x.to(self.device)
-        return x, y.to(self.device).reshape(batch_size, -1)
+        return x, y.to(self.device).reshape(len(x), -1)
 
     @run_hooks
     def train_epoch(self, inputs):
         epoch, split, loader = inputs
         batch_size = loader.batch_size
         for batch_i, batch in enumerate(loader):
-            with Timeit(f'batch_i # {batch_i} / {len(loader.dataset)}',
-                        epoch, len(loader)):
-                x, y = self.__get_x_y(batch, batch_size)
+            # with Timeit(f'batch_i # {batch_i} / {len(loader.dataset)}',
+            #             epoch, len(loader)):
+                x, y = self.__get_x_y(batch)
                 data = {
                     'epoch': epoch,
                     'batch_i': batch_i,
@@ -106,11 +107,11 @@ class TorchTrainer3(DefaultTrainer):
         return inputs
 
     @run_hooks
-    def compute_loss_train(self, y, pred, data, loss):
+    def compute_loss_train(self, y, pred, data):
         return self.criterion(y, pred)
 
     @run_hooks
-    def compute_loss_valid(self, y, pred, data, loss):
+    def compute_loss_valid(self, y, pred, data):
         return self.criterion(y, pred)
 
     @run_hooks
@@ -128,7 +129,7 @@ class TorchTrainer3(DefaultTrainer):
         batch_size = loader.batch_size
         with torch.no_grad():
             for batch_i, batch in enumerate(loader):
-                x, y = self.__get_x_y(batch, batch_size)
+                x, y = self.__get_x_y(batch)
                 all_data = {
                     'epoch': epoch,
                     'batch_i': batch_i,

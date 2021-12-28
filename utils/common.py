@@ -318,26 +318,31 @@ class Timeit:
 def get_data_loaders(configs, specific=None):
     split_names = [specific] if specific is not None else ['train', 'valid', 'test']
     d_loaders = []
-    for split_name in split_names:
-        dl = get_data_loader(configs, split_name)
-        d_loaders.append(dl)
+    name = configs.get('dataset').get('name')
+    dataset_class = registry.get_dataset_class(name)
+
+    if dataset_class is not None:
+        for split_name in split_names:
+            dl = get_data_loader(configs, split_name, dataset_class)
+            d_loaders.append(dl)
+    else:
+        input_path = configs.get('dataset').get('input_path')
+        print(f'no dataset class with name {name} is found\n'
+              f'will try to look for file with input_path: {input_path}')
+        data = prepare_train(configs, CSVSaver.load(configs))
+        for split_name in split_names:
+            hps = configs.get('dataset').get('data_loaders', {}).get(split_name, {})
+            x, y = data[f'{split_name}_x'], data[f'{split_name}_y']
+            split = PandasDataset(x, y, configs, split_name)
+            d_loaders.append(DataLoader(split, **hps))
     return d_loaders
 
 
-def get_data_loader(configs, split_name):
-    name = configs.get('dataset').get('name')
-    input_path = configs.get('dataset').get('input_path')
-    dataset_class = registry.get_dataset_class(name)
+def get_data_loader(configs, split_name, dataset_class):
     hps = configs.get('dataset').get('data_loaders', {}).get(split_name, {})
-    if dataset_class is not None:
-        split = dataset_class(configs, split_name)
-        hps.update({'collate_fn': split.collate})
-    else:
-        print(f'no dataset class with name {name} is found\n'
-              f'will try to look for file with input_path: {input_path}')
-        data = prepare_train(configs, CSVSaver.load(configs), split_names=[split_name])
-        x, y = data[f'{split_name}_x'], data[f'{split_name}_y']
-        split = PandasDataset(x, y, configs, split_name)
+
+    split = dataset_class(configs, split_name)
+    hps.update({'collate_fn': split.collate})
     return DataLoader(split, **hps)
 
 

@@ -43,33 +43,8 @@ optim:
 special_inputs:
 #  layers_sizes: [[100, 100, 100]]  # the best
   layers_sizes: [[10]]
-  CE_weight: 0.01
-  adjacency_type: 1
-  alpha: 0.2
-  clip: 10
-  g_dim: 90
-  graph_hid: 8
-  graph_model: gcn
-  h_dim: 64
-  n_heads: 4
-  n_layers: 2
-  input_dim: 100
-  obs_len: 10
-  players: atk
-  n_outputs: 400
-  pred_len: 40
-  print_every_batch: 30
-  rnn_dim: 64
-  save_every: 10
-  seed: 128
-  sigma: 1.2
-  top_k_neigh: null
-  warmup: false
-  x_dim: 2
-  z_dim: 32
-  mode: raw
-  wrmp_epochs: 50
-  _lambda: 0.01
+  input_dim: 254
+  n_outputs: 1
 
 
 

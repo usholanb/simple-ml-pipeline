@@ -6,16 +6,6 @@ from abc import ABC, abstractmethod
 
 class BaseModel(object):
 
-    @abstractmethod
-    def get_x_y(self, batch) -> Tuple:
-        """ splits x and y """
-
-    @abstractmethod
-    def forward(self, data):
-        """
-        passes inputs through the model
-        returns: anything that is feed to right to loss
-        """
 
     @abstractmethod
     def predict(self, data):
@@ -26,14 +16,6 @@ class BaseModel(object):
     @abstractmethod
     def model_path(self) -> AnyStr:
         """ absolute path to the model """
-
-    @abstractmethod
-    def add_hooks(self):
-        """ add hooks before and after main trainer functions
-
-            For reference: look at your trainer functions
-                that are decorated with hooks
-         """
 
 
 
