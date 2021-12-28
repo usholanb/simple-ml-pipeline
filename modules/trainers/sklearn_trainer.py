@@ -4,7 +4,7 @@ import numpy as np
 from modules.helpers.csv_saver import CSVSaver
 from modules.trainers.default_trainer import DefaultTrainer
 from modules.wrappers.sklearn_wrapper import SKLearnWrapper
-from utils.common import setup_imports, is_outside_library
+from utils.common import setup_imports, is_outside_library, prepare_train
 from utils.registry import registry
 
 
@@ -14,7 +14,7 @@ class SKLearnTrainer(DefaultTrainer):
     def __init__(self, configs):
         super().__init__(configs)
         dataset = CSVSaver().load(configs)
-        self.data = self.prepare_train(dataset)
+        self.data = prepare_train(configs, dataset)
         self.label_name = dataset.columns[self.configs.get('static_columns')
             .get('FINAL_LABEL_INDEX')]
         self.split_column = dataset.iloc[:, self.split_i]
@@ -23,11 +23,13 @@ class SKLearnTrainer(DefaultTrainer):
         """ trains sklearn model with dataset """
         setup_imports()
         wrapper = self._get_wrapper()
-        wrapper.fit(data['train_x'], data['train_y'])
-        valid_pred = wrapper.get_train_probs(data['valid_x'])
-        train_pred = wrapper.get_train_probs(data['train_x'])
-        valid_metrics = self.metrics_to_log_dict(data['valid_y'], valid_pred, 'valid')
-        train_metrics = self.metrics_to_log_dict(data['train_y'], train_pred, 'train')
+        wrapper.fit(self.data['train_x'], self.data['train_y'])
+        valid_pred = wrapper.get_train_probs(self.data['valid_x'])
+        train_pred = wrapper.get_train_probs(self.data['train_x'])
+        valid_metrics = self.metrics_to_log_dict(self.data['valid_y'].values,
+                                                 valid_pred, 'valid')
+        train_metrics = self.metrics_to_log_dict(self.data['train_y'].values,
+                                                 train_pred, 'train')
         self._log_metrics({**valid_metrics, **train_metrics})
         self.print_metrics(self.data)
 

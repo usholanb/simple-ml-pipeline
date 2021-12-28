@@ -1,7 +1,6 @@
 import numpy as np
 import pandas as pd
 import os
-from modules.helpers.namer import Namer
 from modules.wrappers.base_wrappers.default_wrapper import DefaultWrapper
 from typing import Dict, List
 import torch

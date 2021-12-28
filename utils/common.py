@@ -321,33 +321,29 @@ def get_data_loaders(configs, specific=None):
     name = configs.get('dataset').get('name')
     dataset_class = registry.get_dataset_class(name)
 
-    if dataset_class is not None:
-        for split_name in split_names:
-            dl = get_data_loader(configs, split_name, dataset_class)
-            d_loaders.append(dl)
-    else:
-        input_path = configs.get('dataset').get('input_path')
-        print(f'no dataset class with name {name} is found\n'
-              f'will try to look for file with input_path: {input_path}')
-        data = prepare_train(configs, CSVSaver.load(configs))
-        for split_name in split_names:
-            hps = configs.get('dataset').get('data_loaders', {}).get(split_name, {})
+    for split_name in split_names:
+        hps = configs.get('dataset').get('data_loaders', {}).get(split_name, {})
+        hps.update({'drop_last': True})
+        if dataset_class is not None:
+            split = dataset_class(configs, split_name)
+            hps.update({'collate_fn': split.collate})
+            d_loaders.append(DataLoader(split, **hps))
+        else:
+            input_path = configs.get('dataset').get('input_path')
+            print(f'no dataset class with name {name} is found\n'
+                  f'will try to look for file with input_path: {input_path}')
+            data = prepare_train(configs, CSVSaver.load(configs))
             x, y = data[f'{split_name}_x'], data[f'{split_name}_y']
             split = PandasDataset(x, y, configs, split_name)
             d_loaders.append(DataLoader(split, **hps))
     return d_loaders
 
 
-def get_data_loader(configs, split_name, dataset_class):
-    hps = configs.get('dataset').get('data_loaders', {}).get(split_name, {})
-
-    split = dataset_class(configs, split_name)
-    hps.update({'collate_fn': split.collate})
-    return DataLoader(split, **hps)
-
-
 def prepare_train(configs, dataset, split_names=None) -> Dict:
-    """ splits data to train, test, valid and returns numpy array """
+    """
+        splits pandas dataframe to train, test, valid
+        returns dict of dataframe
+    """
     data = {}
     split_names = ['train', 'valid', 'test'] if split_names is None else split_names
     split_i = configs.get('static_columns').get('FINAL_SPLIT_INDEX')
@@ -403,6 +399,7 @@ def figure_feature_list(f_list: List, available_features: List) -> List:
                     or '_'.join(available_feature.split('_')[:-1]) == feature:
                 final_list.append(available_feature)
     return final_list
+
 
 def df_type_is(df, dtype: Type) -> bool:
     return (df == df.astype(dtype)).all()

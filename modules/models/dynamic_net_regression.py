@@ -3,7 +3,7 @@ from typing import Dict
 
 import torch
 import torch.nn as nn
-from modules.models.base_models.base_torch_model import BaseTorchModel
+from modules.models.base_models.default_model import DefaultModel
 from utils.registry import registry
 from torch.functional import F
 
@@ -23,7 +23,7 @@ class LocalModel(nn.Module):
 
 
 @registry.register_model('dynamic_net_regression')
-class DynamicNetRegression(BaseTorchModel):
+class DynamicNetRegression(DefaultModel):
     def __init__(self, configs):
         super().__init__(configs)
         self.__dict__.update(configs.get('special_inputs', {}))

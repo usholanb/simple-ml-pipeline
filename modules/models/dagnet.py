@@ -2,7 +2,7 @@ import torch
 import math
 from torch.nn import functional as F
 from modules.containers.di_containers import TrainerContainer
-from modules.models.base_models.base_torch_model import BaseTorchModel
+from modules.models.base_models.default_model import DefaultModel
 from modules.transformers.adj_transformer import block_diag_irregular
 from utils.common import get_transformers, transform
 from utils.registry import registry
@@ -14,7 +14,7 @@ from scipy.spatial import distance_matrix
 
 
 @registry.register_model('dagnet')
-class DAGNet(BaseTorchModel):
+class DAGNet(DefaultModel):
     def __init__(self, configs):
         super(DAGNet, self).__init__(configs)
         self.d_dim = self.n_max_agents * 2

@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-from modules.models.base_models.base_torch_model import BaseTorchModel
+from modules.models.base_models.default_model import DefaultModel
 from utils.registry import registry
 from torch.functional import F
 
@@ -20,7 +20,7 @@ class LocalModel(nn.Module):
 
 
 @registry.register_model('dynamic_net')
-class DynamicNet(BaseTorchModel):
+class DynamicNet(DefaultModel):
     def __init__(self, special_inputs):
         super().__init__()
         self.__dict__.update(special_inputs)

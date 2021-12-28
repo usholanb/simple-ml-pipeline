@@ -4,6 +4,7 @@ from typing import Dict, List, AnyStr
 import numpy as np
 import pandas as pd
 
+from modules.helpers.namer import Namer
 from modules.helpers.z_score import ZScore
 from modules.wrappers.base_wrappers.base_wrapper import BaseWrapper
 import importlib
@@ -30,12 +31,7 @@ class DefaultWrapper(BaseWrapper):
 
     @property
     def name(self) -> AnyStr:
-        k_fold_tag = self.configs.get('dataset').get('k_fold_tag', '')
-        m_configs = self.configs.get("model")
-        name = m_configs.get("name")
-        if is_outside_library(name):
-            name = to_snake_case(name.split('.')[-1])
-        return f'{name}_{m_configs.get("tag")}{k_fold_tag}'
+        return Namer().model_name(self.configs.get('model', {}))
 
     def filter_features(self, examples: pd.DataFrame) -> pd.DataFrame:
         """ picks certain features """

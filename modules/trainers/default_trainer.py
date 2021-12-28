@@ -3,8 +3,6 @@ import pandas as pd
 from ray import tune
 
 from modules.containers.di_containers import TrainerContainer
-from modules.helpers.csv_saver import CSVSaver
-from modules.helpers.namer import Namer
 from modules.trainers.base_trainer import BaseTrainer
 from typing import Dict, AnyStr, List
 from utils.common import inside_tune, setup_imports, is_outside_library
@@ -18,6 +16,7 @@ class DefaultTrainer(BaseTrainer):
     def __init__(self, configs: Dict):
         self.configs = configs
         self.label_i = self.configs.get('static_columns').get('FINAL_LABEL_NAME_INDEX')
+        self.split_i = self.configs.get('static_columns').get('FINAL_SPLIT_INDEX')
         self.wrapper = None
         self.device = TrainerContainer.device
 

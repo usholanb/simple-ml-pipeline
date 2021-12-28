@@ -3,7 +3,6 @@ from typing import Dict, Tuple
 import pandas as pd
 from modules.readers.base_reader.base_reader import BaseReader
 from modules.helpers.labels_processor import LabelsProcessor
-from modules.helpers.namer import Namer
 from utils.common import setup_imports
 from utils.registry import registry
 import yaml
@@ -18,7 +17,7 @@ class DefaultReader(BaseReader):
 
     @property
     def name(self):
-        return Namer().dataset_name(self.configs)
+        return self.configs.get("dataset").get('name')
 
     def split_df(self, ratio: float, df: pd.DataFrame)  \
             -> Tuple[pd.DataFrame, pd.DataFrame]:

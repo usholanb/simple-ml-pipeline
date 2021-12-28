@@ -1,12 +1,12 @@
 from typing import Dict, Tuple
 import torch
 import torch.nn.functional as F
-from modules.models.base_models.base_torch_model import BaseTorchModel
+from modules.models.base_models.default_model import DefaultModel
 from utils.registry import registry
 
 
 @registry.register_model('dense_net_regression')
-class DenseNetRegressions(BaseTorchModel):
+class DenseNetRegressions(DefaultModel):
     def __init__(self, configs):
         super(DenseNetRegressions, self).__init__(configs)
         self.__dict__.update(configs.get('special_inputs', {}))

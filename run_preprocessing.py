@@ -6,7 +6,6 @@ input dataset is in data/ folder or/and from remote server
 output dataset is is processed_data/ folder
 """
 from modules.helpers.csv_saver import CSVSaver
-from modules.helpers.namer import Namer
 from utils.common import build_config, setup_imports, setup_directories
 from utils.registry import registry
 from typing import Dict, AnyStr
@@ -19,7 +18,7 @@ def preprocessing(configs: Dict) -> None:
         configs.get('dataset').get('name'))(configs)
     dataset.collect()
     CSVSaver().save(dataset.data, configs)
-    print(f'{Namer.dataset_name(configs)} is ready, dataset: {dataset.data.shape}')
+    print(f'{dataset.name} is ready, dataset: {dataset.data.shape}')
 
 
 def run_preprocessing(k_fold_tag: AnyStr = ''):

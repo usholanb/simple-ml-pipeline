@@ -4,12 +4,12 @@ from torch import nn
 from abc import abstractmethod
 from modules.containers.di_containers import TrainerContainer
 from modules.models.base_models.base_model import BaseModel
-
+from utils.constants import CLASSIFIERS_DIR
 
 global_hooks: Dict[AnyStr, List[Callable]] = {}
 
 
-class BaseTorchModel(nn.Module, BaseModel):
+class DefaultModel(nn.Module, BaseModel):
     """ Use and/or override torch functions if you need to """
 
     def __init__(self, configs):
@@ -18,27 +18,6 @@ class BaseTorchModel(nn.Module, BaseModel):
         self.__dict__.update(configs.get('special_inputs', {}))
         self.configs = configs
         self.add_hooks()
-
-    @abstractmethod
-    def get_x_y(self, batch) -> Tuple:
-        """ splits original Dataloader batch to x and y,
-        where x.shape[0] == y.shape[0] is the number of examples"""
-
-    @abstractmethod
-    def forward(self, data: Dict) -> torch.Tensor:
-        """
-        data: contains x - the input, batch_size, epoch, iteration index
-
-        returns: outputs of size [batch_size x n_outputs]
-        """
-
-    @abstractmethod
-    def add_hooks(self):
-        """ add hooks before and after main trainer functions
-
-            For reference: look at your trainer functions
-                that are decorated with hooks
-         """
 
     def register_pre_hook(self, func_name, hook):
         self.register_hook(f'before_{func_name}', hook)
