@@ -4,7 +4,7 @@ import numpy as np
 from modules.helpers.csv_saver import CSVSaver
 from modules.trainers.default_trainer import DefaultTrainer
 from modules.wrappers.sklearn_wrapper import SKLearnWrapper
-from utils.common import setup_imports, is_outside_library, prepare_train
+from utils.common import setup_imports, is_outside_library, prepare_train, log_metrics
 from utils.registry import registry
 
 
@@ -26,11 +26,11 @@ class SKLearnTrainer(DefaultTrainer):
         wrapper.fit(self.data['train_x'], self.data['train_y'])
         valid_pred = wrapper.get_train_probs(self.data['valid_x'])
         train_pred = wrapper.get_train_probs(self.data['train_x'])
-        valid_metrics = self.metrics_to_log_dict(self.data['valid_y'].values,
-                                                 valid_pred, 'valid')
-        train_metrics = self.metrics_to_log_dict(self.data['train_y'].values,
-                                                 train_pred, 'train')
-        self._log_metrics({**valid_metrics, **train_metrics})
+        valid_metrics = self.get_metrics(self.data['valid_y'].values,
+                                         valid_pred, 'valid')
+        train_metrics = self.get_metrics(self.data['train_y'].values,
+                                         train_pred, 'train')
+        log_metrics({**valid_metrics, **train_metrics})
         self.print_metrics(self.data)
 
     def _get_wrapper(self, *args, **kwargs) -> SKLearnWrapper:

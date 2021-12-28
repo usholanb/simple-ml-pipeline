@@ -1,9 +1,9 @@
 """
-This script utilizes one of the datasets and processes the data converting
+This script utilizes one of the readers and processes the data converting
 it to gz
 
-input dataset is in data/ folder or/and from remote server
-output dataset is is processed_data/ folder
+input reader is in data/ folder or/and from remote server
+output reader is is processed_data/ folder
 """
 from modules.helpers.csv_saver import CSVSaver
 from utils.common import build_config, setup_imports, setup_directories
@@ -12,13 +12,13 @@ from typing import Dict, AnyStr
 
 
 def preprocessing(configs: Dict) -> None:
-    """ Prepares Dataset """
+    """ Prepares Reader """
     setup_imports()
-    dataset = registry.get_dataset_class(
-        configs.get('dataset').get('name'))(configs)
-    dataset.collect()
-    CSVSaver().save(dataset.data, configs)
-    print(f'{dataset.name} is ready, dataset: {dataset.data.shape}')
+    reader = registry.get_reader_class(
+        configs.get('reader').get('name'))(configs)
+    reader.collect()
+    CSVSaver().save(reader.data, configs, reader.reader_configs)
+    print(f'{reader.name} is ready, reader: {reader.data.shape}')
 
 
 def run_preprocessing(k_fold_tag: AnyStr = ''):
@@ -28,7 +28,7 @@ def run_preprocessing(k_fold_tag: AnyStr = ''):
     parser = all_flags['preprocessing'].parser
     args = parser.parse_args()
     configs = build_config(args)
-    configs['dataset']['k_fold_tag'] = k_fold_tag
+    configs['reader']['k_fold_tag'] = k_fold_tag
     preprocessing(configs)
 
 

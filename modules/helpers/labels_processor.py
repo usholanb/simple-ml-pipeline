@@ -1,5 +1,4 @@
-from typing import AnyStr
-
+from typing import AnyStr, Dict
 import pandas as pd
 
 
@@ -9,8 +8,8 @@ class LabelsProcessor:
         self.label_i = self.configs.get('static_columns').get('FINAL_LABEL_NAME_INDEX')
         self.label_index_i = self.configs.get('static_columns').get('FINAL_LABEL_INDEX')
 
-    def get_label_name(self, data: pd.DataFrame) -> AnyStr:
-        target = self.configs.get('dataset').get('label')
+    def get_label_name(self, reader_configs: Dict, data: pd.DataFrame) -> AnyStr:
+        target = reader_configs.get('label')
         if isinstance(target, str):
             label_name = target
         elif isinstance(target, int):
@@ -19,13 +18,13 @@ class LabelsProcessor:
             raise TypeError('label must be int or str')
         return label_name
 
-    def process_labels(self, data: pd.DataFrame):
+    def process_labels(self, reader_configs: Dict, data: pd.DataFrame):
         """
         data is all data
         return: restructured data, if classification label index is added
         """
-        label_name = self.get_label_name(data)
-        label_type = self.configs.get('dataset').get('label_type')
+        label_name = self.get_label_name(reader_configs, data)
+        label_type = reader_configs.get('label_type')
         assert label_type in ['classification', 'regression'], \
             'dataset.label_type must be ether classification or regression'
         y_end_index = len(self.configs.get('static_columns'))

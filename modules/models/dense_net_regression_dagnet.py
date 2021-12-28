@@ -1,8 +1,6 @@
 from typing import Dict
 import torch
-from torch import nn
 import torch.nn.functional as F
-from modules.models.base_models.default_model import DefaultModel
 from modules.models.dense_net_regression import DenseNetRegressions
 from utils.registry import registry
 
@@ -14,12 +12,18 @@ class DenseNetRegressionsDagnet(DenseNetRegressions):
         self.__dict__.update(configs.get('special_inputs', {}))
         self.layers = self.set_layers()
         self.to(self.device)
+        self.kld = 0
+
+    def get_epoch_logs(self) -> Dict:
+        metrics = {'kld': self.kld}
+        self.kld = 0
+        return metrics
 
     def add_hooks(self):
         def add_loss(y, pred, data, loss):
             if not hasattr(self, 'kld'):
                 self.kld = torch.zeros(1).to(self.device)
-            self.kld += data['x'][4].mean()
+            self.kld += data['x'][4].mean().item()
             return loss + self.kld
         self.register_post_hook('compute_loss_train', add_loss)
 

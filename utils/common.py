@@ -1,7 +1,7 @@
 import logging
 import sys
 import importlib.util as importlib_util
-
+from ray import tune
 import torch
 import yaml
 from typing import List, Dict, Type
@@ -410,3 +410,25 @@ def std(vector, mean):
     for el in vector:
         sum += el - mean
     return torch.sqrt(torch.abs(sum) / len(vector))
+
+
+def log_metrics(results) -> None:
+    if inside_tune():
+        tune.report(**results)
+    else:
+        to_print = '  '.join([f'{k}: {"{:10.4f}".format(v)}' for k, v in results.items()])
+        print(to_print)
+
+
+def mean_dict_values(ds: List[Dict]) -> Dict:
+    """ ds:
+            all dicts in ds must have identical keys
+        Returns: dict with key-wise mean values of all dict values
+    """
+    if not ds:
+        return {}
+    sum_d = {k: 0 for k in ds[0].keys()}
+    for d in ds:
+        for k, v in d.items():
+            sum_d[k] += v
+    return {k: v * 1.0 / len(ds) for k, v in sum_d.items()}

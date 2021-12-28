@@ -3,8 +3,32 @@ includes:
 
 
 dataset:
-  input_path: processed_data/toy_dataset
+  input_path: processed_data/iris
   name: csv_dataset
+  label_type: classification
+
+  data_loaders:
+
+    train:
+      batch_size: 4
+      shuffle: true
+      num_workers: 4
+      multiprocessing_context: spawn
+      pin_memory: true
+
+    valid:
+      batch_size: 4
+      shuffle: false
+      num_workers: 4
+      multiprocessing_context: spawn
+      pin_memory: true
+
+    test:
+      batch_size: 4
+      shuffle: false
+      num_workers: 4
+      multiprocessing_context: spawn
+      pin_memory: true
 
 
 model:
@@ -20,17 +44,16 @@ optim:
 
 # this inputs will go to your specific model __init__
 special_inputs:
-  n_outputs: 3
-
+  n_outputs: 1
+  input_dim: 4
 
 trainer:
-  name: torch_trainer
+  name: torch_trainer3
   optim: Adam
-  label_type: classification
   loss: NLLLoss
   save: 1
-  epochs: 10
-  log_valid_every: 10
+  epochs: 2
+  log_valid_every: 1
   tune:
     resources_per_trial:
       cpu: 2
@@ -45,7 +68,7 @@ trainer:
 
 
 features_list:
-#  - sepal width (cm)
+  - sepal width (cm)
   - petal length (cm)
   - petal width (cm)
   - sepal length (cm)

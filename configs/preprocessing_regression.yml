@@ -2,8 +2,8 @@ includes:
   - configs/constant_configs.yml
 
 
-dataset:
-  name: xlsx_dataset
+reader:
+  name: xlsx_reader
   sheet_name: Sheet1
   label_type: regression  # classification or regression
   input_path: data/no_GK_merged_df_v62

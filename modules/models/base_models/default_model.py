@@ -61,6 +61,9 @@ class DefaultModel(nn.Module, BaseModel):
         layers = [l.to(self.device) for l in layers]
         return layers
 
+    def get_epoch_logs(self) -> Dict:
+        return {}
+
 
 def run_hooks(func):
     def func_hook(self, *args):

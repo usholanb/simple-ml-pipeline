@@ -1,7 +1,7 @@
 from modules.helpers.csv_saver import CSVSaver
 from modules.trainers.default_trainer import DefaultTrainer
 from modules.wrappers.torch_wrapper import TorchWrapper
-from utils.common import setup_imports, Timeit, prepare_torch_data
+from utils.common import setup_imports, Timeit, prepare_torch_data, log_metrics
 from utils.registry import registry
 import torch
 import pandas as pd
@@ -41,9 +41,9 @@ class TorchTrainer(DefaultTrainer):
                         valid_metrics, train_metrics = {}, {}
                         valid_preds = self.wrapper.predict(self.data['valid_x'])
                         train_preds = self.wrapper.predict(self.data['train_x'])
-                        valid_metrics.update(self.metrics_to_log_dict(
+                        valid_metrics.update(self.get_metrics(
                         self.data['valid_y'], valid_preds, 'valid'))
-                        train_metrics.update(self.metrics_to_log_dict(
+                        train_metrics.update(self.get_metrics(
                             self.data['train_y'], train_preds, 'train'))
 
                         valid_outputs = self.wrapper.forward(self.data['valid_x'])
@@ -51,7 +51,7 @@ class TorchTrainer(DefaultTrainer):
                         valid_metrics.update({f'valid_{self.loss_name}': valid_loss.item()})
                         train_metrics.update({f'train_{self.loss_name}': loss.item()})
 
-                        self._log_metrics({**valid_metrics, **train_metrics})
+                        log_metrics({**valid_metrics, **train_metrics})
 
         with torch.no_grad():
             self.print_metrics(self.data)
@@ -67,7 +67,7 @@ class TorchTrainer(DefaultTrainer):
                 split_y_str, split_x_str = f'{split_name}_y', f'{split_name}_x'
                 split_preds = self.wrapper.get_train_probs(data[split_x_str])
                 split_outputs = self.wrapper.forward(data[split_x_str])
-                metrics = self.metrics_to_log_dict(data[split_y_str], split_preds, split_name)
+                metrics = self.get_metrics(data[split_y_str], split_preds, split_name)
                 loss = self.criterion(split_outputs, data[split_y_str])
                 metrics.update({self.loss_name: loss.item()})
                 metrics = "\n".join([f"{k}:{v}" for k, v in metrics.items()])

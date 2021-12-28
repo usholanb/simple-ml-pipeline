@@ -5,13 +5,13 @@ from typing import AnyStr
 class CSVSaver:
 
     @classmethod
-    def save(cls, data, configs) -> None:
+    def save(cls, data, configs, reader_configs) -> None:
         """ saves csv to processed_ + input_path which is local path """
-        input_path = configs.get('dataset').get('input_path')
+        path = reader_configs.get('input_path')
         if isinstance(data, pd.DataFrame):
-            input_path = input_path.rstrip('.csv')
-            k_fold_tag = configs.get('dataset').get('k_fold_tag', '')
-            name = f"{cls.raw_to_processed(f'{input_path}{k_fold_tag}')}"
+            path = path.split('.csv')[0]
+            k_fold_tag = reader_configs.get('k_fold_tag', '')
+            name = f"{cls.raw_to_processed(f'{path}{k_fold_tag}')}"
             data.to_csv(name, index=False, compression='gzip')
 
     @classmethod

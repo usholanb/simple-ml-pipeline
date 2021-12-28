@@ -1,6 +1,7 @@
 import sys
 from typing import Dict, Tuple
 import pandas as pd
+import modules.helpers.labels_processor
 from modules.readers.base_reader.base_reader import BaseReader
 from modules.helpers.labels_processor import LabelsProcessor
 from utils.common import setup_imports
@@ -16,8 +17,12 @@ class DefaultReader(BaseReader):
         self.split_i = self.configs.get('static_columns').get('FINAL_SPLIT_INDEX')
 
     @property
+    def reader_configs(self):
+        return self.configs.get('reader')
+
+    @property
     def name(self):
-        return self.configs.get("dataset").get('name')
+        return self.configs.get("reader").get('name')
 
     def split_df(self, ratio: float, df: pd.DataFrame)  \
             -> Tuple[pd.DataFrame, pd.DataFrame]:
@@ -27,10 +32,10 @@ class DefaultReader(BaseReader):
     def split(self, input_paths: Dict, shuffle: bool = True) -> Dict:
         """
         reads source and splits to train, valid and test
-        if valid or test is absense, train is split accordingly the split ratio
+        if valid or test is absence, train is split accordingly the split ratio
         """
 
-        ratio = self.configs.get('dataset').get('split_ratio')
+        ratio = self.reader_configs.get('split_ratio')
         train, valid, test = ratio['train'], ratio['valid'], ratio['test']
         assert 'train' in input_paths, \
             "if only 1 file is input, it must be train, " \
@@ -51,7 +56,7 @@ class DefaultReader(BaseReader):
             train_df, test_df = self.split_df(train, train_df)
         else:
             raise RuntimeError('at least train set file must exist')
-        limit = self.configs.get('dataset').get('limit', None)
+        limit = self.reader_configs.get('limit', None)
         return {
             'train': train_df.iloc[:limit],
             'valid': valid_df.iloc[:limit],
@@ -91,13 +96,13 @@ class DefaultReader(BaseReader):
         return processed_data
 
     def collect(self) -> None:
-        input_paths = self.configs.get('dataset').get('input_path')
+        input_paths = self.reader_configs.get('input_path')
         if isinstance(input_paths, str):
             input_paths = {'train': input_paths}
         data = self.split(input_paths)
         data = self.concat_dataset(data)
         label_processor = LabelsProcessor(self.configs)
-        data_x, data_y = label_processor.process_labels(data)
+        data_x, data_y = label_processor.process_labels(self.reader_configs, data)
         data_x = self.apply_transformers(data_x)
         self.data = pd.concat([data_y, data_x], axis=1)
         f_list = self.get_features_order()
@@ -121,7 +126,7 @@ class DefaultReader(BaseReader):
 
     def shuffle(self, data: pd.DataFrame, shuffle: bool = True) -> pd.DataFrame:
         if shuffle:
-            if self.configs.get('dataset').get('shuffle', True):
+            if self.reader_configs.get('shuffle', True):
                 data = data.sample(frac=1).reset_index(drop=True)
         return data
 

@@ -14,13 +14,14 @@ class DenseNet(DefaultModel):
         self.prediction_function = nn.Softmax(dim=1)
         self.output_function = nn.LogSoftmax(dim=1)
 
-    def forward(self, x) -> Dict:
+    def forward(self, data: Dict) -> Dict:
         """
         passes inputs through the model
         returns: dict that is feed to right to loss and must contain 'outputs'
         example:
             {'outputs': something, ...}
         """
+        x = data['x']
         for layer in self.layers[:-1]:
             x = F.relu(layer(x))
         outputs = self.layers[-1](x)
@@ -30,3 +31,7 @@ class DenseNet(DefaultModel):
     def predict(self, x):
         x = self.forward(x)
         return self.prediction_function(x)
+
+    def get_x_y(self, batch):
+        return batch
+

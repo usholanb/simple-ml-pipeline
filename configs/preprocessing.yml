@@ -4,14 +4,13 @@ includes:
 
 
 
-dataset:
-  name: csv_dataset
+reader:
+  name: csv_reader
   label_type: classification  # classification or regression
 #  input_path:
 #    train: data/toy_dataset.csv
 #    test: data/toy_dataset2.csv
   input_path: data/iris.csv
-  output_path: processed_data/iris
   # index or name of the labels column in the input data
   label: -1
   shuffle: 1 # can be (0, false null) OR (anything else, which means true)

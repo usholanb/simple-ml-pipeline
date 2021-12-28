@@ -68,4 +68,10 @@ class TorchWrapper(DefaultWrapper):
     def prepare_data(self, data):
         return self.clf.prepare_data(data)
 
+    def get_epoch_logs(self) -> Dict:
+        """ Returns:
+            1 epoch logs that must be saved in tensorboard
+            Example: {"mse": 0.01}
+        """
+        return self.clf.get_epoch_logs()
 
