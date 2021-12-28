@@ -311,8 +311,8 @@ class Timeit:
                   f' expected for all {self.iter_n} iters: {expected}')
 
 
-def get_data_loaders(configs, specific=None):
-    split_names = [specific] if specific is not None else ['train', 'valid', 'test']
+def get_data_loaders(configs):
+    split_names = ['train', 'valid', 'test']
     d_loaders = []
     name = configs.get('dataset').get('name')
     dataset_class = registry.get_dataset_class(name)

@@ -34,7 +34,7 @@ def save_files(predictor: BasePredictor, output_dataset: pd.DataFrame) -> None:
 def run_prediction(k_fold_tag: AnyStr = '') -> None:
     print('started run_prediction')
     predictor = get_predictor(k_fold_tag)
-    output_dataset = predictor.predict()
+    output_dataset = predictor.make_predict()
     # save_files(predictor, output_dataset)
 
 

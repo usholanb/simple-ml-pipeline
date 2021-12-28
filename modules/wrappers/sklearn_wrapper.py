@@ -34,9 +34,9 @@ class SKLearnWrapper(DefaultWrapper):
         """
         if self.configs.get('trainer').get('label_type') == 'classification':
             result = np.zeros((len(examples), self.clf.n_outputs_))
-            result[np.arange(len(examples)), self.clf.predict(examples).astype(int)] = 1
+            result[np.arange(len(examples)), self.clf.make_predict(examples).astype(int)] = 1
         else:
-            result = self.clf.predict(examples)
+            result = self.clf.make_predict(examples)
         return result
 
     def fit(self, inputs, targets) -> None:

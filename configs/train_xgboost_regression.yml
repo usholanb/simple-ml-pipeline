@@ -4,6 +4,7 @@ includes:
 
 dataset:
   input_path: processed_data/no_GK_merged_df_v62
+  label_type: regression
 
 
 model:
@@ -27,7 +28,6 @@ special_inputs:
 
 trainer:
     name: sklearn_trainer
-    label_type: regression
     save: 1
     tune:
       resources_per_trial:

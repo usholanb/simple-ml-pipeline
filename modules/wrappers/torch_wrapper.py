@@ -75,3 +75,13 @@ class TorchWrapper(DefaultWrapper):
         """
         return self.clf.get_epoch_logs()
 
+    def to(self, device):
+        self.clf.to(device)
+
+    def get_x_y(self, batch):
+        x, y = self.clf.get_x_y(batch)
+        if isinstance(x, (list, tuple)):
+            x = [e.to(self.device) for e in x]
+        else:
+            x = x.to(self.device)
+        return x, y.to(self.device)

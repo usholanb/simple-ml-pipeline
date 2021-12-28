@@ -4,6 +4,7 @@ includes:
 
 dataset:
   input_path: processed_data/merged_df_v62
+  label_type: regression
 
   data_loaders:
 

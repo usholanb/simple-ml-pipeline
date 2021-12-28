@@ -39,8 +39,8 @@ class TorchTrainer(DefaultTrainer):
                     with torch.no_grad():
                         self.wrapper.eval()
                         valid_metrics, train_metrics = {}, {}
-                        valid_preds = self.wrapper.predict(self.data['valid_x'])
-                        train_preds = self.wrapper.predict(self.data['train_x'])
+                        valid_preds = self.wrapper.make_predict(self.data['valid_x'])
+                        train_preds = self.wrapper.make_predict(self.data['train_x'])
                         valid_metrics.update(self.get_metrics(
                         self.data['valid_y'], valid_preds, 'valid'))
                         train_metrics.update(self.get_metrics(

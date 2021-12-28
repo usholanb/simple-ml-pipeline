@@ -19,22 +19,9 @@ class BasePredictor:
     def __init__(self, configs: Dict):
         self.configs = configs
         self.device = TrainerContainer.device
-        self.get_data()
-        self.data = self.get_trainer().data
+        self.train_loader, self.valid_loader, self.test_loader = \
+            get_data_loaders(self.configs)
         self.feature_importance = None
-
-    def get_data(self):
-        if self.configs.get('dataset').get('dataloaders', True):
-            self.train_loader, self.valid_loader, self.test_loader = \
-                get_data_loaders(self.configs)
-        else:
-            setattr(self, 'dataset', CSVSaver().load(self.configs))
-
-    def get_trainer(self):
-        trainer = registry.get_trainer_class(
-            self.configs.get('trainer').get('name')
-        )(self.configs)
-        return trainer
 
     @property
     def pred_dir(self):
@@ -68,7 +55,7 @@ class BasePredictor:
         split_x['k_fold'] = k_fold_tag
         return split_x
 
-    def predict(self) -> pd.DataFrame:
+    def make_predict(self) -> pd.DataFrame:
         output_dataset = []
         k_fold_tag = self.configs.get('dataset').get('k_fold_tag', '')
 

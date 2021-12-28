@@ -4,6 +4,7 @@ from typing import Dict, List, AnyStr
 import numpy as np
 import pandas as pd
 
+from modules.containers.di_containers import TrainerContainer
 from modules.helpers.namer import Namer
 from modules.helpers.z_score import ZScore
 from modules.wrappers.base_wrappers.base_wrapper import BaseWrapper
@@ -16,6 +17,7 @@ from utils.constants import CLASSIFIERS_DIR
 class DefaultWrapper(BaseWrapper):
 
     def __init__(self, configs: Dict):
+        self.device = TrainerContainer.device
         self.configs = configs
         self.clf = self.get_classifier(configs)
         self._features_list = self.configs.get('features_list', [])

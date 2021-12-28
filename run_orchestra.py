@@ -34,7 +34,7 @@ def orchestra(configs: Dict):
         prediction_config = configs.get('prediction')
         flag = CustomFlag('prediction').add_config_args(prediction_config)
         all_flags['prediction'] = flag
-        output_dataset = get_predictor(k_fold_tag).predict()
+        output_dataset = get_predictor(k_fold_tag).make_predict()
         output_datasets.append(output_dataset)
     all_folds = pd.concat(output_datasets)
     predictor_name = configs.get('predictor')

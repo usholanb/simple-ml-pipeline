@@ -1,5 +1,6 @@
 dataset:
   name: basket_dataset
+  label_type: regression
 
   data_loaders:
 

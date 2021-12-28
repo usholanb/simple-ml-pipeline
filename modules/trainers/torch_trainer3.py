@@ -151,12 +151,7 @@ class TorchTrainer3(DefaultTrainer):
         """ takes batch sample and splits to
         x: inputs[batch_size, N_FEATURES]
         y: labels: [batch_size: n_outputs] """
-        x, y = self.wrapper.clf.get_x_y(batch)
-        if isinstance(x, (list, tuple)):
-            x = [e.to(self.device) for e in x]
-        else:
-            x = x.to(self.device)
-        return x, y.to(self.device)
+        return self.wrapper.get_x_y(batch)
 
     def __get_loss(self) -> torch.nn.Module:
         if hasattr(torch.nn, self.loss_name):
@@ -176,7 +171,6 @@ class TorchTrainer3(DefaultTrainer):
         metrics = self.get_metrics(y.detach().cpu().numpy(),
                                    pred.detach().cpu().numpy(), split)
         return {**metrics, **{f'{split}_{self.loss_name}': loss.item()}}
-
 
     def get_metrics(self, y_true: np.ndarray, y_preds: np.ndarray, split_name: AnyStr) -> Dict:
         metrics = self.get_split_metrics(y_true, y_preds)

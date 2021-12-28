@@ -74,7 +74,7 @@ class PlayerEvaluationPredictor(BasePredictor):
             current = p
         return np.array(x_ticks)
 
-    def predict(self):
+    def make_predict(self):
         output_dataset = deepcopy(self.dataset)
         k_fold_tag = self.configs.get('dataset').get('k_fold_tag', '')
         for tag, model_name in self.configs.get('models').items():

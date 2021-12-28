@@ -4,7 +4,6 @@ includes:
 
 dataset:
   input_path: processed_data/iris
-  name: csv_dataset
   label_type: classification
 
   data_loaders:
