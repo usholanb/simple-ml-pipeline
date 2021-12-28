@@ -64,9 +64,7 @@ class TorchTrainer3(DefaultTrainer):
             loss.backward()
             self.__clip_gradients()
             self.optimizer.step()
-            epoch_metrics.append(self.get_metrics(y.detach().cpu().numpy(),
-                                                  pred.detach().cpu().numpy(), split))
-
+            epoch_metrics.append(self.__metrics_from_torch(y, pred, split, loss))
         model_metrics = self.wrapper.get_epoch_logs()
         return {**model_metrics, **mean_dict_values(epoch_metrics)}
 
@@ -86,9 +84,8 @@ class TorchTrainer3(DefaultTrainer):
                     'batch_size': batch_size,
                 }
                 pred = self.valid_forward(data)
-                self.compute_loss_valid(y, pred, data)
-                epoch_metrics.append(self.get_metrics(y.detach().cpu().numpy(),
-                                                      pred.detach().cpu().numpy(), split))
+                loss = self.compute_loss_valid(y, pred, data)
+                epoch_metrics.append(self.__metrics_from_torch(y, pred, split, loss))
         model_metrics = self.wrapper.get_epoch_logs()
         return {**model_metrics, **mean_dict_values(epoch_metrics)}
 
@@ -98,12 +95,11 @@ class TorchTrainer3(DefaultTrainer):
 
     @run_hooks
     def compute_loss_train(self, y, pred, data):
-        return self.criterion(pred, y)
+        return self.criterion(pred, y.reshape(*pred.shape))
 
     @run_hooks
     def compute_loss_valid(self, y, pred, data):
-        loss = self.criterion(pred, y)
-        return loss
+        return self.criterion(pred, y.reshape(*pred.shape))
 
     @run_hooks
     def train_forward(self, all_data):
@@ -175,6 +171,12 @@ class TorchTrainer3(DefaultTrainer):
         optim_name = self.configs.get('trainer').get('optim', 'Adam')
         optim_func = getattr(optim, optim_name)
         return optim_func(model.parameters(), **self.configs.get('optim'))
+
+    def __metrics_from_torch(self, y, pred, split, loss):
+        metrics = self.get_metrics(y.detach().cpu().numpy(),
+                                   pred.detach().cpu().numpy(), split)
+        return {**metrics, **{f'{split}_{self.loss_name}': loss.item()}}
+
 
     def get_metrics(self, y_true: np.ndarray, y_preds: np.ndarray, split_name: AnyStr) -> Dict:
         metrics = self.get_split_metrics(y_true, y_preds)

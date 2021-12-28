@@ -17,11 +17,7 @@ import re
 import ray
 import numpy as np
 from time import time
-
 from torch.utils.data import DataLoader
-
-from modules.datasets.pandas_dataset import PandasDataset
-from modules.helpers.csv_saver import CSVSaver
 from utils.constants import MODULES_DIR, FOLDERS_NAMES
 from utils.registry import registry
 
@@ -332,9 +328,8 @@ def get_data_loaders(configs, specific=None):
             input_path = configs.get('dataset').get('input_path')
             print(f'no dataset class with name {name} is found\n'
                   f'will try to look for file with input_path: {input_path}')
-            data = prepare_train(configs, CSVSaver.load(configs))
-            x, y = data[f'{split_name}_x'], data[f'{split_name}_y']
-            split = PandasDataset(x, y, configs, split_name)
+            pandas_dataset_class = registry.get_dataset_class('pandas_dataset')
+            split = pandas_dataset_class(configs, split_name)
             d_loaders.append(DataLoader(split, **hps))
     return d_loaders
 

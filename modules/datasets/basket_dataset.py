@@ -3,6 +3,7 @@ import torch
 from torch.utils.data import Dataset
 
 from modules.containers.di_containers import TrainerContainer
+from modules.datasets.base_datasets.default_dataset import DefaultDataset
 from utils.constants import DATA_DIR
 from utils.registry import registry
 
@@ -34,11 +35,11 @@ def seq_collate(data):
 
 
 @registry.register_dataset('basket_dataset')
-class BasketDataset(Dataset):
+class BasketDataset(DefaultDataset):
     """ Dataloader for the Basketball trajectories datasets """
 
     def __init__(self, configs, split_name):
-        super(BasketDataset, self).__init__()
+        super(BasketDataset, self).__init__(configs, split_name)
         self.configs = configs
         si = self.configs.get('special_inputs')
         self.name = split_name if split_name != 'valid' else 'validation'
@@ -47,13 +48,11 @@ class BasketDataset(Dataset):
         self.pred_len = si.get('pred_len')
         self.seq_len = self.obs_len + self.pred_len
         self.n_agents = 10 if si.get('players') == 'all' else 5
-
         self.set_n_max_agents()
 
         # 'trajectories' shape (seq_len, batch*n_agents, 2) -> 2 = coords (x,y) for the single player
         # 'goals' shape (seq_len, batch*n_agents)
         traj_abs, goals = BasketDataset._read_files(self.data_dir)
-
         traj_abs = traj_abs[:, :640, :]
         goals = goals[:, :640]
 

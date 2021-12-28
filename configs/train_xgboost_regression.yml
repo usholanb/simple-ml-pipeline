@@ -35,7 +35,7 @@ trainer:
         gpu: 0
       max_concurrent_trials: 54
 
-    metrics: mse
+    metrics: [mse]
 
     grid_metric:
       name: valid_mse
