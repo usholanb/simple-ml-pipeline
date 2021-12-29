@@ -57,14 +57,12 @@ trainer:
     resources_per_trial:
       cpu: 2
       gpu: 0
-  metrics:
-    - accuracy
-    - precision
 
   grid_metric:
     name: valid_precision
     mode: max
 
+metrics: [accuracy, precision]
 
 features_list:
   - sepal width (cm)

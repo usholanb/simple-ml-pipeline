@@ -53,9 +53,9 @@ class TrainFlags(Flags):
         self._parser.add_argument_group("Core Arguments")
         self._parser.add_argument(
             "--config-yml",
-            default=f'{CONFIGS_DIR}/train_dagnet.yml',
+            # default=f'{CONFIGS_DIR}/train_dagnet.yml',
             # default=f'{CONFIGS_DIR}/train_dense_net_regression.yml',
-            # default=f'{CONFIGS_DIR}/train_xgboost_regression.yml',
+            default=f'{CONFIGS_DIR}/train_xgboost_regression.yml',
             # default=f'{CONFIGS_DIR}/train_dense_net.yml',
             help="path to config file starting from project home path",
         )
@@ -67,7 +67,8 @@ class PredictionFlags(Flags):
         self._parser.add_argument_group("Core Arguments")
         self._parser.add_argument(
             "--config-yml",
-            default=f'{CONFIGS_DIR}/prediction_multi_regression.yml',
+            default=f'{CONFIGS_DIR}/prediction_regression.yml',
+            # default=f'{CONFIGS_DIR}/prediction_multi_regression.yml',
             help="path to config file starting from project home path",
         )
 

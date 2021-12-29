@@ -1,15 +1,12 @@
-from typing import Dict, List, Tuple, AnyStr
+from typing import Dict, Tuple
 
-import numpy as np
 import torch
-from ray import tune
 
-from modules.containers.di_containers import TrainerContainer
 from modules.models.base_models.default_model import run_hooks
-from modules.trainers.default_trainer import DefaultTrainer
+from modules.trainers.default_trainer import DefaultTrainer, metrics_fom_torch
 from modules.wrappers.base_wrappers.base_wrapper import BaseWrapper
 from modules.wrappers.torch_wrapper import TorchWrapper
-from utils.common import pickle_obj, setup_imports, inside_tune, transform, Timeit, get_transformers, get_data_loaders, \
+from utils.common import pickle_obj, setup_imports, Timeit, get_data_loaders, \
     log_metrics, mean_dict_values
 from utils.registry import registry
 
@@ -51,7 +48,7 @@ class TorchTrainer3(DefaultTrainer):
         for batch_i, batch in enumerate(loader):
             # with Timeit(f'batch_i # {batch_i} / {len(loader.dataset)}',
             #             epoch, len(loader)):
-            x, y = self.__get_x_y(batch, batch_size)
+            x, y = self.__get_x_y(batch)
             data = {
                 'epoch': epoch,
                 'batch_i': batch_i,
@@ -64,8 +61,10 @@ class TorchTrainer3(DefaultTrainer):
             loss.backward()
             self.__clip_gradients()
             self.optimizer.step()
-            epoch_metrics.append(self.__metrics_from_torch(y, pred, split, loss))
-        model_metrics = self.wrapper.get_epoch_logs()
+            metrics = metrics_fom_torch(y, pred, split, self.configs)
+            metrics.update({f'{split}_{self.loss_name}': loss.item()})
+            epoch_metrics.append(metrics)
+        model_metrics = self.wrapper.model_epoch_logs()
         return {**model_metrics, **mean_dict_values(epoch_metrics)}
 
     @run_hooks
@@ -75,7 +74,7 @@ class TorchTrainer3(DefaultTrainer):
         epoch_metrics = []
         with torch.no_grad():
             for batch_i, batch in enumerate(loader):
-                x, y = self.__get_x_y(batch, batch_size)
+                x, y = self.__get_x_y(batch)
                 data = {
                     'epoch': epoch,
                     'batch_i': batch_i,
@@ -85,8 +84,10 @@ class TorchTrainer3(DefaultTrainer):
                 }
                 pred = self.valid_forward(data)
                 loss = self.compute_loss_valid(y, pred, data)
-                epoch_metrics.append(self.__metrics_from_torch(y, pred, split, loss))
-        model_metrics = self.wrapper.get_epoch_logs()
+                metrics = metrics_fom_torch(y, pred, split, self.configs)
+                metrics.update({f'{split}_{self.loss_name}': loss.item()})
+                epoch_metrics.append(metrics)
+        model_metrics = self.wrapper.model_epoch_logs()
         return {**model_metrics, **mean_dict_values(epoch_metrics)}
 
     def save(self) -> None:
@@ -104,13 +105,13 @@ class TorchTrainer3(DefaultTrainer):
     @run_hooks
     def train_forward(self, all_data):
         self.optimizer.zero_grad()
-        pred = self.wrapper.forward(all_data)
+        pred = self.wrapper.get_train_probs(all_data)
         pred = pred if pred.shape[1] > 1 else pred.flatten()
         return pred
 
     @run_hooks
     def valid_forward(self, all_data):
-        pred = self.wrapper.forward(all_data)
+        pred = self.wrapper.get_train_probs(all_data)
         pred = pred if pred.shape[1] > 1 else pred.flatten()
         return pred
 
@@ -147,7 +148,7 @@ class TorchTrainer3(DefaultTrainer):
         self.wrapper.eval()
         return self.eval_epoch([epoch, 'valid', self.valid_loader])
 
-    def __get_x_y(self, batch, batch_size) -> Tuple[torch.Tensor, torch.Tensor]:
+    def __get_x_y(self, batch) -> Tuple[torch.Tensor, torch.Tensor]:
         """ takes batch sample and splits to
         x: inputs[batch_size, N_FEATURES]
         y: labels: [batch_size: n_outputs] """
@@ -166,23 +167,4 @@ class TorchTrainer3(DefaultTrainer):
         optim_name = self.configs.get('trainer').get('optim', 'Adam')
         optim_func = getattr(optim, optim_name)
         return optim_func(model.parameters(), **self.configs.get('optim'))
-
-    def __metrics_from_torch(self, y, pred, split, loss):
-        metrics = self.get_metrics(y.detach().cpu().numpy(),
-                                   pred.detach().cpu().numpy(), split)
-        return {**metrics, **{f'{split}_{self.loss_name}': loss.item()}}
-
-    def get_metrics(self, y_true: np.ndarray, y_preds: np.ndarray, split_name: AnyStr) -> Dict:
-        metrics = self.get_split_metrics(y_true, y_preds)
-        return dict([(f'{split_name}_{k}', v) for k, v in metrics.items()])
-
-    def get_split_metrics(self, y_true: np.ndarray, y_outputs: np.ndarray) -> Dict:
-        setup_imports()
-        metrics = self.configs.get('trainer').get('metrics', [])
-        metrics = metrics if isinstance(metrics, list) else [metrics]
-        results = {}
-        for metric_name in metrics:
-            metric = registry.get_metric_class(metric_name)()
-            results[metric_name] = metric.compute_metric(y_true, y_outputs)
-        return results
 

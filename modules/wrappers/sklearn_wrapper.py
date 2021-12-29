@@ -1,8 +1,11 @@
 from typing import Dict, Any
 import numpy as np
 import pandas as pd
+
+from modules.helpers.csv_saver import CSVSaver
 from modules.wrappers.base_wrappers.default_wrapper import DefaultWrapper
-from utils.common import get_outside_library
+from utils.common import get_outside_library, unpickle_obj
+from utils.constants import CLASSIFIERS_DIR
 from utils.registry import registry
 
 
@@ -34,9 +37,9 @@ class SKLearnWrapper(DefaultWrapper):
         """
         if self.configs.get('trainer').get('label_type') == 'classification':
             result = np.zeros((len(examples), self.clf.n_outputs_))
-            result[np.arange(len(examples)), self.clf.make_predict(examples).astype(int)] = 1
+            result[np.arange(len(examples)), self.clf.predict(examples).astype(int)] = 1
         else:
-            result = self.clf.make_predict(examples)
+            result = self.clf.predict(examples)
         return result
 
     def fit(self, inputs, targets) -> None:
@@ -44,3 +47,17 @@ class SKLearnWrapper(DefaultWrapper):
             else targets.shape[1]
         self.clf.fit(inputs, targets)
 
+    def predict_dataset(self) -> pd.DataFrame:
+        output_dataset = []
+        k_fold_tag = self.configs.get('dataset').get('k_fold_tag', '')
+        data = CSVSaver().load(self.configs)
+        for tag, model_name in self.configs.get('models').items():
+            for split_name in ['train', 'valid', 'test']:
+                model_name_tag = f'{model_name}_{tag}'
+                model_path = f'{CLASSIFIERS_DIR}/{model_name_tag}{k_fold_tag}.pkl'
+                wrapper = unpickle_obj(model_path)
+                split_y = data[f'{split_name}_y']
+                split_x = self.predict_split_model(data[f'{split_name}_x'], wrapper,
+                                                   model_name_tag, k_fold_tag)
+                output_dataset.append(pd.concat([split_x, split_y], axis=1))
+        return pd.concat(output_dataset, axis=1)

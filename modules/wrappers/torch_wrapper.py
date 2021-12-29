@@ -1,10 +1,12 @@
 import numpy as np
 import pandas as pd
 import os
+
+from modules.trainers.default_trainer import metrics_fom_torch
 from modules.wrappers.base_wrappers.default_wrapper import DefaultWrapper
-from typing import Dict, List
+from typing import Dict, List, AnyStr
 import torch
-from utils.common import setup_imports, unpickle_obj
+from utils.common import setup_imports, unpickle_obj, get_data_loaders, mean_dict_values
 from utils.constants import CLASSIFIERS_DIR
 from utils.registry import registry
 
@@ -33,22 +35,36 @@ class TorchWrapper(DefaultWrapper):
             )(configs)
         return model
 
-    def get_prediction_probs(self, examples: pd.DataFrame) -> np.ndarray:
-        """ returns probabilities, is used in prediction step.
-            Uses only certain features that were used during training """
+    def predict_dataset(self, model_name_tag: AnyStr):
+        train_loader, valid_loader, test_loader = get_data_loaders(self.configs)
+        self.to(self.device)
+        self.eval()
+        epoch_metrics = []
+        model_metrics = {model_name_tag: {}}
+        for split, loader in zip(['train', 'valid', 'test'], [train_loader, valid_loader, test_loader]):
+            with torch.no_grad():
 
-        examples = self.filter_features(examples)
-        return self.get_train_probs(torch.FloatTensor(
-                    examples
-                )).detach().numpy()
+                for batch_i, batch in enumerate(loader):
+                    x, y = self.get_x_y(batch)
+                    data = {
+                        'epoch': 0,
+                        'batch_i': batch_i,
+                        'x': x,
+                        'split': split,
+                        'batch_size': loader.batch_size
+                    }
+                    pred = self.get_train_probs(data)
+                epoch_metrics.append(metrics_fom_torch(y, pred, split, self.configs))
+            model_metrics[model_name_tag][split] = self.model_epoch_logs()
+        model_metrics.update(mean_dict_values(epoch_metrics))
+        return model_metrics
 
-    def get_train_probs(self, examples: torch.FloatTensor) -> torch.Tensor:
+    def get_prediction_probs(self, data: Dict):
+        return self.clf.predict(data)
+
+    def get_train_probs(self, data: Dict):
         """ returned to metrics or predict_proba in prediction step """
-        return self.clf.get_train_probs(examples)
-
-    def forward(self, examples: torch.FloatTensor):
-        """ returns outputs, not probs, is used in train """
-        return self.clf.forward(examples)
+        return self.clf.forward(data)
 
     def train(self) -> None:
         self.clf.train()
@@ -68,12 +84,12 @@ class TorchWrapper(DefaultWrapper):
     def prepare_data(self, data):
         return self.clf.prepare_data(data)
 
-    def get_epoch_logs(self) -> Dict:
+    def model_epoch_logs(self) -> Dict:
         """ Returns:
             1 epoch logs that must be saved in tensorboard
             Example: {"mse": 0.01}
         """
-        return self.clf.get_epoch_logs()
+        return self.clf.model_epoch_logs()
 
     def to(self, device):
         self.clf.to(device)
@@ -85,3 +101,5 @@ class TorchWrapper(DefaultWrapper):
         else:
             x = x.to(self.device)
         return x, y.to(self.device)
+
+

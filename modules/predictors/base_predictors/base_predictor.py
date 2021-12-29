@@ -1,11 +1,11 @@
 from typing import AnyStr, Dict
 from abc import abstractmethod
 import pandas as pd
-
+import torch
 from modules.containers.di_containers import TrainerContainer
 from modules.helpers.csv_saver import CSVSaver
 from modules.wrappers.base_wrappers.default_wrapper import DefaultWrapper
-from utils.common import unpickle_obj, create_folder, get_data_loaders
+from utils.common import unpickle_obj, create_folder, get_data_loaders, mean_dict_values
 from utils.constants import CLASSIFIERS_DIR, PREDICTIONS_DIR, PROCESSED_DATA_DIR
 from copy import deepcopy
 
@@ -20,7 +20,7 @@ class BasePredictor:
         self.configs = configs
         self.device = TrainerContainer.device
         self.train_loader, self.valid_loader, self.test_loader = \
-            get_data_loaders(self.configs)
+            [None] * 3
         self.feature_importance = None
 
     @property
@@ -55,20 +55,14 @@ class BasePredictor:
         split_x['k_fold'] = k_fold_tag
         return split_x
 
-    def make_predict(self) -> pd.DataFrame:
-        output_dataset = []
-        k_fold_tag = self.configs.get('dataset').get('k_fold_tag', '')
-
+    def make_predict(self):
+        model_results = {}
         for tag, model_name in self.configs.get('models').items():
-            for split_name in ['train', 'valid', 'test']:
-                model_name_tag = f'{model_name}_{tag}'
-                model_path = f'{CLASSIFIERS_DIR}/{model_name_tag}{k_fold_tag}.pkl'
-                wrapper = unpickle_obj(model_path)
-                split_y = self.data[f'{split_name}_y']
-                split_x = self.predict_split_model(self.data[f'{split_name}_x'], wrapper,
-                                                   model_name_tag, k_fold_tag)
-                output_dataset.append(pd.concat([split_x, split_y], axis=1))
-        return pd.concat(output_dataset, axis=1)
+            model_name_tag = f'{model_name}_{tag}'
+            model_path = f'{CLASSIFIERS_DIR}/{model_name_tag}.pkl'
+            wrapper = unpickle_obj(model_path)
+            model_results[model_name_tag] = wrapper.predict_dataset()
+        return model_results
 
     def save_metrics(self, split: pd.DataFrame, split_name: AnyStr, dataset_name: AnyStr) -> None:
         """ Saves metrics for the split  """

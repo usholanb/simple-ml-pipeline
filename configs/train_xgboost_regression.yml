@@ -27,19 +27,19 @@ special_inputs:
 
 
 trainer:
-    name: sklearn_trainer
-    save: 1
-    tune:
-      resources_per_trial:
-        cpu: 1
-        gpu: 0
-      max_concurrent_trials: 54
+  name: sklearn_trainer
+  save: 1
+  tune:
+    resources_per_trial:
+      cpu: 1
+      gpu: 0
+    max_concurrent_trials: 54
 
-    metrics: [mse]
+  grid_metric:
+    name: valid_mse
+    mode: min
 
-    grid_metric:
-      name: valid_mse
-      mode: min
+metrics: [mse]
 
 features_list:
 #  - Team_encoded

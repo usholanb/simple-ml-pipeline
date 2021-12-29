@@ -48,8 +48,6 @@ special_inputs:
   n_outputs: 1
 
 
-
-
 trainer:
   name: torch_trainer3
   optim: Adam
@@ -61,12 +59,12 @@ trainer:
     resources_per_trial:
       cpu: 8
       gpu: 0
-  metrics:
-    - mse
 
   grid_metric:
     name: valid_MSELoss
     mode: min
+
+metrics: [mse]
 
 
 features_list:

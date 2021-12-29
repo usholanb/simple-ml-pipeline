@@ -346,18 +346,18 @@ def prepare_train(configs, dataset, split_names=None) -> Dict:
     features_list = configs.get('features_list', [])
     if not features_list:
         print('features_list not specified')
-    f_list = figure_feature_list(features_list, dataset.columns.tolist())
+    filtered_f_list = figure_feature_list(features_list, dataset.columns.tolist())
     for split in split_names:
         split_column = dataset.iloc[:, split_i]
         data[f'{split}_y'] = \
             dataset.loc[split_column == split].iloc[:, label_index_i]
         if features_list:
             data[f'{split}_x'] = \
-                dataset.loc[split_column == split][f_list]
+                dataset.loc[split_column == split][filtered_f_list]
         else:
             data[f'{split}_x'] = \
                 dataset.loc[split_column == split].iloc[:, len(configs.get('static_columns')):]
-    configs['features_list'] = f_list
+    configs['features_list'] = filtered_f_list
     return data
 
 

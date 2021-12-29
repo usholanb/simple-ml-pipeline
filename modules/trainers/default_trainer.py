@@ -1,5 +1,5 @@
 import numpy as np
-from ray import tune
+
 from modules.containers.di_containers import TrainerContainer
 from modules.trainers.base_trainer import BaseTrainer
 from typing import Dict, AnyStr, List
@@ -25,29 +25,31 @@ class DefaultTrainer(BaseTrainer):
         print(f'saved model {self.model_path}')
         pickle_obj(self.wrapper, self.model_path())
 
-    def print_metrics(self, data: Dict) -> None:
-        for split_name in ['train', 'valid', 'test']:
-            split_preds = self.wrapper.get_train_probs(data[f'{split_name}_x'])
-            s_metrics = self.get_split_metrics(data[f'{split_name}_y'].values, split_preds)
-            print(f'{s_metrics}\n')
-
-    def get_metrics(self, y_true: np.ndarray, y_preds: np.ndarray, split_name: AnyStr) -> Dict:
-        metrics = self.get_split_metrics(y_true, y_preds)
-        return dict([(f'{split_name}_{k}', v) for k, v in metrics.items()])
-
-    def get_split_metrics(self, y_true: np.ndarray, y_outputs: np.ndarray) -> Dict:
-        setup_imports()
-        metrics = self.configs.get('trainer').get('metrics', [])
-        metrics = metrics if isinstance(metrics, list) else [metrics]
-        results = {}
-        for metric_name in metrics:
-            metric = registry.get_metric_class(metric_name)()
-            results[metric_name] = metric.compute_metric(y_true, y_outputs)
-        return results
-
     def get_dataset(self):
         setup_imports()
         dataset = registry.get_dataset_class(
             self.configs.get('dataset').get('name'))(self.configs)
         return dataset
 
+
+def metrics_fom_torch(y, pred, split, configs):
+    metrics = get_metrics(y.detach().cpu().numpy(),
+                          pred.detach().cpu().numpy(), split, configs)
+    return metrics
+
+
+def get_metrics(y_true: np.ndarray, y_preds: np.ndarray,
+                split_name: AnyStr, configs: Dict) -> Dict:
+    metrics = get_split_metrics(y_true, y_preds, configs)
+    return dict([(f'{split_name}_{k}', v) for k, v in metrics.items()])
+
+
+def get_split_metrics(y: np.ndarray, pred: np.ndarray, configs: Dict) -> Dict:
+    setup_imports()
+    m_names = configs.get('metrics', [])
+    m_names = m_names if isinstance(m_names, list) else [m_names]
+    results = {}
+    for metric_name in m_names:
+        metric = registry.get_metric_class(metric_name)()
+        results[metric_name] = metric.compute_metric(y.reshape(*pred.shape), pred)
+    return results

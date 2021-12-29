@@ -61,17 +61,7 @@ class TorchTrainer(DefaultTrainer):
             result = super().get_split_metrics(y_true, y_outputs)
         return result
             
-    def print_metrics(self, data: Dict) -> None:
-        with torch.no_grad():
-            for split_name in ['train', 'valid', 'test']:
-                split_y_str, split_x_str = f'{split_name}_y', f'{split_name}_x'
-                split_preds = self.wrapper.get_train_probs(data[split_x_str])
-                split_outputs = self.wrapper.forward(data[split_x_str])
-                metrics = self.get_metrics(data[split_y_str], split_preds, split_name)
-                loss = self.criterion(split_outputs, data[split_y_str])
-                metrics.update({self.loss_name: loss.item()})
-                metrics = "\n".join([f"{k}:{v}" for k, v in metrics.items()])
-                print(f'{split_name}:\n{metrics}\n')
+
 
     def get_optimizer(self, model) -> torch.optim.Optimizer:
         import torch.optim as optim

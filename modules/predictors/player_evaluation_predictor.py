@@ -74,19 +74,6 @@ class PlayerEvaluationPredictor(BasePredictor):
             current = p
         return np.array(x_ticks)
 
-    def make_predict(self):
-        output_dataset = deepcopy(self.dataset)
-        k_fold_tag = self.configs.get('dataset').get('k_fold_tag', '')
-        for tag, model_name in self.configs.get('models').items():
-            model_name_tag = f'{model_name}_{tag}'
-            model_path = f'{CLASSIFIERS_DIR}/{model_name_tag}{k_fold_tag}.pkl'
-            wrapper = unpickle_obj(model_path)
-            self.print_important_features(wrapper)
-            probs = wrapper.predict_proba(self.dataset)
-            output_dataset[f'{model_name_tag}'] = probs
-            output_dataset['k_fold'] = k_fold_tag
-        return output_dataset
-
 
 
 
