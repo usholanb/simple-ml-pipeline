@@ -1,19 +1,15 @@
 from copy import deepcopy
 from typing import AnyStr, Dict
 import pandas as pd
-
-from modules.helpers.csv_saver import CSVSaver
 from modules.helpers.matplotlibgraph import MatPlotLibGraph
-from modules.predictors.base_predictors.base_predictor import BasePredictor
-from utils.common import unpickle_obj
-from utils.constants import CLASSIFIERS_DIR
+from modules.predictors.base_predictors.pandas_predictor import PandasPredictor
 from utils.registry import registry
 import numpy as np
 import utils.small_functions as sf
 
 
 @registry.register_predictor('player_evaluation_predictor')
-class PlayerEvaluationPredictor(BasePredictor):
+class PlayerEvaluationPredictor(PandasPredictor):
     """ uses all wrappers pointed in prediction config to
         make and save several prediction files """
 

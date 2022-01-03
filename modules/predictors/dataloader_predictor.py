@@ -13,8 +13,8 @@ import csv
 import utils.small_functions as sf
 
 
-@registry.register_predictor('regression_predictor')
-class RegressionPredictor(BasePredictor):
+@registry.register_predictor('dataloader_predictor')
+class DataloaderPredictor(BasePredictor):
     """ uses all wrappers pointed in prediction config to
         make and save several prediction files
 

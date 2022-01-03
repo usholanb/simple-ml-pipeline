@@ -47,17 +47,3 @@ class SKLearnWrapper(DefaultWrapper):
             else targets.shape[1]
         self.clf.fit(inputs, targets)
 
-    def predict_dataset(self) -> pd.DataFrame:
-        output_dataset = []
-        k_fold_tag = self.configs.get('dataset').get('k_fold_tag', '')
-        data = CSVSaver().load(self.configs)
-        for tag, model_name in self.configs.get('models').items():
-            for split_name in ['train', 'valid', 'test']:
-                model_name_tag = f'{model_name}_{tag}'
-                model_path = f'{CLASSIFIERS_DIR}/{model_name_tag}{k_fold_tag}.pkl'
-                wrapper = unpickle_obj(model_path)
-                split_y = data[f'{split_name}_y']
-                split_x = self.predict_split_model(data[f'{split_name}_x'], wrapper,
-                                                   model_name_tag, k_fold_tag)
-                output_dataset.append(pd.concat([split_x, split_y], axis=1))
-        return pd.concat(output_dataset, axis=1)

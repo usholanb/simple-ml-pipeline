@@ -37,7 +37,7 @@ class BasePredictor:
             print(sorted(self.feature_importance.items(), key=lambda x: -x[1]))
 
     def predict_split_model(self, split_x, wrapper, model_name_tag, k_fold_tag=''):
-        probs = wrapper.predict_proba(split_x)
+        probs = wrapper.get_prediction_probs(split_x)
         if self.configs.get('classification'):
             if len(wrapper.clf.classes_) > 1:
                 for i, label in enumerate(wrapper.clf.classes):
@@ -61,8 +61,10 @@ class BasePredictor:
             model_name_tag = f'{model_name}_{tag}'
             model_path = f'{CLASSIFIERS_DIR}/{model_name_tag}.pkl'
             wrapper = unpickle_obj(model_path)
-            model_results[model_name_tag] = wrapper.predict_dataset()
+            model_results[model_name_tag] = self.predict_dataset()
         return model_results
+
+
 
     def save_metrics(self, split: pd.DataFrame, split_name: AnyStr, dataset_name: AnyStr) -> None:
         """ Saves metrics for the split  """
