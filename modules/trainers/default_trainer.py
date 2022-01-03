@@ -18,12 +18,13 @@ class DefaultTrainer(BaseTrainer):
         self.wrapper = None
         self.device = TrainerContainer.device
 
+    @property
     def model_path(self) -> AnyStr:
-        return f'{CLASSIFIERS_DIR}/{self.wrapper.name}.pkl'
+        return self.wrapper.model_path
 
     def save(self) -> None:
         print(f'saved model {self.model_path}')
-        pickle_obj(self.wrapper, self.model_path())
+        pickle_obj(self.wrapper, self.model_path)
 
     def get_dataset(self):
         setup_imports()

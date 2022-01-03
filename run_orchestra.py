@@ -22,7 +22,7 @@ def orchestra(configs: Dict):
     preprocessing_config = configs.get('preprocessing')
     flag = CustomFlag('preprocessing').add_config_args(preprocessing_config)
     all_flags['preprocessing'] = flag
-    output_datasets = []
+    all_preds_ys = {}
     for k_fold_i in range(configs.get('k_fold')):
         k_fold_tag = f'k_fold{k_fold_i}'
         # run_preprocessing(k_fold_tag=k_fold_tag)
@@ -34,12 +34,11 @@ def orchestra(configs: Dict):
         prediction_config = configs.get('prediction')
         flag = CustomFlag('prediction').add_config_args(prediction_config)
         all_flags['prediction'] = flag
-        output_dataset = get_predictor(k_fold_tag).make_predict()
-        output_datasets.append(output_dataset)
-    all_folds = pd.concat(output_datasets)
+        preds_ys = get_predictor(k_fold_tag).get_preds_ys()
+        all_preds_ys.update(preds_ys)
     predictor_name = configs.get('predictor')
-    predictor = registry.get_predictor_class(predictor_name)(configs, all_folds)
-    save_files(predictor, all_folds)
+    predictor = registry.get_predictor_class(predictor_name)(configs)
+    save_files(predictor, all_preds_ys)
 
 
 def run_orchestra():

@@ -25,17 +25,17 @@ def get_predictor(k_fold_tag: AnyStr) -> BasePredictor:
     return registry.get_predictor_class(predictor_name)(configs)
 
 
-def save_files(predictor: BasePredictor, output_dataset: pd.DataFrame) -> None:
+def save_files(predictor: BasePredictor, preds_ys) -> None:
     """ Prepares Dataset """
-    predictor.save_results(output_dataset)
-    predictor.save_graphs(output_dataset)
+    predictor.save_results(preds_ys)
+    predictor.save_graphs(preds_ys)
 
 
 def run_prediction(k_fold_tag: AnyStr = '') -> None:
     print('started run_prediction')
     predictor = get_predictor(k_fold_tag)
-    output_dataset = predictor.make_predict()
-    # save_files(predictor, output_dataset)
+    preds_ys = predictor.get_preds_ys()
+    save_files(predictor, preds_ys)
 
 
 if __name__ == '__main__':

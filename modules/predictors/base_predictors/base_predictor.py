@@ -36,66 +36,52 @@ class BasePredictor:
             }
             print(sorted(self.feature_importance.items(), key=lambda x: -x[1]))
 
-    def predict_split_model(self, split_x, wrapper, model_name_tag, k_fold_tag=''):
-        probs = wrapper.get_prediction_probs(split_x)
-        if self.configs.get('classification'):
-            if len(wrapper.clf.classes_) > 1:
-                for i, label in enumerate(wrapper.clf.classes):
-                    pred_name = f'{model_name_tag}{k_fold_tag}_{i}'
-                    split_x[pred_name] = probs[:, i]
-            else:
-                pred_name = f'{model_name_tag}{k_fold_tag}'
-                split_x[pred_name] = probs
-        else:
-            if wrapper.n_outputs > 1:
-                for i in range(wrapper.n_outputs):
-                    split_x[f'{model_name_tag}{k_fold_tag}_{i}'] = probs[:, i]
-            else:
-                split_x[f'{model_name_tag}{k_fold_tag}'] = probs[:]
-        split_x['k_fold'] = k_fold_tag
-        return split_x
-
-    def make_predict(self):
+    def get_preds_ys(self) -> Dict:
         model_results = {}
         for tag, model_name in self.configs.get('models').items():
-            model_name_tag = f'{model_name}_{tag}'
+            k_fold_tag = self.configs.get('dataset').get('k_fold_tag', '')
+            model_name_tag = f'{model_name}_{tag}{k_fold_tag}'
             model_path = f'{CLASSIFIERS_DIR}/{model_name_tag}.pkl'
             wrapper = unpickle_obj(model_path)
-            model_results[model_name_tag] = self.predict_dataset()
+            model_results[model_name_tag] = self.predict_dataset(wrapper)
         return model_results
 
+    @abstractmethod
+    def predict_dataset(self, wrapper):
+        """ return  """
 
+    @abstractmethod
+    def predict_split_model(self, split_x, wrapper, model_name_tag):
+        """ return """
 
-    def save_metrics(self, split: pd.DataFrame, split_name: AnyStr, dataset_name: AnyStr) -> None:
+    def save_metrics(self, split: Dict, split_name: AnyStr) -> pd.DataFrame:
         """ Saves metrics for the split  """
-        y_true_index = self.configs.get('static_columns').get('FINAL_LABEL_INDEX')
-        y_true = split.iloc[:, y_true_index].values
+        y_true = split[f'{split_name}_ys']
         metrics_values = {}
-        for metric_name in self.configs.get('metrics'):
+        for metric_name in self.configs.get('metrics', []):
             metric = registry.get_metric_class(metric_name)()
-            models_values = {}
-            for tag, model_name in self.configs.get('models').items():
-                model_name_tag = f'{model_name}_{tag}'
-                y_outputs = split[model_name_tag].values
-                values = metric.compute_metric(y_true, y_outputs)
-                models_values[model_name_tag] = values
-            metrics_values[metric_name] = models_values
-        df = pd.DataFrame(metrics_values)
-        CSVSaver.save_file(f'{self.pred_dir}/{dataset_name}_{split_name}_metrics',
-                           df, index=True, compression=None)
+            y_outputs = split[f'{split_name}_preds']
+            values = metric.compute_metric(y_true, y_outputs)
+            metrics_values[metric_name] = values
+        return metrics_values
+        # CSVSaver.save_file(f'{self.pred_dir}/{dataset_name}_{split_name}_metrics',
+        #                    df, index=True, compression=None)
 
     def save_predictions(self, split: pd.DataFrame, split_name: AnyStr, dataset_name: AnyStr) -> None:
         CSVSaver.save_file(f'{self.pred_dir}/{dataset_name}_{split_name}', split)
 
-    def save_results(self, output_dataset: pd.DataFrame) -> None:
+    def save_results(self, preds_ys: Dict) -> None:
         """ saves splits with predictions and metrics """
-        for split_name in output_dataset['split'].unique():
-            split = output_dataset.loc[output_dataset['split'] == split_name]
-            dataset_path = self.configs.get('dataset').get('input_path')
-            dataset_name = dataset_path.split('/')[1]
-            # self.save_predictions(split, split_name, dataset_name)
-            self.save_metrics(split, split_name, dataset_name)
+        metrics = {}
+        dataset_path = self.configs.get('dataset').get('input_path')
+        dataset_name = dataset_path.split('/')[1]
+        for model_name, splits in preds_ys.items():
+            metrics[model_name] = {}
+            for split_name, split in splits.items():
+                metrics[model_name][split_name] = self.save_metrics(split, split_name)
+        df = pd.concat({k: pd.DataFrame(v) for k, v in metrics.items()})
+        CSVSaver.save_file(f'{self.pred_dir}/{dataset_name}_metrics',
+                           df, index=True, compression=None)
 
-    def save_graphs(self, output_dataset: pd.DataFrame):
-        """ saves various project specific graphs """
-
+    def save_graphs(self, output_dataset: Dict) -> None:
+        """ override if need graphs """

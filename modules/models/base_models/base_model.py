@@ -36,6 +36,11 @@ class BaseModel(ABC):
             For reference: look at your trainer functions
                 that are decorated with hooks
          """
-
+    
+    @abstractmethod
+    def model_epoch_logs(self) -> Dict:
+        """ Return anything that needs to be logged in tensorboard
+            each epoch
+        """
 
 

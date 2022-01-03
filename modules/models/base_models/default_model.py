@@ -61,7 +61,7 @@ class DefaultModel(nn.Module, BaseModel):
         layers = [l.to(self.device) for l in layers]
         return layers
 
-    def get_epoch_logs(self) -> Dict:
+    def model_epoch_logs(self) -> Dict:
         return {}
 
 

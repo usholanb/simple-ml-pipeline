@@ -21,30 +21,31 @@ class PlayerEvaluationPredictor(PandasPredictor):
         self.graph = MatPlotLibGraph(self.configs)
         self.split_names = self.configs.get('plots', {}).get('splits', [])
 
-    def save_graphs(self, output_dataset: pd.DataFrame) -> None:
+    def save_graphs(self, output_dataset: Dict) -> None:
         x_ticks = self.get_x_ticks()
         for f_name in self.configs.get('plots', {}).get('steps_func', []):
             f = getattr(sf, f_name)
             self.plot_one_f(f, x_ticks, output_dataset)
         self.one_hist(x_ticks, output_dataset, 'distribution')
 
-    def one_hist(self, x_ticks: np.ndarray, output_dataset: pd.DataFrame,
+    def one_hist(self, x_ticks: np.ndarray, output_dataset: Dict,
                  name: AnyStr) -> None:
         labels, trues = [], []
-        for split_name in self.split_names:
-            split = output_dataset[output_dataset['split'] == split_name]
-            trues.append((10 ** split['value']).values.astype(int) / 1e6)
+        splits = list(output_dataset.values())[0]
+        for split_name, split in splits.items():
+            y_name = f'{split_name}_ys'
+            trues.append((10 ** split[y_name]).astype(int) / 1e6)
             labels.append(f'{name}_{split_name}')
         self.graph.plot_hist(x_ticks, trues, self.pred_dir, labels)
 
     def plot_one_f(self, f, x_ticks, output_dataset):
         ys, labels, quantities = [], [], []
-        for tag, model_name in self.configs.get('models').items():
-            model_name_tag = f'{model_name}_{tag}'
-            for split_name in self.split_names:
-                split = output_dataset[output_dataset['split'] == split_name]
-                pred = (10 ** split[model_name_tag]).values.astype(int) / 1e6
-                true = (10 ** split['value']).values.astype(int) / 1e6
+        for model_name_tag, splits in output_dataset.items():
+            for split_name, split in splits.items():
+                pred_name = f'{split_name}_preds'
+                y_name = f'{split_name}_ys'
+                pred = (10 ** split[pred_name]).astype(int) / 1e6
+                true = (10 ** split[y_name]).astype(int) / 1e6
                 label = f'{model_name_tag} {f.__name__}_{split_name}'
                 loss_y, quantity = [], []
                 for prev_x_point, x_point in zip(x_ticks[:-1], x_ticks[1:]):

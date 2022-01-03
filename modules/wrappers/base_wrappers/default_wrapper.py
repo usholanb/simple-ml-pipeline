@@ -21,7 +21,7 @@ class DefaultWrapper(BaseWrapper):
         self.configs = configs
         self.clf = self.get_classifier(configs)
         self._features_list = self.configs.get('features_list', [])
-        self.n_outputs = None
+        self.__dict__.update(self.configs.get('special_inputs', {}))
 
     @property
     def features_list(self):
@@ -33,7 +33,8 @@ class DefaultWrapper(BaseWrapper):
 
     @property
     def name(self) -> AnyStr:
-        return Namer().model_name(self.configs.get('model', {}))
+        kfold = self.configs.get('dataset', {}).get('k_fold_tag', '')
+        return f"{Namer().model_name(self.configs.get('model', {}))}{kfold}"
 
     def filter_features(self, examples: pd.DataFrame) -> pd.DataFrame:
         """ picks certain features """
@@ -44,15 +45,3 @@ class DefaultWrapper(BaseWrapper):
         if len(examples.shape) == 1:
             examples = examples.reshape((1, -1))
         return examples
-
-
-
-
-
-
-
-
-
-
-
-
