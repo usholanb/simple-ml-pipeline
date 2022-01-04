@@ -17,7 +17,7 @@ def preprocessing(configs: Dict) -> None:
     reader = registry.get_reader_class(
         configs.get('reader').get('name'))(configs)
     reader.collect()
-    CSVSaver().save(reader.data, configs, reader.reader_configs)
+    CSVSaver().save(reader.data, reader.reader_configs)
     print(f'{reader.name} is ready, reader: {reader.data.shape}')
 
 

@@ -1,12 +1,12 @@
+from typing import Dict
 import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib.pyplot import figure
-import seaborn as sea
 
 
 class MatPlotLibGraph:
 
-    def __init__(self, configs):
+    def __init__(self, configs: Dict):
         self.configs = configs
 
     def plot_step(self, x, ys, quantities, lines_labels, save_folder, x_label, y_label):

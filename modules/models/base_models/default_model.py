@@ -1,40 +1,45 @@
-from typing import AnyStr, Dict, Callable, OrderedDict, Type, List, Tuple
-import torch
+from typing import AnyStr, Dict, Callable, List
 from torch import nn
-from abc import abstractmethod
 from modules.containers.di_containers import TrainerContainer
 from modules.models.base_models.base_model import BaseModel
-from utils.constants import CLASSIFIERS_DIR
-
 global_hooks: Dict[AnyStr, List[Callable]] = {}
 
 
 class DefaultModel(nn.Module, BaseModel):
     """ Use and/or override torch functions if you need to """
 
-    def __init__(self, configs):
+    def __init__(self, configs: Dict):
         super().__init__()
         self.device = TrainerContainer.device
         self.__dict__.update(configs.get('special_inputs', {}))
         self.configs = configs
         self.add_hooks()
 
-    def register_pre_hook(self, func_name, hook):
-        self.register_hook(f'before_{func_name}', hook)
+    def register_pre_hook(self, name: AnyStr, hook: Callable) -> None:
+        self.register_hook(f'before_{name}', hook)
 
-    def register_hook(self, name, hook):
+    def register_hook(self, name: AnyStr, hook: Callable) -> None:
+        """ Addes hooks before or after a specific function """
         if name in global_hooks:
             global_hooks[name].append(hook)
         else:
             global_hooks[name] = [hook]
 
-    def register_post_hook(self, func_name, hook):
-        self.register_hook(f'after_{func_name}', hook)
+    def register_post_hook(self, name: AnyStr, hook: Callable) -> None:
+        self.register_hook(f'after_{name}', hook)
 
     def add_hooks(self):
+        """ use register_pre_hook and register_post_hook to add hooks around
+            main train loop functions.
+
+            See trainer functions decorated with "run_hooks" function in train loop
+        """
         pass
 
-    def set_layers(self):
+    def set_layers(self) -> List[nn.Module]:
+        """ Creates a structure of dense layers
+            specified under special_inputs
+        """
         index = 1
         layers_sizes = getattr(self, 'layers_sizes', [10, 10, 10])
         # assert len(layers_sizes) > 1, 'number of layers defined in config file ' \
@@ -62,10 +67,23 @@ class DefaultModel(nn.Module, BaseModel):
         return layers
 
     def model_epoch_logs(self) -> Dict:
+        """ Called after each epoch
+            Return: dict of whatever needs to be logged to tensorboard
+        """
         return {}
 
 
-def run_hooks(func):
+def run_hooks(func: Callable) -> Callable:
+    """ inputs -> Before hook # 1 -> output
+        output ->  Before hook # 2 -> output
+        ...
+        output ->  Before hook # N -> output
+
+        inputs + output -> After hook # 1 -> output
+        inputs + output -> After hook # 2 -> output
+        ...
+        inputs + output -> After hook # N output -> output
+     """
     def func_hook(self, *args):
         pre_inputs = args
         b_name = f'before_{func.__name__}'

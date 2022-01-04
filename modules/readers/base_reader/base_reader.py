@@ -3,11 +3,11 @@ from typing import Dict, AnyStr
 
 
 class BaseReader(ABC):
-    """ To distinguish datasets between sports """
+    """ Reads data from any source and converts to pandas """
 
     @abstractmethod
-    def __init__(self, configs):
-        """ self.data must be set """
+    def __init__(self, configs: Dict):
+        """ self.data must be pandas representation of the dataset """
 
     @abstractmethod
     def collect(self) -> None:
@@ -15,7 +15,7 @@ class BaseReader(ABC):
 
     @abstractmethod
     def read_source(self, *args, **kwargs):
-        """ reads any source to pandas """
+        """ read and convert any input to pandas """
 
     @abstractmethod
     def split(self, input_paths: dict, shuffle: bool) -> Dict:

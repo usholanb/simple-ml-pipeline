@@ -8,8 +8,6 @@ classification: false
 dataset:
   input_path: processed_data/no_GK_merged_df_v62
 
-trainer:
-  name: sklearn_trainer
 
 print_important_features: true
 
@@ -29,11 +27,11 @@ plots:
 
 models:
 #  uan: dense_net_regression
-  uan3: xgb_regressor
-#  small: xgb_regressor
+#  uan3: xgb_regressor
+  small: xgb_regressor
 #  uan4: linear_regression
-  uan3k_fold1: xgb_regressor
-  uan3k_fold0: xgb_regressor
+#  uan3k_fold1: xgb_regressor
+#  uan3k_fold0: xgb_regressor
 
 
 metrics: [mse]

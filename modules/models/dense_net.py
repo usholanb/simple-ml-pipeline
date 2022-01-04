@@ -1,4 +1,6 @@
 from typing import Dict
+
+import torch
 from torch import nn
 import torch.nn.functional as F
 from modules.models.base_models.default_model import DefaultModel
@@ -7,7 +9,7 @@ from utils.registry import registry
 
 @registry.register_model('dense_net')
 class DenseNet(DefaultModel):
-    def __init__(self, configs):
+    def __init__(self, configs: Dict):
         super(DenseNet, self).__init__(configs)
         self.__dict__.update(configs.get('special_inputs'))
         self.layers = self.set_layers()
@@ -28,7 +30,7 @@ class DenseNet(DefaultModel):
         outputs = self.output_function(outputs)
         return outputs
 
-    def predict(self, x):
+    def predict(self, x: Dict) -> torch.Tensor:
         x = self.forward(x)
         return self.prediction_function(x)
 

@@ -6,7 +6,6 @@ import pandas as pd
 
 from modules.containers.di_containers import TrainerContainer
 from modules.helpers.namer import Namer
-from modules.helpers.z_score import ZScore
 from modules.wrappers.base_wrappers.base_wrapper import BaseWrapper
 import importlib
 
@@ -34,7 +33,7 @@ class DefaultWrapper(BaseWrapper):
     @property
     def name(self) -> AnyStr:
         kfold = self.configs.get('dataset', {}).get('k_fold_tag', '')
-        return f"{Namer().model_name(self.configs.get('model', {}))}{kfold}"
+        return f"{Namer.model_name(self.configs.get('model', {}))}{kfold}"
 
     def filter_features(self, examples: pd.DataFrame) -> pd.DataFrame:
         """ picks certain features """

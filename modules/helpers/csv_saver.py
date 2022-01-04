@@ -1,11 +1,11 @@
 import pandas as pd
-from typing import AnyStr
+from typing import AnyStr, Dict
 
 
 class CSVSaver:
 
     @classmethod
-    def save(cls, data, configs, reader_configs) -> None:
+    def save(cls, data: pd.DataFrame, reader_configs: Dict) -> None:
         """ saves csv to processed_ + input_path which is local path """
         path = reader_configs.get('input_path')
         if isinstance(data, pd.DataFrame):
@@ -15,7 +15,7 @@ class CSVSaver:
             data.to_csv(name, index=False, compression='gzip')
 
     @classmethod
-    def load(cls, configs) -> pd.DataFrame:
+    def load(cls, configs: Dict) -> pd.DataFrame:
         """ loads csv from input_path which is local path"""
         tag = configs.get('dataset').get('k_fold_tag', '')
         input_path = f"{configs.get('dataset').get('input_path')}{tag}"
@@ -25,11 +25,11 @@ class CSVSaver:
         return dataset
 
     @classmethod
-    def add_csv(cls, path):
+    def add_csv(cls, path: AnyStr) -> AnyStr:
         return f'{path}.csv'
 
     @classmethod
-    def add_csv_gz(cls, path):
+    def add_csv_gz(cls, path: AnyStr) -> AnyStr:
         path = cls.add_csv(path)
         return f'{path}.gz'
 
@@ -38,18 +38,12 @@ class CSVSaver:
         return cls.add_csv_gz(f'processed_{path}')
 
     @classmethod
-    def save_file(cls, path, df, compression='gzip', index=False):
-        if compression == 'gzip':
+    def save_file(cls, path: AnyStr, df: pd.DataFrame,
+                  gzip: bool = True,
+                  index: bool = False) -> None:
+        if gzip:
             path = cls.add_csv_gz(path)
         else:
             path = cls.add_csv(path)
-        df.to_csv(path, index=index,  compression=compression)
+        df.to_csv(path, index=index, compression='gzip' if gzip else None)
         print(f'saved {path}')
-
-    @classmethod
-    def clean_csv(cls, path):
-        open(path, "w+").close()
-
-    @classmethod
-    def append_rows(cls, df: pd.DataFrame, path: AnyStr) -> None:
-        df.to_csv(path, mode='a', compression='gzip')

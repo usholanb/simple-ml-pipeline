@@ -21,14 +21,12 @@ class BaseWrapper(ABC):
         """ returns a model object created with external library """
 
     @abstractmethod
-    def get_prediction_probs(self, examples: pd.DataFrame) -> np.ndarray:
+    def get_prediction_probs(self, examples):
         """ Returns probs
             filters in needed features and makes prediction
         """
 
     @abstractmethod
-    def get_train_probs(self, examples: np.ndarray) -> np.ndarray:
+    def get_train_probs(self, data):
         """ Returns probs
-            makes prediction on pandas examples of dim N X M
-            where N is number of examples and M number of features
         """

@@ -7,7 +7,7 @@ from utils.registry import registry
 
 @registry.register_model('dense_net_regression')
 class DenseNetRegressions(DefaultModel):
-    def __init__(self, configs):
+    def __init__(self, configs: Dict):
         super(DenseNetRegressions, self).__init__(configs)
         self.__dict__.update(configs.get('special_inputs', {}))
         self.layers = self.set_layers()
@@ -21,7 +21,7 @@ class DenseNetRegressions(DefaultModel):
             x = F.relu(layer(x))
         return self.layers[-1](x)
 
-    def predict(self, x):
+    def predict(self, x: Dict):
         x = self.forward(x)
         return x
 

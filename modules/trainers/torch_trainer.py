@@ -60,8 +60,6 @@ class TorchTrainer(DefaultTrainer):
         with torch.no_grad():
             result = super().get_split_metrics(y_true, y_outputs)
         return result
-            
-
 
     def get_optimizer(self, model) -> torch.optim.Optimizer:
         import torch.optim as optim

@@ -3,7 +3,7 @@ includes:
 
 
 dataset:
-  input_path: processed_data/merged_df_v62
+  input_path: processed_data/no_GK_merged_df_v62
   label_type: regression
 
   data_loaders:
@@ -44,7 +44,7 @@ optim:
 special_inputs:
 #  layers_sizes: [[100, 100, 100]]  # the best
   layers_sizes: [[10]]
-  input_dim: 254
+  input_dim: 255
   n_outputs: 1
 
 

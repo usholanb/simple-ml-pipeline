@@ -47,3 +47,16 @@ class SKLearnWrapper(DefaultWrapper):
             else targets.shape[1]
         self.clf.fit(inputs, targets)
 
+    def predict_dataset(self, configs, split_names) -> Dict:
+        splits = {}
+        data = CSVSaver().load(configs)
+        const = configs.get('static_columns')
+        for split_name in split_names:
+            split = data[data['split'] == split_name]
+            split_y = split.iloc[:, const.get('FINAL_LABEL_INDEX')].values
+            split_x = split.iloc[:, len(const):]
+            preds = self.get_prediction_probs(split_x)
+
+            splits[split_name] = {f'{split_name}_preds': preds,
+                                  f'{split_name}_ys': split_y}
+        return splits

@@ -1,17 +1,17 @@
 from copy import deepcopy
-from typing import AnyStr, Dict
+from typing import AnyStr, Dict, Callable
 import pandas as pd
 from modules.helpers.matplotlibgraph import MatPlotLibGraph
-from modules.predictors.base_predictors.pandas_predictor import PandasPredictor
+from modules.predictors.base_predictors.base_predictor import BasePredictor
 from utils.registry import registry
 import numpy as np
-import utils.small_functions as sf
+import utils.small_functions as custom_functions_module
 
 
 @registry.register_predictor('player_evaluation_predictor')
-class PlayerEvaluationPredictor(PandasPredictor):
-    """ uses all wrappers pointed in prediction config to
-        make and save several prediction files """
+class PlayerEvaluationPredictor(BasePredictor):
+    """ uses all wrappers specified in prediction config to
+        create several prediction files """
 
     def __init__(self, configs: Dict):
         super().__init__(configs)
@@ -21,26 +21,28 @@ class PlayerEvaluationPredictor(PandasPredictor):
         self.graph = MatPlotLibGraph(self.configs)
         self.split_names = self.configs.get('splits', [])
 
-    def save_graphs(self, output_dataset: Dict) -> None:
+    def save_graphs(self, preds_ys: Dict) -> None:
         x_ticks = self.get_x_ticks()
         for f_name in self.configs.get('plots', {}).get('steps_func', []):
-            f = getattr(sf, f_name)
-            self.plot_one_f(f, x_ticks, output_dataset)
-        self.one_hist(x_ticks, output_dataset, 'distribution')
+            f = getattr(custom_functions_module, f_name)
+            self.plot_one_f(f, x_ticks, preds_ys)
+        self.one_hist(x_ticks, preds_ys, 'distribution')
 
-    def one_hist(self, x_ticks: np.ndarray, output_dataset: Dict,
+    def one_hist(self, x_ticks: np.ndarray, preds_ys: Dict,
                  name: AnyStr) -> None:
+        """ ys are the same for all models """
         labels, trues = [], []
-        splits = list(output_dataset.values())[0]
-        for split_name, split in splits.items():
+        splits = list(preds_ys.values())[0]
+        for split_name in self.split_names:
+            split = splits[split_name]
             y_name = f'{split_name}_ys'
             trues.append((10 ** split[y_name]).astype(int) / 1e6)
             labels.append(f'{name}_{split_name}')
         self.graph.plot_hist(x_ticks, trues, self.pred_dir, labels)
 
-    def plot_one_f(self, f, x_ticks, output_dataset):
+    def plot_one_f(self, f: Callable, x_ticks: np.ndarray, preds_ys: Dict) -> None:
         ys, labels, quantities = [], [], []
-        for model_name_tag, splits in output_dataset.items():
+        for model_name_tag, splits in preds_ys.items():
             for split_name, split in splits.items():
                 pred_name = f'{split_name}_preds'
                 y_name = f'{split_name}_ys'
@@ -70,10 +72,4 @@ class PlayerEvaluationPredictor(PandasPredictor):
                                       s)))
             current = p
         return np.array(x_ticks)
-
-
-
-
-
-
 

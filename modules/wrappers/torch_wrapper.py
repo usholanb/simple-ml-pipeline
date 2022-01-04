@@ -35,29 +35,6 @@ class TorchWrapper(DefaultWrapper):
             )(configs)
         return model
 
-    # def predict_dataset(self):
-    #     train_loader, valid_loader, test_loader = get_data_loaders(self.configs)
-    #     self.to(self.device)
-    #     self.eval()
-    #     model_metrics = {}
-    #     for split, loader in zip(['train', 'valid', 'test'], [train_loader, valid_loader, test_loader]):
-    #         with torch.no_grad():
-    #             epoch_metrics = []
-    #             for batch_i, batch in enumerate(loader):
-    #                 x, y = self.get_x_y(batch)
-    #                 data = {
-    #                     'epoch': 0,
-    #                     'batch_i': batch_i,
-    #                     'x': x,
-    #                     'split': split,
-    #                     'batch_size': loader.batch_size
-    #                 }
-    #                 pred = self.get_train_probs(data)
-    #                 epoch_metrics.append(metrics_fom_torch(y, pred, split, self.configs))
-    #             model_metrics.update(self.model_epoch_logs())
-    #             model_metrics.update(mean_dict_values(epoch_metrics))
-    #     return model_metrics
-
     def get_prediction_probs(self, data: (Dict, pd.DataFrame)) -> np.ndarray:
         if isinstance(data, pd.DataFrame):
             data = self.filter_features(data)
@@ -104,4 +81,27 @@ class TorchWrapper(DefaultWrapper):
             x = x.to(self.device)
         return x, y.to(self.device)
 
-
+    def predict_dataset(self, configs, split_names) -> Dict:
+        configs['features_list'] = self._features_list
+        train_loader, valid_loader, test_loader = get_data_loaders(configs)
+        self.to(self.device)
+        self.eval()
+        model_metrics = {s: {} for s in split_names}
+        ys, preds = [], []
+        for split, loader in zip(split_names, [train_loader, valid_loader, test_loader]):
+            with torch.no_grad():
+                for batch_i, batch in enumerate(loader):
+                    x, y = self.get_x_y(batch)
+                    data = {
+                        'epoch': 0,
+                        'batch_i': batch_i,
+                        'x': x,
+                        'split': split,
+                        'batch_size': loader.batch_size
+                    }
+                    pred = self.get_train_probs(data)
+                    preds.append(pred.cpu().detach().numpy())
+                    ys.append(y.cpu().detach().numpy())
+                model_metrics[split].update({f'{split}_preds': np.concatenate(preds),
+                                            f'{split}_ys': np.concatenate(ys)})
+        return model_metrics

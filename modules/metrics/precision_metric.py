@@ -9,8 +9,9 @@ from sklearn.metrics import precision_score
 
 @registry.register_metric('precision')
 class PrecisionMetric(DefaultMetric):
-
-    def compute_metric_numpy(self, y_true: np.array, y_outputs: np.array) -> float:
+    """ FOR CLASSIFICATION TASKS ONLY """
+    def compute_metric_numpy(self, y_true: np.array,
+                             y_outputs: np.array) -> float:
         """ y_true: 1D, y_outputs: 1D or 2D """
         import warnings
         warnings.filterwarnings('ignore')
@@ -18,8 +19,10 @@ class PrecisionMetric(DefaultMetric):
         precision = precision_score(y_true, y_pred, average='macro')
         return precision
 
-    def compute_metric_torch(self, y_true: torch.Tensor, y_outputs: torch.Tensor) -> float:
+    def compute_metric_torch(self, y_true: torch.Tensor,
+                             y_outputs: torch.Tensor) -> float:
         """ y_true: 1D, y_outputs: 1D or 2D """
-        return self.compute_metric_numpy(y_true.detach().numpy(), y_outputs.detach().numpy())
+        return self.compute_metric_numpy(y_true.detach().numpy(),
+                                         y_outputs.detach().numpy())
 
 

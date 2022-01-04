@@ -1,14 +1,16 @@
-from typing import Dict, AnyStr, Tuple
+from typing import Dict, Tuple
 from abc import ABC, abstractmethod
+import pandas as pd
 import torch
 
 
 class BaseModel(ABC):
 
     @abstractmethod
-    def predict(self, data):
+    def predict(self, data: (Dict, pd.DataFrame)):
         """
         Used during prediction step
+        Forward + optional transformations for predictions creation
         """
 
     @abstractmethod
@@ -17,7 +19,7 @@ class BaseModel(ABC):
         where x.shape[0] == y.shape[0] is the number of examples
 
         Returns (x, y) where
-        x - tensor or list of tensors, doesn't contain y
+        x - anything(typically tensor or list of tensors, doesn't contain y)
         y - tensor
         """
 
@@ -30,7 +32,7 @@ class BaseModel(ABC):
         """
 
     @abstractmethod
-    def add_hooks(self):
+    def add_hooks(self) -> None:
         """ add hooks before and after main trainer functions
 
             For reference: look at your trainer functions
@@ -42,5 +44,3 @@ class BaseModel(ABC):
         """ Return anything that needs to be logged in tensorboard
             each epoch
         """
-
-

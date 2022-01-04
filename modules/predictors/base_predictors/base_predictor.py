@@ -4,6 +4,7 @@ import pandas as pd
 import torch
 from modules.containers.di_containers import TrainerContainer
 from modules.helpers.csv_saver import CSVSaver
+from modules.wrappers.base_wrappers.base_wrapper import BaseWrapper
 from modules.wrappers.base_wrappers.default_wrapper import DefaultWrapper
 from utils.common import unpickle_obj, create_folder, get_data_loaders, mean_dict_values
 from utils.constants import CLASSIFIERS_DIR, PREDICTIONS_DIR, PROCESSED_DATA_DIR
@@ -25,7 +26,7 @@ class BasePredictor:
         self.split_names = self.configs.get('splits', [])
 
     @property
-    def pred_dir(self):
+    def pred_dir(self) -> AnyStr:
         dataset_name = self.configs.get('dataset').get('input_path').split('/')[-1]
         return create_folder(f'{PREDICTIONS_DIR}/{dataset_name}')
 
@@ -44,7 +45,8 @@ class BasePredictor:
             model_name_tag = f'{model_name}_{tag}{k_fold_tag}'
             model_path = f'{CLASSIFIERS_DIR}/{model_name_tag}.pkl'
             wrapper = unpickle_obj(model_path)
-            model_results[model_name_tag] = self.predict_dataset(wrapper)
+            model_results[model_name_tag] = \
+                wrapper.predict_dataset(self.configs, self.split_names)
         return model_results
 
     def save_metrics(self, split: Dict, split_name: AnyStr) -> Dict:
@@ -72,11 +74,11 @@ class BasePredictor:
                 metrics[model_name][split_name] = self.save_metrics(split, split_name)
         df = pd.concat({k: pd.DataFrame(v) for k, v in metrics.items()})
         CSVSaver.save_file(f'{self.pred_dir}/{dataset_name}_metrics',
-                           df, index=True, compression=None)
+                           df, gzip=False, index=True)
 
     def save_graphs(self, output_dataset: Dict) -> None:
         """ override if need graphs """
 
     @abstractmethod
-    def predict_dataset(self, wrapper):
-        """ return  """
+    def predict_dataset(self, wrapper: BaseWrapper) -> Dict:
+        """ Return metrics for each split for given wrapper """

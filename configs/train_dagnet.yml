@@ -36,7 +36,7 @@ trainer:
   checkpoint: false
 
 
-
+metrics: [mse, accuracy]
 
 #features_list:
 

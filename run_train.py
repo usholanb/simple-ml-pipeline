@@ -20,6 +20,9 @@ import time
 
 
 def train_one(configs: Dict, save: bool = False) -> None:
+    """
+    save MUST be kept here false by default for grid search
+    """
     setup_imports()
     trainer = registry.get_trainer_class(
         configs.get('trainer').get('name')

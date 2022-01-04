@@ -7,7 +7,7 @@ from utils.registry import registry
 
 @registry.register_model('dense_net_regression_dagnet')
 class DenseNetRegressionsDagnet(DenseNetRegressions):
-    def __init__(self, configs):
+    def __init__(self, configs: Dict):
         super(DenseNetRegressionsDagnet, self).__init__(configs)
         self.__dict__.update(configs.get('special_inputs', {}))
         self.layers = self.set_layers()
@@ -19,7 +19,7 @@ class DenseNetRegressionsDagnet(DenseNetRegressions):
         self.kld = 0
         return metrics
 
-    def add_hooks(self):
+    def add_hooks(self) -> None:
         def add_loss(y, pred, data, loss):
             if not hasattr(self, 'kld'):
                 self.kld = torch.zeros(1).to(self.device)
@@ -27,14 +27,14 @@ class DenseNetRegressionsDagnet(DenseNetRegressions):
             return loss + self.kld
         self.register_post_hook('compute_loss_train', add_loss)
 
-    def forward(self, inputs) -> Dict:
+    def forward(self, data: Dict) -> Dict:
         """
         passes inputs through the model
         returns: dict that is feed to right to loss and must contain 'outputs'
         example:
             {'outputs': something, ...}
         """
-        batch = inputs['x'][0].reshape(inputs['batch_size'], -1)
+        batch = data['x'][0].reshape(data['batch_size'], -1)
         for layer in self.layers[:-1]:
             batch = F.relu(layer(batch))
         outputs = self.layers[-1](batch)

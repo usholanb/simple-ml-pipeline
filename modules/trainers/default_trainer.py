@@ -1,4 +1,5 @@
 import numpy as np
+import torch
 
 from modules.containers.di_containers import TrainerContainer
 from modules.trainers.base_trainer import BaseTrainer
@@ -26,16 +27,11 @@ class DefaultTrainer(BaseTrainer):
         print(f'saved model {self.model_path}')
         pickle_obj(self.wrapper, self.model_path)
 
-    def get_dataset(self):
-        setup_imports()
-        dataset = registry.get_dataset_class(
-            self.configs.get('dataset').get('name'))(self.configs)
-        return dataset
 
-
-def metrics_fom_torch(y, pred, split, configs):
+def metrics_fom_torch(y: torch.Tensor, pred: torch.Tensor,
+                      split_name: AnyStr, configs: Dict) -> Dict:
     metrics = get_metrics(y.detach().cpu().numpy(),
-                          pred.detach().cpu().numpy(), split, configs)
+                          pred.detach().cpu().numpy(), split_name, configs)
     return metrics
 
 

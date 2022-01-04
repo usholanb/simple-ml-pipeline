@@ -8,9 +8,13 @@ class DefaultMetric(BaseMetric):
     """ default functionality of metrics """
 
     def compute_metric(self, y_true, y_outputs) -> str:
-        """ computes certain metric for numpy input, y_true - 1D,
-            y_outputs - [N x K] N - # of examples, K - # of labels OR
-                [N x 1] if its a regression problem """
+        """
+            y_true : array-like of shape (n_samples,) or (n_samples, n_outputs)
+                Ground truth (correct) target values.
+
+            y_pred : array-like of shape (n_samples,) or (n_samples, n_outputs)
+                Estimated target values.
+        """
         if isinstance(y_true, np.ndarray):
             result = self.compute_metric_numpy(y_true, y_outputs)
         elif isinstance(y_true, torch.Tensor):
@@ -23,10 +27,11 @@ class DefaultMetric(BaseMetric):
     def compute_metric_torch(self, y_true: torch.Tensor,
                              y_outputs: torch.Tensor) -> float:
         """
-        y_true - 1D
-        y_outputs - 1D or 2D
-        [N x K] N - # of examples, K - # of labels
-        or [N]
+            y_true : array-like of shape (n_samples,) or (n_samples, n_outputs)
+                Ground truth (correct) target values.
+
+            y_pred : array-like of shape (n_samples,) or (n_samples, n_outputs)
+                Estimated target values.
         """
         raise ValueError(f'Please implement {inspect.stack()[0][3]}'
                          f' for class {self.__class__.__name__}')

@@ -1,5 +1,5 @@
 import sys
-from typing import Dict, Tuple
+from typing import Dict, Tuple, AnyStr
 import pandas as pd
 import modules.helpers.labels_processor
 from modules.readers.base_reader.base_reader import BaseReader
@@ -11,17 +11,17 @@ import yaml
 
 class DefaultReader(BaseReader):
 
-    def __init__(self, configs):
+    def __init__(self, configs: Dict):
         self.configs = configs
         self.data = None
         self.split_i = self.configs.get('static_columns').get('FINAL_SPLIT_INDEX')
 
     @property
-    def reader_configs(self):
+    def reader_configs(self) -> Dict:
         return self.configs.get('reader')
 
     @property
-    def name(self):
+    def name(self) -> AnyStr:
         return self.configs.get("reader").get('name')
 
     def split_df(self, ratio: float, df: pd.DataFrame)  \

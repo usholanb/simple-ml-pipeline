@@ -11,6 +11,3 @@ class Namer:
             name = to_snake_case(name.split('.')[-1])
         return f'{name}_{m_configs.get("tag")}'
 
-    @staticmethod
-    def dataset_name(configs: Dict) -> AnyStr:
-        return configs.get("dataset").get('name')
