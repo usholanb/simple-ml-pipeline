@@ -22,6 +22,7 @@ class BasePredictor:
         self.train_loader, self.valid_loader, self.test_loader = \
             [None] * 3
         self.feature_importance = None
+        self.split_names = self.configs.get('splits', [])
 
     @property
     def pred_dir(self):
@@ -46,15 +47,7 @@ class BasePredictor:
             model_results[model_name_tag] = self.predict_dataset(wrapper)
         return model_results
 
-    @abstractmethod
-    def predict_dataset(self, wrapper):
-        """ return  """
-
-    @abstractmethod
-    def predict_split_model(self, split_x, wrapper, model_name_tag):
-        """ return """
-
-    def save_metrics(self, split: Dict, split_name: AnyStr) -> pd.DataFrame:
+    def save_metrics(self, split: Dict, split_name: AnyStr) -> Dict:
         """ Saves metrics for the split  """
         y_true = split[f'{split_name}_ys']
         metrics_values = {}
@@ -64,8 +57,6 @@ class BasePredictor:
             values = metric.compute_metric(y_true, y_outputs)
             metrics_values[metric_name] = values
         return metrics_values
-        # CSVSaver.save_file(f'{self.pred_dir}/{dataset_name}_{split_name}_metrics',
-        #                    df, index=True, compression=None)
 
     def save_predictions(self, split: pd.DataFrame, split_name: AnyStr, dataset_name: AnyStr) -> None:
         CSVSaver.save_file(f'{self.pred_dir}/{dataset_name}_{split_name}', split)
@@ -85,3 +76,7 @@ class BasePredictor:
 
     def save_graphs(self, output_dataset: Dict) -> None:
         """ override if need graphs """
+
+    @abstractmethod
+    def predict_dataset(self, wrapper):
+        """ return  """

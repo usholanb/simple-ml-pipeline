@@ -9,18 +9,16 @@ dataset:
 
 model:
   name: xgboost.XGBRegressor
-  tag: small
+  tag: uan3
 
 # inputs go to __init__ of the model (sklearn xgboost model in this case)
 special_inputs:
   booster: dart
-#  n_estimators: [90, 100, 110]
-#  max_depth: [8, 16, 32]
-  n_estimators: 11
+  n_estimators: 110
   max_depth: 32
-#  gamma: .01
+  gamma: .01
   num_parallel_tree: 6
-#  eta: 0.4
+  eta: 0.4
   learning_rate: 0.1
   subsample: 0.8
   colsample_bytree: .2

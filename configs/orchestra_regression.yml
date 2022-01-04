@@ -3,33 +3,9 @@ includes:
 
 
 k_fold: 2
-
 preprocessing: preprocessing_regression
-predictor: player_evaluation_predictor
-
-train:
-  - train_xgboost_regression
-
+train: [train_xgboost_regression]
 prediction: prediction_regression
-
-reader:
-  name: xlsx_reader
-  sheet_name: Sheet1
-  label_type: regression  # classification or regression
-  input_path: data/no_GK_merged_df_v62
-  limit: null
-  # index or name of the labels column in the input data
-  label: value
-  shuffle: 1 # can be (0, false null) OR (anything else, which means true)
-   # if "split_ratio" doesn't sum to 1, then valid + test will be 1 - train
-  split_ratio:
-    train: 0.8
-    valid: 0.1
-    test: 0.1
-
-
-dataset:
-  input_path: processed_data/merged_df_v62
 
 
 models:

@@ -19,7 +19,7 @@ class PlayerEvaluationPredictor(PandasPredictor):
         self.points = [10, 80, 200]
         self.steps = [1, 5, 10]
         self.graph = MatPlotLibGraph(self.configs)
-        self.split_names = self.configs.get('plots', {}).get('splits', [])
+        self.split_names = self.configs.get('splits', [])
 
     def save_graphs(self, output_dataset: Dict) -> None:
         x_ticks = self.get_x_ticks()

@@ -55,8 +55,8 @@ class TrainFlags(Flags):
             "--config-yml",
             # default=f'{CONFIGS_DIR}/train_dagnet.yml',
             # default=f'{CONFIGS_DIR}/train_dense_net_regression.yml',
-            # default=f'{CONFIGS_DIR}/train_xgboost_regression.yml',
-            default=f'{CONFIGS_DIR}/train_dense_net.yml',
+            default=f'{CONFIGS_DIR}/train_xgboost_regression.yml',
+            # default=f'{CONFIGS_DIR}/train_dense_net.yml',
             help="path to config file starting from project home path",
         )
 

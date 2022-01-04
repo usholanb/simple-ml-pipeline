@@ -20,13 +20,12 @@ class DataloaderPredictor(BasePredictor):
         super().__init__(configs)
 
     def predict_dataset(self, wrapper) -> Dict:
-        splits = ['train', 'valid', 'test']
         train_loader, valid_loader, test_loader = get_data_loaders(wrapper.configs)
         wrapper.to(wrapper.device)
         wrapper.eval()
-        model_metrics = {s: {} for s in splits}
+        model_metrics = {s: {} for s in self.split_names}
         ys, preds = [], []
-        for split, loader in zip(splits, [train_loader, valid_loader, test_loader]):
+        for split, loader in zip(self.split_names, [train_loader, valid_loader, test_loader]):
             with torch.no_grad():
                 for batch_i, batch in enumerate(loader):
                     x, y = wrapper.get_x_y(batch)

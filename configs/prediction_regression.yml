@@ -13,11 +13,13 @@ trainer:
 
 print_important_features: true
 
+
+splits:
+#  - train
+#  - valid
+  - test
+
 plots:
-  splits:
-    - train
-    - valid
-    - test
   steps_func:
     - get_abs_diff
     - get_abs_mean_fraction
@@ -27,9 +29,11 @@ plots:
 
 models:
 #  uan: dense_net_regression
-#  uan3: xgb_regressor
-  small: xgb_regressor
+  uan3: xgb_regressor
+#  small: xgb_regressor
 #  uan4: linear_regression
+  uan3k_fold1: xgb_regressor
+  uan3k_fold0: xgb_regressor
 
 
 metrics: [mse]

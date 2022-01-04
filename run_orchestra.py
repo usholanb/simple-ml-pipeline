@@ -19,25 +19,24 @@ from utils.registry import registry
 
 def orchestra(configs: Dict):
     setup_imports()
-    preprocessing_config = configs.get('preprocessing')
-    flag = CustomFlag('preprocessing').add_config_args(preprocessing_config)
-    all_flags['preprocessing'] = flag
+    prep_cnf_path = configs.get('preprocessing')
+    pred_cnf_path = configs.get('prediction')
+
+    all_flags['preprocessing'] = CustomFlag('preprocessing').add_config_args(prep_cnf_path)
+    all_flags['prediction'] = CustomFlag('prediction').add_config_args(pred_cnf_path)
+    pred_cnf = build_config(all_flags['prediction'].parser.parse_args())
+    predictor_name = pred_cnf['predictor']
     all_preds_ys = {}
     for k_fold_i in range(configs.get('k_fold')):
         k_fold_tag = f'k_fold{k_fold_i}'
         # run_preprocessing(k_fold_tag=k_fold_tag)
-        # for train_config in configs.get('train'):
-        #     flag = CustomFlag('training').add_config_args(train_config)
-        #     all_flags['train'] = flag
-        #     run_train(k_fold_tag=k_fold_tag)
-
-        prediction_config = configs.get('prediction')
-        flag = CustomFlag('prediction').add_config_args(prediction_config)
-        all_flags['prediction'] = flag
+        for train_config in configs.get('train'):
+            flag = CustomFlag('training').add_config_args(train_config)
+            all_flags['train'] = flag
+            run_train(k_fold_tag=k_fold_tag)
         preds_ys = get_predictor(k_fold_tag).get_preds_ys()
         all_preds_ys.update(preds_ys)
-    predictor_name = configs.get('predictor')
-    predictor = registry.get_predictor_class(predictor_name)(configs)
+    predictor = registry.get_predictor_class(predictor_name)(pred_cnf)
     save_files(predictor, all_preds_ys)
 
 
