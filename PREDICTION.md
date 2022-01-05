@@ -1,5 +1,8 @@
 # Prediction
-
+#####Description:
+1. Runs all specified models and runs against the specified dataset  
+2. Saves the results of the run
+3. Can be used to create graphs
 
 #### 1. Create train config in **configs** like prediction_<something>.yml
 Example: **example_config_files/**_prediction_example.yml_

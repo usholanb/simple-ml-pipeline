@@ -1,9 +1,16 @@
 # Preprocessing[OPTIONAL]
+Note:This step is needed only initial preprocessing such as set splitting, transformations and feature filtering is needed
+
+#####Description:
+1. Uses data of any type(that can be represented as pandas) from "data" folder. 
+2. It transforms features according the instructions in config file. 
+3. Filters non-needed features
+4. splits to sets
+5. Can shuffle train set
+
 
 ### REQUIREMENTS:
 Input dataset must be possible to read and convert to pandas, Files live csv, excel, numpy arrays and others plain datasets
-
-This step is needed only initial preprocessing such as set splitting, transformations and feature filtering is needed
 
 #### 1. Download example dataset from here
 [csv dataset](https://raw.githubusercontent.com/jbrownlee/Datasets/master/pima-indians-diabetes.data.csv) <br/>

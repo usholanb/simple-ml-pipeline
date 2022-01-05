@@ -1,5 +1,11 @@
 # Training 
 
+#####Description:
+1. Trains a model specified in config file 
+2. Saves classifier and best checkpoints 
+3. Saves logs for tensorboard
+
+
 ### OPTION 1 - using preprocessed files(from [PREPROCESSING](PREPROCESSING.MD) STEP)
 
 
@@ -30,6 +36,7 @@ If trained torch model the epoch wise and additional metrics are saved in train_
 1. You must be in G42 network to access this dataset
 2. Download [dataset](https://uan-example-datasets.obs.ae-ad-1.g42cloud.com/dagnet.zip) of x y coordinates of players in NBA games
 3. Unzip it and put in **data** folder
+4. Original dataset and code [reference](https://github.com/alexmonti19/dagnet)
 
 #### 2. Insert the appropriate torch.Dataset class in **path_to_project/modules/datasets/**
 The torch.Dataset for this specific example is already inserted
