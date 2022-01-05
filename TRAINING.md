@@ -1,4 +1,6 @@
-# Training
+# Training 
+
+### OPTION 1 - using preprocessed files(from [PREPROCESSING](PREPROCESSING.MD) STEP)
 
 
 #### 1. Create train config in **configs** like train_<something>.yml
@@ -22,7 +24,8 @@
 ###### If trained torch model the epoch wise and additional metrics are saved in train_results in **tensorboard** format
 
 
-
-
+### OPTION 2 - if you have your own torch.Dataset
+#### Example:
+1. 
 
 
