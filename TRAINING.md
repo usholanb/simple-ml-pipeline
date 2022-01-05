@@ -12,7 +12,7 @@
 #### 3. Repeat steps 1 and 2 but with other examples
 ###### a. Logistic Regression config **example_config_files/**_train_logistic_regression_example.yml_
 ###### Note changes in Logistic Regression:
-&emsp; 1. Trainer changed to sklearn_trainer  <br\>
+&emsp; 1. Trainer changed to sklearn_trainer <br />
 &emsp; 2. model.name, model.tag changed <br\>
 &emsp; 3. special inputs are accords with inputs of sklearn.linear_model.LogisticRegression class<br\>
 &emsp; 4. dataset.Dataloader was removed as it's not needed<br\>
