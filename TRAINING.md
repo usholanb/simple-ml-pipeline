@@ -12,10 +12,10 @@
 #### 3. Repeat steps 1 and 2 but with other examples
 ###### a. Logistic Regression config **example_config_files/**_train_logistic_regression_example.yml_
 ###### Note changes in Logistic Regression:
-###### 1. Trainer changed to sklearn_trainer
-###### 2. model.name, model.tag changed
-###### 3. special inputs are accords with inputs of sklearn.linear_model.LogisticRegression class
-###### 4. dataset.Dataloader was removed as it's not needed
+    1. Trainer changed to sklearn_trainer
+    2. model.name, model.tag changed
+    3. special inputs are accords with inputs of sklearn.linear_model.LogisticRegression class
+    4. dataset.Dataloader was removed as it's not needed
 ###### b. Logistic Regression config **example_config_files/**_train_xgboost_example.yml_
 
 #### 4. The result classifiers are saved in classifiers folder
