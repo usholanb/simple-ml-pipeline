@@ -1,7 +1,7 @@
 import argparse
 from abc import ABC, abstractmethod
 from typing import AnyStr
-from utils.constants import CONFIGS_DIR
+from utils.constants import CONFIGS_DIR, PROJECT_DIR
 
 
 class Flags:
@@ -14,14 +14,15 @@ class Flags:
         return self._parser
 
     @staticmethod
-    def get_parser(description='Default Parser Description'):
+    def get_parser(description='Default Parser Description')\
+            -> argparse.ArgumentParser:
         """ Default Parser """
         return argparse.ArgumentParser(
             description=description
         )
 
     @abstractmethod
-    def add_core_args(self):
+    def add_core_args(self) -> None:
         """ Choose config file for example, use parser.add_argument """
 
 
@@ -43,7 +44,8 @@ class PreprocessingFlag(Flags):
         self._parser.add_argument(
             "--config-yml",
             # default=f'{CONFIGS_DIR}/preprocessing_regression.yml',
-            default=f'{CONFIGS_DIR}/preprocessing.yml',
+            # default=f'{CONFIGS_DIR}/preprocessing.yml',
+            default=f'{PROJECT_DIR}/example_config_files/preprocessing_example.yml',
         )
 
 
@@ -54,7 +56,10 @@ class TrainFlags(Flags):
         self._parser.add_argument(
             "--config-yml",
             # default=f'{CONFIGS_DIR}/train_dagnet.yml',
-            default=f'{CONFIGS_DIR}/train_dense_net_regression.yml',
+            # default=f'{CONFIGS_DIR}/train_dense_net_regression.yml',
+            # default=f'{PROJECT_DIR}/example_config_files/train_dense_net_example.yml',
+            # default=f'{PROJECT_DIR}/example_config_files/train_logistic_regression_example.yml',
+            default=f'{PROJECT_DIR}/example_config_files/train_xgboost_example.yml',
             # default=f'{CONFIGS_DIR}/train_xgboost_regression.yml',
             # default=f'{CONFIGS_DIR}/train_dense_net.yml',
             help="path to config file starting from project home path",
@@ -68,8 +73,9 @@ class PredictionFlags(Flags):
         self._parser.add_argument(
             "--config-yml",
             # default=f'{CONFIGS_DIR}/prediction.yml',
-            default=f'{CONFIGS_DIR}/prediction_regression.yml',
+            # default=f'{CONFIGS_DIR}/prediction_regression.yml',
             # default=f'{CONFIGS_DIR}/prediction_multi_regression.yml',
+            default=f'{PROJECT_DIR}/example_config_files/prediction_example.yml',
             help="path to config file starting from project home path",
         )
 

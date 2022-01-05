@@ -21,7 +21,7 @@ class BaseWrapper(ABC):
         """ returns a model object created with external library """
 
     @abstractmethod
-    def get_prediction_probs(self, examples):
+    def get_prediction_probs(self, data):
         """ Returns probs
             filters in needed features and makes prediction
         """

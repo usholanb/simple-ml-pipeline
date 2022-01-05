@@ -1,11 +1,11 @@
 import numpy as np
 from sklearn.preprocessing import MinMaxScaler
-from modules.transformers.base_transformers.default_transformer import DefaultTransformer
+from modules.transformers.base_transformers.base_transformer import BaseTransformer
 from utils.registry import registry
 
 
 @registry.register_transformer('min_max_scaler')
-class MinMaxScalerTransformer(DefaultTransformer):
+class MinMaxScalerTransformer(BaseTransformer):
 
     def __init__(self, configs):
         super(MinMaxScalerTransformer, self).__init__(configs)

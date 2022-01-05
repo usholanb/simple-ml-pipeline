@@ -4,7 +4,7 @@ from modules.losses.base_losses.base_loss import BaseLoss
 from utils.registry import registry
 
 
-@registry.register_loss('example')
+@registry.register_loss('example_loss')
 class ExampleLoss(BaseLoss):
     """
     you can just use NLLLoss instead, this loss is just to show

@@ -1,4 +1,4 @@
-from typing import Dict, Any
+from typing import Dict, Any, List, AnyStr
 import numpy as np
 import pandas as pd
 
@@ -28,7 +28,7 @@ class SKLearnWrapper(DefaultWrapper):
             filters in needed features and makes prediction
         """
         examples = self.filter_features(examples)
-        return self.get_train_probs(examples)
+        return self.get_train_probs(examples.values)
 
     def get_train_probs(self, examples: np.ndarray) -> np.ndarray:
         """ Returns probs
@@ -42,12 +42,12 @@ class SKLearnWrapper(DefaultWrapper):
             result = self.clf.predict(examples)
         return result
 
-    def fit(self, inputs, targets) -> None:
+    def fit(self, inputs: np.ndarray, targets: np.ndarray) -> None:
         self.n_outputs = 1 if len(targets.shape) == 1 \
             else targets.shape[1]
         self.clf.fit(inputs, targets)
 
-    def predict_dataset(self, configs, split_names) -> Dict:
+    def predict_dataset(self, configs: Dict, split_names: List[AnyStr]) -> Dict:
         splits = {}
         data = CSVSaver().load(configs)
         const = configs.get('static_columns')

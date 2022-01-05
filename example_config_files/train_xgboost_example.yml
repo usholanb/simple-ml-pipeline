@@ -11,41 +11,17 @@ includes:
 
 dataset:
   input_path: processed_data/pima-indians-diabetes.data
-  label_type: classification
-
-  data_loaders:
-
-    train:
-      batch_size: 128
-      shuffle: true
-      num_workers: 4
-      multiprocessing_context: spawn
-      pin_memory: true
-
-    valid:
-      batch_size: 64
-      shuffle: false
-      num_workers: 4
-      multiprocessing_context: spawn
-      pin_memory: true
-
-    test:
-      batch_size: 64
-      shuffle: false
-      num_workers: 4
-      multiprocessing_context: spawn
-      pin_memory: true
-
+  label_type: regression
 
 model:
   # name can be a registered model, all registered models are in modules/models/
   # name can be a path to the class of outside library
   # for example:
   # name: sklearn.linear_model.LogisticRegression
-  name: dense_net
+  name: xgboost.XGBClassifier
   # tag must be a unique value among other tags, this way we distinguish
   # models during the prediction step
-  tag: uan
+  tag: uan3
 
 
 # must be same hps actual optimizer
@@ -64,16 +40,23 @@ optim:
 # Additional inputs can be used to customize the model. All special_inputs
 # will become local variables of the model
 special_inputs:
-  input_dim: 47
-  n_outputs: 1
-
+  booster: dart
+  n_estimators: 20
+  max_depth: 5
+  gamma: .01
+  num_parallel_tree: 2
+  eta: 0.4
+  learning_rate: 0.1
+  subsample: 0.8
+  colsample_bytree: .2
+  use_label_encoder: false
 
 
 trainer:
   # Possible trainers:
   # 1. torch_trainer - for all torch related models
   # 2. sklearn_trainer - for all sklearn related models
-  name: torch_trainer
+  name: sklearn_trainer
   # optim is not needed when trainer is sklearn_trainer
   # optim can be a torch optimizer, any optim from torch.optim
   optim: Adam

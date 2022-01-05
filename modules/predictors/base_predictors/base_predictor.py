@@ -15,15 +15,7 @@ from utils.registry import registry
 
 class BasePredictor:
     """ uses all wrappers pointed in prediction config to
-        make and save several prediction files """
-
-    def __init__(self, configs: Dict):
-        self.configs = configs
-        self.device = TrainerContainer.device
-        self.train_loader, self.valid_loader, self.test_loader = \
-            [None] * 3
-        self.feature_importance = None
-        self.split_names = self.configs.get('splits', [])
+        make and save metrics """
 
     @property
     def pred_dir(self) -> AnyStr:
@@ -38,44 +30,19 @@ class BasePredictor:
             }
             print(sorted(self.feature_importance.items(), key=lambda x: -x[1]))
 
+    @abstractmethod
     def get_preds_ys(self) -> Dict:
-        model_results = {}
-        for tag, model_name in self.configs.get('models').items():
-            k_fold_tag = self.configs.get('dataset').get('k_fold_tag', '')
-            model_name_tag = f'{model_name}_{tag}{k_fold_tag}'
-            model_path = f'{CLASSIFIERS_DIR}/{model_name_tag}.pkl'
-            wrapper = unpickle_obj(model_path)
-            model_results[model_name_tag] = \
-                wrapper.predict_dataset(self.configs, self.split_names)
-        return model_results
+        """ """
 
+    @abstractmethod
     def save_metrics(self, split: Dict, split_name: AnyStr) -> Dict:
         """ Saves metrics for the split  """
-        y_true = split[f'{split_name}_ys']
-        metrics_values = {}
-        for metric_name in self.configs.get('metrics', []):
-            metric = registry.get_metric_class(metric_name)()
-            y_outputs = split[f'{split_name}_preds']
-            values = metric.compute_metric(y_true, y_outputs)
-            metrics_values[metric_name] = values
-        return metrics_values
 
-    def save_predictions(self, split: pd.DataFrame, split_name: AnyStr, dataset_name: AnyStr) -> None:
-        CSVSaver.save_file(f'{self.pred_dir}/{dataset_name}_{split_name}', split)
-
+    @abstractmethod
     def save_results(self, preds_ys: Dict) -> None:
         """ saves splits with predictions and metrics """
-        metrics = {}
-        dataset_path = self.configs.get('dataset').get('input_path')
-        dataset_name = dataset_path.split('/')[1]
-        for model_name, splits in preds_ys.items():
-            metrics[model_name] = {}
-            for split_name, split in splits.items():
-                metrics[model_name][split_name] = self.save_metrics(split, split_name)
-        df = pd.concat({k: pd.DataFrame(v) for k, v in metrics.items()})
-        CSVSaver.save_file(f'{self.pred_dir}/{dataset_name}_metrics',
-                           df, gzip=False, index=True)
 
+    @abstractmethod
     def save_graphs(self, output_dataset: Dict) -> None:
         """ override if need graphs """
 

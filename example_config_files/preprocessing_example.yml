@@ -1,42 +1,52 @@
+###############################################################################
+###############################################################################
+###################### PLEASE DON'T MODIFY THIS EXAMPLE #######################
+###############################################################################
+###############################################################################
+# Copy to configs file and rename somehow
 includes:
   - configs/constant_configs.yml
 
-# all inner project library classes that can be chosen in the config file
-# must be registered with the utils.registry.Registry class
 
-
-dataset:
-
-  name: csv_dataset # name is the name of the registered dataset
-
-  label_type: classification  # classification or regression
-
-  # input path can be 1 file or dict with keys train, test and/or valid
-#  input_path:
-#    train: data/toy_dataset.csv
-#    test: data/toy_dataset2.csv
-  input_path: data/toy_dataset.csv
-
-  output_path: processed_data/toy_dataset_output
-
-  # label is index or name(str) of the label column in the input data
-  label: target
-
+reader:
+  name: csv_reader  # all variations are defined in modules/readers/
+  sheet_name: Sheet1
+  label_type: regression  # classification or regression
+  input_path: data/pima-indians-diabetes.data
+  limit: null
+  # index or name of the labels column in the input data
+  label: -1
   shuffle: 1 # can be (0, false null) OR (anything else, which means true)
 
-   # if "split_ratio" doesn't sum to 1, then valid + test will be 1 - train
-  # if one file is given, split as follows, otherwise, split train file
-  # according the ratio between train and the lacking file(test of valid)
-  # Example, train and test files are given
+  # if "split_ratio" doesn't sum to 1, then valid + test will be 1 - train
+  # if one file is given, split as follows below
+  # otherwise
+  # Example: train and test files are given of size 90 and 10 examples
   # then train will be split into
-  # train of ratio 0.8/(0.8 + 0.1) of the original train
-  # And valid of ratio 0.1/(0.8 + 0.1) of the original train
+  # train: train_ration * (90 + 10)
+  # test: test_ration * (90 + 10)
+  # valid: valid_ratio * (90 + 10)
   split_ratio:
     train: 0.8
     valid: 0.1
     test: 0.1
 
+to_all_features: []
 
+# if columns are set to [], no columns will be assigned
+columns:
+  - Number
+  - Plasma
+  - Diastolic
+  - Triceps
+  - 2-Hour
+  - Body mass
+  - Diabetes
+  - Age
+  - Class_
+
+
+# DON'T INCLUDE LABEL
 # Comment out features that are not needed
 # If all commented out then all features are used
 # Pick Transformers(defined in modules/transformers/) or create your own
@@ -44,7 +54,6 @@ dataset:
 # Put transformers in list in the order that you can them to be applied on
 # data. Can be one of multiple
 features_list:
-  sepal width (cm): [norm]
-  petal length (cm): norm
-  petal width (cm): norm
-  sepal length (cm): norm
+  2-Hour: [norm]
+  Body mass: norm
+  Triceps: [ohe]

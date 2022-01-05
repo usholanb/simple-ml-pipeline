@@ -1,15 +1,13 @@
-from copy import deepcopy
 from typing import AnyStr, Dict, Callable
-import pandas as pd
 from modules.helpers.matplotlibgraph import MatPlotLibGraph
-from modules.predictors.base_predictors.base_predictor import BasePredictor
+from modules.predictors.simple_predictor import SimplePredictor
 from utils.registry import registry
 import numpy as np
 import utils.small_functions as custom_functions_module
 
 
 @registry.register_predictor('player_evaluation_predictor')
-class PlayerEvaluationPredictor(BasePredictor):
+class PlayerEvaluationPredictor(SimplePredictor):
     """ uses all wrappers specified in prediction config to
         create several prediction files """
 

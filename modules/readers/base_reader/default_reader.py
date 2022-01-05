@@ -40,19 +40,20 @@ class DefaultReader(BaseReader):
         assert 'train' in input_paths, \
             "if only 1 file is input, it must be train, " \
             "if multiple given, at least one of them must be train"
+        data = self.assign_columns(self.read_source(input_paths['train']))
         if 'valid' not in input_paths and 'test' not in input_paths:
-            data = self.shuffle(self.read_source(input_paths['train']), shuffle)
+            data = self.shuffle(data, shuffle)
             train_df, valid_df = self.split_df(train, data)
             valid_df, test_df = self.split_df(valid / (valid + test), valid_df)
         elif 'valid' not in input_paths:
             train = train / (train + valid)
-            train_df = self.shuffle(self.read_source(input_paths['train']), shuffle)
-            test_df = self.read_source(input_paths['test'])
+            train_df = self.shuffle(data, shuffle)
+            test_df = self.assign_columns(self.read_source(input_paths['test']))
             train_df, valid_df = self.split_df(train, train_df)
         elif 'test' not in input_paths:
             train = train / (train + test)
-            train_df = self.shuffle(self.read_source(input_paths['train']), shuffle)
-            valid_df = self.read_source(input_paths['valid'])
+            train_df = self.shuffle(data, shuffle)
+            valid_df = self.assign_columns(self.read_source(input_paths['valid']))
             train_df, test_df = self.split_df(train, train_df)
         else:
             raise RuntimeError('at least train set file must exist')
@@ -83,7 +84,9 @@ class DefaultReader(BaseReader):
                     feature_to_process = t_obj.apply(feature_to_process)
                 except Exception as e:
                     # print([e for e in feature_to_process if isinstance(e, float)])
+                    feature_to_process = t_obj.apply(feature_to_process)
                     raise TypeError(f'feature {feature} could not be {t_name}: {e}')
+
             if len(feature_to_process.shape) == 1:
                 processed_data[feature] = feature_to_process
             elif len(feature_to_process.shape) == 2:
@@ -136,7 +139,14 @@ class DefaultReader(BaseReader):
                          .get('FINAL_SPLIT_INDEX'), column='split', value=split_name)
         return pd.concat(data.values(), ignore_index=True)
 
+    def assign_columns(self, df: pd.DataFrame) -> pd.DataFrame:
+        """ Number of columns defined in preprocessing config must be equal
+            to number of features in the pandas created from the input source"""
 
-
-
-
+        columns = self.configs.get('columns', [])
+        if columns:
+            assert len(columns) == df.shape[1], \
+                f'Number of defined columns {len(columns)} doesnt match number of' \
+                f'read data frame columns: {df.shape[1]}'
+            df.columns = columns
+        return df

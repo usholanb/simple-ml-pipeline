@@ -1,10 +1,17 @@
+###############################################################################
+###############################################################################
+###################### PLEASE DON'T MODIFY THIS EXAMPLE #######################
+###############################################################################
+###############################################################################
+# Copy to configs file and rename somehow
 includes:
   - configs/constant_configs.yml
 
+predictor: simple_predictor
+
 
 dataset:
-  input_path: processed_data/toy_dataset_output
-  type: csv
+  input_path: processed_data/pima-indians-diabetes.data
 
 
 # models is dict, first comes unique tag and then the name of the model
@@ -15,9 +22,16 @@ dataset:
 # saved for model comparison
 models:
   uan: dense_net
-  uan2: random_forest_classifier
-  uan3: logistic_regression
+  uan2: logistic_regression
+  uan3: xgb_classifier
 
 
+metrics:
+#    - accuracy  # classification only
+#    - precision  # classification only
+  - mse  # regression only
 
-
+splits:
+  - train
+  - valid
+  - test

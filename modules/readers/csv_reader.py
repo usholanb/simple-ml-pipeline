@@ -10,10 +10,12 @@ class CSVReader(DefaultReader):
 
     def read_source(self, input_path: AnyStr) -> pd.DataFrame:
         """ reads csv files and returns pandas DataFrame"""
-        df = pd.read_csv(input_path)
+        df = pd.read_csv(f'{input_path}.csv')
         if df.columns[0] == 'Unnamed: 0':
             df = df.drop(columns=[df.columns[0]])
         return df
+
+
 
 
 

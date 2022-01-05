@@ -1,13 +1,13 @@
+from typing import List, AnyStr
+
 import numpy as np
 import nltk
-
-from nltk.corpus import wordnet
-from modules.transformers.base_transformers.default_transformer import DefaultTransformer
+from modules.transformers.base_transformers.base_transformer import BaseTransformer
 from utils.registry import registry
 
 
-def get_similar_words(words, coeff):
-
+def get_similar_words(words: List[AnyStr], coeff: float) -> None:
+    """ Prints out similar works  """
     scores = {}
     for i, ww1 in enumerate(words[:-1]):
         for j in range(i + 1, len(words)):
@@ -23,11 +23,12 @@ def get_similar_words(words, coeff):
 
 
 @registry.register_transformer('ohe')
-class OheTransformer(DefaultTransformer):
+class OheTransformer(BaseTransformer):
     def apply(self, vector: np.ndarray) -> np.ndarray:
         nltk.download('wordnet')
         uniq = sorted(np.unique(vector))
-        get_similar_words(uniq, coeff=0.8)
+        if isinstance(uniq[0], str):
+            get_similar_words(uniq, coeff=0.8)
         val_to_index = {val: index for index, val in enumerate(uniq)}
         output = np.zeros((len(vector), len(val_to_index)))
         idx = np.array([val_to_index[val] for val in vector.tolist()])

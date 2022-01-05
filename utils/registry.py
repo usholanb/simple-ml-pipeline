@@ -6,6 +6,8 @@ LICENSE file in the root directory of this source tree.
 
 # Copyright (c) Facebook, Inc. and its affiliates.
 # Borrowed from https://github.com/facebookresearch/pythia/blob/master/pythia/common/registry.py.
+from typing import AnyStr, Callable
+
 from utils.constants import FOLDERS_NAMES
 
 """
@@ -29,99 +31,87 @@ class Registry:
     }
 
     @classmethod
-    def add_this_to(cls, func, name, mapping_name):
+    def add_this_to(cls, func: Callable, name: AnyStr, mapping_name: AnyStr) -> None:
         if name not in cls.mapping[mapping_name]:
             cls.mapping[mapping_name][name] = func
 
     @classmethod
-    def register_dataset(cls, name):
-        def wrap(func):
+    def register_dataset(cls, name: AnyStr) -> Callable:
+        def wrap(func: Callable) -> Callable:
             cls.add_this_to(func, name, 'datasets_name_mapping')
             return func
         return wrap
 
     @classmethod
-    def register_reader(cls, name):
-        def wrap(func):
+    def register_reader(cls, name: AnyStr) -> Callable:
+        def wrap(func: Callable) -> Callable:
             cls.add_this_to(func, name, 'readers_name_mapping')
             return func
         return wrap
 
     @classmethod
-    def register_wrapper(cls, name):
+    def register_wrapper(cls, name: AnyStr) -> Callable:
 
-        def wrap(func):
+        def wrap(func: Callable) -> Callable:
             cls.add_this_to(func, name, 'wrappers_name_mapping')
             return func
 
         return wrap
 
     @classmethod
-    def register_transformer(cls, name):
+    def register_transformer(cls, name: AnyStr) -> Callable:
 
-        def wrap(func):
+        def wrap(func: Callable) -> Callable:
             cls.add_this_to(func, name, 'transformers_name_mapping')
             return func
 
         return wrap
 
     @classmethod
-    def register_metric(cls, name):
+    def register_metric(cls, name: AnyStr) -> Callable:
 
-        def wrap(func):
+        def wrap(func: Callable) -> Callable:
             cls.add_this_to(func, name, 'metrics_name_mapping')
             return func
 
         return wrap
 
     @classmethod
-    def register_model(cls, name):
+    def register_model(cls, name: AnyStr) -> Callable:
 
-        def wrap(func):
+        def wrap(func: Callable) -> Callable:
             cls.add_this_to(func, name, 'models_name_mapping')
             return func
 
         return wrap
 
     @classmethod
-    def register_loss(cls, name):
-        def wrap(func):
+    def register_loss(cls, name: AnyStr) -> Callable:
+        def wrap(func: Callable) -> Callable:
             cls.add_this_to(func, name, 'losses_name_mapping')
             return func
 
         return wrap
 
     @classmethod
-    def register_logger(cls, name):
-        def wrap(func):
-
-            assert issubclass(
-                func, Logger
-            ), "All loggers must inherit Logger class"
-            cls.add_this_to(func, name, 'loggers_name_mapping')
-            return func
-
-        return wrap
-
-    @classmethod
-    def register_trainer(cls, name):
-        def wrap(func):
+    def register_trainer(cls, name: AnyStr) -> Callable:
+        def wrap(func: Callable) -> Callable:
             cls.add_this_to(func, name, 'trainers_name_mapping')
             return func
 
         return wrap
 
     @classmethod
-    def register_predictor(cls, name):
+    def register_predictor(cls, name: AnyStr) -> Callable:
 
-        def wrap(func):
+        def wrap(func: Callable) -> Callable:
             cls.add_this_to(func, name, 'predictors_name_mapping')
             return func
 
         return wrap
 
     @classmethod
-    def register(cls, name, obj):
+    def register(cls, name: AnyStr, obj) -> None:
         path = name.split(".")
         current = cls.mapping["state"]
 
@@ -133,47 +123,47 @@ class Registry:
         current[path[-1]] = obj
 
     @classmethod
-    def get_dataset_class(cls, name):
+    def get_dataset_class(cls, name: AnyStr) -> Callable:
         return cls.mapping["datasets_name_mapping"].get(name, None)
 
     @classmethod
-    def get_reader_class(cls, name):
+    def get_reader_class(cls, name: AnyStr) -> Callable:
         return cls.mapping["readers_name_mapping"].get(name, None)
 
     @classmethod
-    def get_wrapper_class(cls, name):
+    def get_wrapper_class(cls, name: AnyStr) -> Callable:
         return cls.mapping["wrappers_name_mapping"].get(name, None)
 
     @classmethod
-    def get_transformer_class(cls, name):
+    def get_transformer_class(cls, name: AnyStr) -> Callable:
         return cls.mapping["transformers_name_mapping"].get(name, None)
 
     @classmethod
-    def get_metric_class(cls, name):
+    def get_metric_class(cls, name: AnyStr) -> Callable:
         return cls.mapping["metrics_name_mapping"].get(name, None)
 
     @classmethod
-    def get_model_class(cls, name):
+    def get_model_class(cls, name: AnyStr) -> Callable:
         return cls.mapping["models_name_mapping"].get(name, None)
 
     @classmethod
-    def get_loss_class(cls, name):
+    def get_loss_class(cls, name: AnyStr) -> Callable:
         return cls.mapping["losses_name_mapping"].get(name, None)
 
     @classmethod
-    def get_logger_class(cls, name):
+    def get_logger_class(cls, name: AnyStr) -> Callable:
         return cls.mapping["loggers_name_mapping"].get(name, None)
 
     @classmethod
-    def get_trainer_class(cls, name):
+    def get_trainer_class(cls, name: AnyStr) -> Callable:
         return cls.mapping["trainers_name_mapping"].get(name, None)
 
     @classmethod
-    def get_predictor_class(cls, name):
+    def get_predictor_class(cls, name: AnyStr) -> Callable:
         return cls.mapping["predictors_name_mapping"].get(name, None)
 
     @classmethod
-    def get(cls, name, default=None, no_warning=False):
+    def get(cls, name, default=None, no_warning: bool =False):
         r"""Get an item from registry with key 'name'
         Args:
             name (string): Key whose value needs to be retreived.
@@ -206,7 +196,7 @@ class Registry:
         return value
 
     @classmethod
-    def unregister(cls, name):
+    def unregister(cls, name: AnyStr) -> Callable:
         r"""Remove an item from registry with key 'name'
         Args:
             name: Key which needs to be removed.

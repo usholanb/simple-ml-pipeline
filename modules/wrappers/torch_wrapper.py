@@ -19,7 +19,7 @@ class TorchWrapper(DefaultWrapper):
         super().__init__(configs)
         self.output_function = self.get_output_function()
 
-    def get_classifier(self, configs):
+    def get_classifier(self, configs: Dict):
         if configs.get('trainer', {}).get('resume', False):
             if os.path.isfile(self.model_path):
                 model = unpickle_obj(self.model_path)
@@ -60,9 +60,6 @@ class TorchWrapper(DefaultWrapper):
     def parameters(self):
         return self.clf.parameters()
 
-    def prepare_data(self, data):
-        return self.clf.prepare_data(data)
-
     def model_epoch_logs(self) -> Dict:
         """ Returns:
             1 epoch logs that must be saved in tensorboard
@@ -81,7 +78,7 @@ class TorchWrapper(DefaultWrapper):
             x = x.to(self.device)
         return x, y.to(self.device)
 
-    def predict_dataset(self, configs, split_names) -> Dict:
+    def predict_dataset(self, configs: Dict, split_names: List[AnyStr]) -> Dict:
         configs['features_list'] = self._features_list
         train_loader, valid_loader, test_loader = get_data_loaders(configs)
         self.to(self.device)

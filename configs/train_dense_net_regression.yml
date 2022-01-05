@@ -49,7 +49,7 @@ special_inputs:
 
 
 trainer:
-  name: torch_trainer3
+  name: torch_trainer
   optim: Adam
   loss: MSELoss
   save: 1

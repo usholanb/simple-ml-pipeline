@@ -26,7 +26,7 @@ plots:
 
 
 models:
-#  uan: dense_net_regression
+  uan: dense_net_regression
 #  uan3: xgb_regressor
   small: xgb_regressor
 #  uan4: linear_regression

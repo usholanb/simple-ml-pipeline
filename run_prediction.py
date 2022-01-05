@@ -5,15 +5,13 @@ on the specified in the config dataset
 The predictions and probabilities are saved in the prediction files in
 predictions/ folder
 """
-from typing import AnyStr
-import pandas as pd
-from modules.helpers.csv_saver import CSVSaver
-from modules.predictors.base_predictors.base_predictor import BasePredictor
+from typing import AnyStr, Dict
+from modules.predictors.simple_predictor import SimplePredictor
 from utils.common import build_config, setup_imports, setup_directories
 from utils.registry import registry
 
 
-def get_predictor(k_fold_tag: AnyStr) -> BasePredictor:
+def get_predictor(k_fold_tag: AnyStr) -> SimplePredictor:
     setup_directories()
     from utils.flags import all_flags
     parser = all_flags['prediction'].parser
@@ -25,7 +23,7 @@ def get_predictor(k_fold_tag: AnyStr) -> BasePredictor:
     return registry.get_predictor_class(predictor_name)(configs)
 
 
-def save_files(predictor: BasePredictor, preds_ys) -> None:
+def save_files(predictor: SimplePredictor, preds_ys: Dict) -> None:
     """ Prepares Dataset """
     predictor.save_results(preds_ys)
     predictor.save_graphs(preds_ys)

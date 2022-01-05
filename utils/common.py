@@ -1,6 +1,8 @@
 import logging
 import sys
 import importlib.util as importlib_util
+
+import pandas as pd
 from ray import tune
 import torch
 import yaml
@@ -18,6 +20,8 @@ import ray
 import numpy as np
 from time import time
 from torch.utils.data import DataLoader
+
+from modules.containers.di_containers import TrainerContainer
 from utils.constants import MODULES_DIR, FOLDERS_NAMES
 from utils.registry import registry
 
@@ -311,7 +315,7 @@ class Timeit:
                   f' expected for all {self.iter_n} iters: {expected}')
 
 
-def get_data_loaders(configs):
+def get_data_loaders(configs: Dict) -> List[DataLoader]:
     split_names = ['train', 'valid', 'test']
     d_loaders = []
     name = configs.get('dataset').get('name')
@@ -334,7 +338,8 @@ def get_data_loaders(configs):
     return d_loaders
 
 
-def prepare_train(configs, dataset, split_names=None) -> Dict:
+def prepare_train(configs: Dict, dataset: pd.DataFrame,
+                  split_names: List[AnyStr] = None) -> Dict:
     """
         splits pandas dataframe to train, test, valid
         returns dict of dataframe
@@ -361,7 +366,7 @@ def prepare_train(configs, dataset, split_names=None) -> Dict:
     return data
 
 
-def prepare_torch_data(configs, dataset) -> Dict:
+def prepare_torch_data(configs: Dict, dataset: pd.DataFrame) -> Dict:
     data = prepare_train(configs, dataset)
     configs['special_inputs'].update({'input_dim': data['train_x'].shape[1]})
     torch_data = {}
@@ -382,8 +387,8 @@ def prepare_torch_data(configs, dataset) -> Dict:
 
 
 def figure_feature_list(f_list: List, available_features: List) -> List:
-    """ Specifying only name of the feature (w/o index for one hot encoded
-        features) is enough to allow them in dataset
+    """ In configs under features_list specifying only name of the feature
+        (w/o index for one hot encoded features) is enough to allow them in dataset
         f_list: specified in train config file for training,
         available_features: actually inside dataset
         Return: intersection of two lists"""
@@ -396,18 +401,11 @@ def figure_feature_list(f_list: List, available_features: List) -> List:
     return final_list
 
 
-def df_type_is(df, dtype: Type) -> bool:
+def df_type_is(df: pd.DataFrame, dtype: Type) -> bool:
     return (df == df.astype(dtype)).all()
 
 
-def std(vector, mean):
-    sum = torch.zeros(mean.shape).to(device)
-    for el in vector:
-        sum += el - mean
-    return torch.sqrt(torch.abs(sum) / len(vector))
-
-
-def log_metrics(results) -> None:
+def log_metrics(results: Dict) -> None:
     if inside_tune():
         tune.report(**results)
     else:

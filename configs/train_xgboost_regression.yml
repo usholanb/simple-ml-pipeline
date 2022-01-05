@@ -22,6 +22,7 @@ special_inputs:
   learning_rate: 0.1
   subsample: 0.8
   colsample_bytree: .2
+  use_label_encoder: false
 
 
 trainer:
