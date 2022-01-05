@@ -64,6 +64,7 @@ if __name__ == '__main__':
 
     # remove where Team is nan
     df = df[df['Team'].notna()]
+    df = df[df['bp'] != 'GK']
     df.loc[df['Team'] == 'Real SociedadDec', 'Team'] = 'Real Sociedad'
     df.loc[df['Team'] == 'Torino F.C.', 'Team'] = 'Toronto FC'
     # remove goal keepers

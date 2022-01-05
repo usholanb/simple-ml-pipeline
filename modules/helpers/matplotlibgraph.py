@@ -66,7 +66,7 @@ class MatPlotLibGraph:
                     color=c, label=f'{label} Total number : {len(true)}')
             ax.legend(fontsize=40, loc="upper left")
 
-        plt.title(f'distribution')
+        plt.title(f'distribution', fontsize=50)
         plt.savefig(f'{save_dir}/distribution.png')
 
 
