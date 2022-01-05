@@ -13,13 +13,13 @@ All configs are intended to be tweaked for appropriate model/dataset
 
 Example usage:
 ```terminal
-# collects and transforms the data
+# collects and transforms the data [preprocessing](PREPROCESSING.MD)
 python run_preprocessing.py --config-yml=configs/preprocessing.yml
 
-# trains one or multimple models
+# trains one or multimple models [training](TRAINING.md)
 python run_train.py --config-yml=configs/dense_net.yml
 
-# makes predictions with several models
+# makes predictions with several models [prediction](PREDICTION.md)
 python run_prediction.py --config-yml=configs/prediction.yml
 
 ```
