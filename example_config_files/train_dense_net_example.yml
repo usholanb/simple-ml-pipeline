@@ -48,13 +48,6 @@ model:
   tag: uan
 
 
-# must be same hps actual optimizer
-# names must be the same as the actual parameters of the optimizer
-optim:
-  lr: 0.01
-  weight_decay: 0.00001
-
-
 # REQUIRED INPUTS FOR TORCH MODELS:
 #
 # 1. input_dim - int, length of feature vector
@@ -94,16 +87,25 @@ trainer:
   # "checkpoint_metric" is chosen based on valid set metrics
   # Possible names examples: valid_precision, valid_mse, valid_<loss>
   checkpoint_metric:
-    name: valid_mse
+    name: valid_accuracy
     mode: max  # choose max or min
+
+
+# must be same hps actual optimizer
+# names must be the same as the actual parameters of the optimizer
+optim:
+  lr: 0.01
+  weight_decay: 0.00001
+
 
 # list of registered metrics that are used during training on valid
 metrics:
-#    - accuracy  # classification only
-#    - precision  # classification only
-  - mse  # only regression
+    - accuracy  # classification only
+    - precision  # classification only
+#  - mse  # regression and classification
 
 # comment out features that you don't want to train on
+# If comment out "features_list" completely then all features are used
 features_list:
   - 2-Hour
   - Body mass

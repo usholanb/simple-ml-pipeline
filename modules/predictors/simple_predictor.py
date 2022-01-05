@@ -7,7 +7,7 @@ from modules.helpers.csv_saver import CSVSaver
 from modules.predictors.base_predictors.base_predictor import BasePredictor
 from modules.wrappers.base_wrappers.base_wrapper import BaseWrapper
 from modules.wrappers.base_wrappers.default_wrapper import DefaultWrapper
-from utils.common import unpickle_obj, create_folder, get_data_loaders, mean_dict_values
+from utils.common import unpickle_obj, create_folder
 from utils.constants import CLASSIFIERS_DIR, PREDICTIONS_DIR, PROCESSED_DATA_DIR
 from copy import deepcopy
 
@@ -29,7 +29,11 @@ class SimplePredictor(BasePredictor):
 
     @property
     def pred_dir(self) -> AnyStr:
-        dataset_name = self.configs.get('dataset').get('input_path').split('/')[-1]
+        dataset_path = self.configs.get('dataset').get('input_path')
+        if dataset_path is not None:
+            dataset_name = dataset_path.split('/')[1]
+        else:
+            dataset_name = self.configs.get('dataset').get('name')
         return create_folder(f'{PREDICTIONS_DIR}/{dataset_name}')
 
     def print_important_features(self, wrapper: DefaultWrapper) -> None:
@@ -65,14 +69,13 @@ class SimplePredictor(BasePredictor):
     def save_results(self, preds_ys: Dict) -> None:
         """ saves splits with predictions and metrics """
         metrics = {}
-        dataset_path = self.configs.get('dataset').get('input_path')
-        dataset_name = dataset_path.split('/')[1]
+
         for model_name, splits in preds_ys.items():
             metrics[model_name] = {}
             for split_name, split in splits.items():
                 metrics[model_name][split_name] = self.save_metrics(split, split_name)
         df = pd.concat({k: pd.DataFrame(v) for k, v in metrics.items()})
-        CSVSaver.save_file(f'{self.pred_dir}/{dataset_name}_metrics',
+        CSVSaver.save_file(f'{self.pred_dir}/metrics',
                            df, gzip=False, index=True)
 
     def save_graphs(self, output_dataset: Dict) -> None:

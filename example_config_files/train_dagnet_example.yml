@@ -4,24 +4,47 @@
 ###############################################################################
 ###############################################################################
 # Copy to configs file and rename somehow
-
 includes:
   - configs/constant_configs.yml
 
 
 dataset:
-  input_path: processed_data/pima-indians-diabetes.data
+  name: basket_dataset
   label_type: regression
+
+  data_loaders:
+
+    train:
+      batch_size: 128
+      shuffle: true
+      num_workers: 4
+      multiprocessing_context: spawn
+      pin_memory: true
+
+    valid:
+      batch_size: 64
+      shuffle: false
+      num_workers: 4
+      multiprocessing_context: spawn
+      pin_memory: true
+
+    test:
+      batch_size: 64
+      shuffle: false
+      num_workers: 4
+      multiprocessing_context: spawn
+      pin_memory: true
+
 
 model:
   # name can be a registered model, all registered models are in modules/models/
   # name can be a path to the class of outside library
   # for example:
   # name: sklearn.linear_model.LogisticRegression
-  name: xgboost.XGBClassifier
+  name: dense_net_regression_dagnet
   # tag must be a unique value among other tags, this way we distinguish
   # models during the prediction step
-  tag: uan3
+  tag: uan2
 
 
 # REQUIRED INPUTS FOR TORCH MODELS:
@@ -33,112 +56,94 @@ model:
 # Additional inputs can be used to customize the model. All special_inputs
 # will become local variables of the model
 special_inputs:
-  booster: dart
-  n_estimators: 20
-  max_depth: 5
-  gamma: .01
-  num_parallel_tree: 2
-  eta: 0.4
-  learning_rate: 0.1
-  subsample: 0.8
-  colsample_bytree: .2
-  use_label_encoder: false
+  transformers: [goals_ohe, adj]
+  CE_weight: 0.01
+  adjacency_type: 1
+  alpha: 0.2
+  clip: 10
+  g_dim: 90
+  graph_hid: 8
+  graph_model: gcn
+  h_dim: 64
+  n_heads: 4
+  n_layers: 2
+  obs_len: 10
+  players: atk
+  pred_len: 40
+  print_every_batch: 30
+  rnn_dim: 64
+  save_every: 10
+  seed: 128
+  sigma: 1.2
+  top_k_neigh: null
+  warmup: false
+  x_dim: 2
+  z_dim: 32
+  mode: raw
+  wrmp_epochs: 50
+  _lambda: 0.01
+  input_dim: 100
+  n_outputs: 400
+  layers_sizes: [[10]]
 
 
 trainer:
   # Possible trainers:
   # 1. torch_trainer - for all torch related models
   # 2. sklearn_trainer - for all sklearn related models
-  name: sklearn_trainer
+  name: torch_trainer
   # optim is not needed when trainer is sklearn_trainer
   # optim can be a torch optimizer, any optim from torch.optim
   optim: Adam
   # loss can be any loss from torch.nn
   # Examples: NLLLoss, MSELoss, example_loss, <your custom loss defined in modules/losses>
-  loss: NLLLoss
+  loss: MSELoss
   # set it to 0, null or false to not save, otherwise - saves
   save: 1
   epochs: 10
   # log valid, train loss and metrics every log_valid_every epochs
   log_valid_every: 2
   # hps that go to ray tune.run function
+
   tune:
     resources_per_trial:
-      cpu: 2
-      gpu: 0
+      cpu: 25
+      gpu: 1
+    verbose: 0
+
   # name of checkpoint_metric is used to choose the best model
   # "checkpoint_metric" is chosen based on valid set metrics
   # Possible names examples: valid_precision, valid_mse, valid_<loss>
   checkpoint_metric:
-    name: valid_accuracy
+    name: valid_mse
     mode: max  # choose max or min
+
+  resume: false
+  checkpoint: false
 
 
 # must be same hps actual optimizer
 # names must be the same as the actual parameters of the optimizer
 optim:
-  lr: 0.01
-  weight_decay: 0.00001
+  lr: 0.0001
 
 
 # list of registered metrics that are used during training on valid
 metrics:
-    - accuracy  # classification only
-    - precision  # classification only
-#  - mse  # regression and classification
+#    - accuracy  # classification only
+#    - precision  # classification only
+  - mse  # regression and classification
 
 # comment out features that you don't want to train on
-features_list:
-  - 2-Hour
-  - Body mass
-  - Triceps_1
-  - Triceps_10
-  - Triceps_11
-  - Triceps_12
-  - Triceps_13
-  - Triceps_14
-  - Triceps_15
-  - Triceps_16
-  - Triceps_17
-  - Triceps_18
-  - Triceps_19
-#  - Triceps_2
-#  - Triceps_20
-#  - Triceps_21
-#  - Triceps_22
-#  - Triceps_23
-#  - Triceps_24
-  - Triceps_25
-  - Triceps_26
-  - Triceps_27
-  - Triceps_28
-  - Triceps_29
-  - Triceps_3
-  - Triceps_30
-  - Triceps_31
-  - Triceps_32
-  - Triceps_33
-  - Triceps_34
-  - Triceps_35
-  - Triceps_36
-  - Triceps_37
-  - Triceps_38
-  - Triceps_39
-  - Triceps_4
-  - Triceps_40
-  - Triceps_41
-  - Triceps_42
-  - Triceps_43
-  - Triceps_44
-  - Triceps_45
-  - Triceps_46
-  - Triceps_47
-  - Triceps_48
-  - Triceps_49
-  - Triceps_5
-  - Triceps_50
-  - Triceps_51
-  - Triceps_6
-  - Triceps_7
-  - Triceps_8
-  - Triceps_9
+# If comment out "features_list" completely then all features are used
+#features_list:
+
+
+
+
+
+
+
+
+
+

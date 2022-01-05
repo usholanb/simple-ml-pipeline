@@ -11,7 +11,7 @@ predictor: simple_predictor
 
 
 dataset:
-  input_path: processed_data/pima-indians-diabetes.data
+  name: basket_dataset
 
 
 # models is dict, first comes unique tag and then the name of the model
@@ -21,15 +21,13 @@ dataset:
 # These models are applied on <dataset.input_path> and their predictions are
 # saved for model comparison
 models:
-  uan: dense_net
-  uan2: logistic_regression
-  uan3: xgb_classifier
+  uan: dense_net_regression_dagnet
 
 
 metrics:
-    - accuracy  # classification only
-    - precision  # classification only
-#  - mse  # regression and classification
+#    - accuracy  # classification only
+#    - precision  # classification only
+  - mse  # regression and classification
 
 splits:
   - train
