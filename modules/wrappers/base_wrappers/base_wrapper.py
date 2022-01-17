@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 
 import numpy as np
-from typing import Dict, AnyStr
+from typing import Dict, AnyStr, List
 
 import pandas as pd
 
@@ -30,3 +30,7 @@ class BaseWrapper(ABC):
     def get_train_probs(self, data):
         """ Returns probs
         """
+
+    @abstractmethod
+    def predict_dataset(self, configs: Dict, split_names: List[AnyStr]) -> Dict:
+        """ apply this wrapper on dataset and returns predictions """

@@ -14,8 +14,7 @@ class TorchTrainer(DefaultTrainer):
     def __init__(self, configs: Dict):
         super(TorchTrainer, self).__init__(configs)
         self.configs = configs
-        self.train_loader, self.valid_loader, self.test_loader = \
-            get_data_loaders(self.configs)
+        self.loaders = get_data_loaders(self.configs)
         self.loss_name = self.configs.get('trainer').get('loss', '')
         self.criterion = self.__get_loss()
         self.metric_val = None
@@ -135,15 +134,15 @@ class TorchTrainer(DefaultTrainer):
 
     def __train_loop(self, epoch: int = 0) -> Dict:
         self.wrapper.train()
-        return self.train_epoch([epoch, 'train', self.train_loader])
+        return self.train_epoch([epoch, 'train', self.loaders['train']])
 
     def __test_loop(self, epoch: int = 0) -> Dict:
         self.wrapper.eval()
-        return self.eval_epoch([epoch, 'test', self.test_loader])
+        return self.eval_epoch([epoch, 'test', self.loaders['test']])
 
     def __valid_loop(self, epoch: int = 0) -> Dict:
         self.wrapper.eval()
-        return self.eval_epoch([epoch, 'valid', self.valid_loader])
+        return self.eval_epoch([epoch, 'valid', self.loaders['valid']])
 
     def __get_x_y(self, batch) -> Tuple[torch.Tensor, torch.Tensor]:
         """ takes batch sample and splits to

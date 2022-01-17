@@ -10,7 +10,7 @@ class MatPlotLibGraph:
         self.configs = configs
 
     def plot_step(self, x, ys, quantities, lines_labels, save_folder, x_label, y_label):
-        figure(figsize=(50, 30), dpi=100)
+        figure(figsize=(100, 30), dpi=80)
         plt.locator_params(axis="y", nbins=10)
         plt.yticks(fontsize=30)
         plt.xticks(x, fontsize=30)
@@ -21,7 +21,7 @@ class MatPlotLibGraph:
             plt.step(x, y, where='post', label=line_label, linewidth=7.0)
             plt.legend(fontsize=40, loc="upper left")
             for xx, yy, qq in zip(x, y, quantity):
-                plt.text(xx, yy, qq, color='blue', fontweight='bold', fontsize=10)
+                plt.text(xx, yy, qq, color='blue', fontweight='bold', fontsize=40)
         plt.savefig(f'{save_folder}/{y_label}.png')
         plt.clf()
 

@@ -1,11 +1,11 @@
 # Training 
 
-#####Description:
+##### Description:
 1. Trains a model specified in config file 
 2. Saves classifier and best checkpoints 
 3. Saves logs for tensorboard
 
-
+## Step 1: Dataset 
 ### OPTION 1 - using preprocessed files(from [PREPROCESSING](PREPROCESSING.MD) STEP)
 
 
@@ -46,3 +46,11 @@ For reference see **path_to_project/modules/datasets/basket_dataset.py**
 Use example **example_config_files/**_train_dagnet_example.yml_
 
 #### 4. `python run_train --config-yml configs/train_<something>.yml`
+
+
+## Step 2: Model
+#### 1. Take a look at one of the models already created in modules/models folder. You already can use them or any of sklearn models. In addition, you can create your own by inheriting BaseModel or DefaultModel. Just override the abstract methods.
+#### 2. Don't forget to register it line other models(put "@registry.register_model('**my_custom_model**')" above your model class declaration). In this case **my_custom_model** will be the name of your model that you specify in your train and prediction config files.
+#### 3. You have to specify tag of your model in config file(see examples). This way models of the same type(for example: 2 **xgboost**s) will be distinguished. They will be named with model class name and tag name in underscore style.
+#### 4. Once the model is written make sure it's in modules/models folder and run
+`python run_train --config-yml configs/train_<something>.yml`

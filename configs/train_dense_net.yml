@@ -58,7 +58,7 @@ trainer:
       cpu: 2
       gpu: 0
 
-  grid_metric:
+  checkpoint_metric:
     name: valid_precision
     mode: max
 

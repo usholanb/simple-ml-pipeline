@@ -35,7 +35,7 @@ class BasePredictor:
         """ """
 
     @abstractmethod
-    def save_metrics(self, split: Dict, split_name: AnyStr) -> Dict:
+    def get_metrics(self, split: Dict, split_name: AnyStr) -> Dict:
         """ Saves metrics for the split  """
 
     @abstractmethod
@@ -46,6 +46,3 @@ class BasePredictor:
     def save_graphs(self, output_dataset: Dict) -> None:
         """ override if need graphs """
 
-    @abstractmethod
-    def predict_dataset(self, wrapper: BaseWrapper) -> Dict:
-        """ Return metrics for each split for given wrapper """

@@ -80,12 +80,13 @@ class TorchWrapper(DefaultWrapper):
 
     def predict_dataset(self, configs: Dict, split_names: List[AnyStr]) -> Dict:
         configs['features_list'] = self._features_list
-        train_loader, valid_loader, test_loader = get_data_loaders({**configs, **self.configs})
+        loaders = get_data_loaders({**configs, **self.configs})
         self.to(self.device)
         self.eval()
         model_metrics = {s: {} for s in split_names}
 
-        for split, loader in zip(split_names, [train_loader, valid_loader, test_loader]):
+        for split in split_names:
+            loader = loaders[split]
             ys, preds = [], []
             with torch.no_grad():
                 for batch_i, batch in enumerate(loader):
@@ -98,8 +99,8 @@ class TorchWrapper(DefaultWrapper):
                         'batch_size': loader.batch_size
                     }
                     pred = self.get_train_probs(data)
+                    pred = pred.reshape(y.shape)
                     preds.append(pred.cpu().detach().numpy())
-                    y = y if len(y.shape) < 3 else y.reshape(pred.shape)
                     ys.append(y.cpu().detach().numpy())
                 model_metrics[split].update({f'{split}_preds': np.concatenate(preds),
                                             f'{split}_ys': np.concatenate(ys)})
