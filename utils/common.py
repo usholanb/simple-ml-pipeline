@@ -315,11 +315,12 @@ class Timeit:
                   f' expected for all {self.iter_n} iters: {expected}')
 
 
-def get_data_loaders(configs: Dict) -> List[DataLoader]:
-    split_names = ['train', 'valid', 'test']
-    d_loaders = []
+def get_data_loaders(configs: Dict) -> Dict[AnyStr, DataLoader]:
+    split_names = configs.get('splits', ['train', 'valid', 'test'])
+
     name = configs.get('dataset').get('name')
     dataset_class = registry.get_dataset_class(name)
+    split_to_loader = {}
 
     for split_name in split_names:
         hps = configs.get('dataset').get('data_loaders', {}).get(split_name, {})
@@ -327,15 +328,14 @@ def get_data_loaders(configs: Dict) -> List[DataLoader]:
         if dataset_class is not None:
             split = dataset_class(configs, split_name)
             hps.update({'collate_fn': split.collate})
-            d_loaders.append(DataLoader(split, **hps))
         else:
             input_path = configs.get('dataset').get('input_path')
             print(f'no dataset class with name {name} is found\n'
                   f'will try to look for file with input_path: {input_path}')
             pandas_dataset_class = registry.get_dataset_class('pandas_dataset')
             split = pandas_dataset_class(configs, split_name)
-            d_loaders.append(DataLoader(split, **hps))
-    return d_loaders
+        split_to_loader[split_name] = DataLoader(split, **hps)
+    return split_to_loader
 
 
 def prepare_train(configs: Dict, dataset: pd.DataFrame,

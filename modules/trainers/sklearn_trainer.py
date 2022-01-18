@@ -5,6 +5,7 @@ from modules.helpers.csv_saver import CSVSaver
 from modules.trainers.default_trainer import DefaultTrainer, get_metrics
 from modules.wrappers.sklearn_wrapper import SKLearnWrapper
 from utils.common import setup_imports, is_outside_library, prepare_train, log_metrics
+from utils.constants import PROCESSED_DATA_DIR, PROJECT_DIR
 from utils.registry import registry
 
 
@@ -13,7 +14,7 @@ class SKLearnTrainer(DefaultTrainer):
 
     def __init__(self, configs):
         super().__init__(configs)
-        dataset = CSVSaver().load(configs)
+        dataset = CSVSaver().load(configs, folder=PROJECT_DIR)
         self.data = prepare_train(configs, dataset)
         self.label_name = dataset.columns[self.configs.get('static_columns')
             .get('FINAL_LABEL_INDEX')]

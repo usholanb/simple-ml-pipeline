@@ -11,7 +11,7 @@ includes:
 
 dataset:
   input_path: processed_data/pima-indians-diabetes.data
-  label_type: regression
+  label_type: classification
 
 model:
   # name can be a registered model, all registered models are in modules/models/
@@ -24,14 +24,7 @@ model:
   tag: uan2
 
 
-# REQUIRED INPUTS FOR TORCH MODELS:
-#
-# 1. input_dim - int, length of feature vector
-#
-# 2. n_outputs - int, last layer size
-#
-# Additional inputs can be used to customize the model. All special_inputs
-# will become local variables of the model
+# This inputs will be used as parameters for the model
 special_inputs:
   tol: 0.0001
   C: 1

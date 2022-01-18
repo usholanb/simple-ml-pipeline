@@ -43,12 +43,12 @@ def train(configs: Dict) -> None:
             name=Namer.model_name(configs.get('model')),
             **config_copy.get('trainer').get('tune', {}),
             keep_checkpoints_num=1,
-            checkpoint_score_attr=configs.get('trainer').get('grid_metric').get('name'),
-            mode=configs.get('trainer').get('grid_metric').get('mode'),
+            checkpoint_score_attr=configs.get('trainer').get('checkpoint_metric').get('name'),
+            mode=configs.get('trainer').get('checkpoint_metric').get('mode'),
         )
         best_configs = analysis.get_best_config(
-            metric=configs.get('trainer').get('grid_metric').get('name'),
-            mode=configs.get('trainer').get('grid_metric').get('mode')
+            metric=configs.get('trainer').get('checkpoint_metric').get('name'),
+            mode=configs.get('trainer').get('checkpoint_metric').get('mode')
         )
         print("Best configs: ", {**best_configs.get('optim'),
                                  **best_configs.get('special_inputs')})

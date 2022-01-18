@@ -57,8 +57,9 @@ model:
 # Additional inputs can be used to customize the model. All special_inputs
 # will become local variables of the model
 special_inputs:
-  input_dim: 47
-  n_outputs: 1
+  input_dim: 53
+  n_outputs: 2
+  layers_sizes: [[300]]
 
 
 
@@ -81,7 +82,7 @@ trainer:
   # hps that go to ray tune.run function
   tune:
     resources_per_trial:
-      cpu: 2
+      cpu: 8
       gpu: 0
   # name of checkpoint_metric is used to choose the best model
   # "checkpoint_metric" is chosen based on valid set metrics
@@ -95,7 +96,7 @@ trainer:
 # names must be the same as the actual parameters of the optimizer
 optim:
   lr: 0.01
-  weight_decay: 0.00001
+  weight_decay: 0.0001
 
 
 # list of registered metrics that are used during training on valid
@@ -120,12 +121,12 @@ features_list:
   - Triceps_17
   - Triceps_18
   - Triceps_19
-#  - Triceps_2
-#  - Triceps_20
-#  - Triceps_21
-#  - Triceps_22
-#  - Triceps_23
-#  - Triceps_24
+  - Triceps_2
+  - Triceps_20
+  - Triceps_21
+  - Triceps_22
+  - Triceps_23
+  - Triceps_24
   - Triceps_25
   - Triceps_26
   - Triceps_27

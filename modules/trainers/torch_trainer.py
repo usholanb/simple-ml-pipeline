@@ -14,8 +14,7 @@ class TorchTrainer(DefaultTrainer):
     def __init__(self, configs: Dict):
         super(TorchTrainer, self).__init__(configs)
         self.configs = configs
-        self.train_loader, self.valid_loader, self.test_loader = \
-            get_data_loaders(self.configs)
+        self.loaders = get_data_loaders(self.configs)
         self.loss_name = self.configs.get('trainer').get('loss', '')
         self.criterion = self.__get_loss()
         self.metric_val = None
@@ -93,23 +92,21 @@ class TorchTrainer(DefaultTrainer):
 
     @run_hooks
     def compute_loss_train(self, y: torch.Tensor, pred: torch.Tensor, data: Dict):
-        return self.criterion(pred, y.reshape(*pred.shape))
+        return self.criterion(pred, y)
 
     @run_hooks
     def compute_loss_valid(self, y: torch.Tensor, pred: torch.Tensor, data: Dict):
-        return self.criterion(pred, y.reshape(*pred.shape))
+        return self.criterion(pred, y)
 
     @run_hooks
     def train_forward(self, data: Dict):
         self.optimizer.zero_grad()
         pred = self.wrapper.get_train_probs(data)
-        pred = pred if pred.shape[1] > 1 else pred.flatten()
         return pred
 
     @run_hooks
     def valid_forward(self, data: Dict):
         pred = self.wrapper.get_train_probs(data)
-        pred = pred if pred.shape[1] > 1 else pred.flatten()
         return pred
 
     def _get_wrapper(self, *args, **kwargs) -> TorchWrapper:
@@ -135,15 +132,15 @@ class TorchTrainer(DefaultTrainer):
 
     def __train_loop(self, epoch: int = 0) -> Dict:
         self.wrapper.train()
-        return self.train_epoch([epoch, 'train', self.train_loader])
+        return self.train_epoch([epoch, 'train', self.loaders['train']])
 
     def __test_loop(self, epoch: int = 0) -> Dict:
         self.wrapper.eval()
-        return self.eval_epoch([epoch, 'test', self.test_loader])
+        return self.eval_epoch([epoch, 'test', self.loaders['test']])
 
     def __valid_loop(self, epoch: int = 0) -> Dict:
         self.wrapper.eval()
-        return self.eval_epoch([epoch, 'valid', self.valid_loader])
+        return self.eval_epoch([epoch, 'valid', self.loaders['valid']])
 
     def __get_x_y(self, batch) -> Tuple[torch.Tensor, torch.Tensor]:
         """ takes batch sample and splits to

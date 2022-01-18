@@ -45,6 +45,7 @@ optim:
 special_inputs:
   n_outputs: 1
   input_dim: 4
+  layers_sizes: [[30]]
 
 trainer:
   name: torch_trainer
@@ -58,7 +59,7 @@ trainer:
       cpu: 2
       gpu: 0
 
-  grid_metric:
+  checkpoint_metric:
     name: valid_precision
     mode: max
 

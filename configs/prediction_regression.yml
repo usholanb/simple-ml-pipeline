@@ -6,29 +6,29 @@ predictor: player_evaluation_predictor
 classification: false
 
 dataset:
-  input_path: processed_data/no_GK_merged_df_v62
+  input_path: processed_data/tf_was_merged_11012022_dups_removed2
 
 
 print_important_features: true
 
 
 splits:
-#  - train
-#  - valid
+  - train
+  - valid
   - test
 
 plots:
   steps_func:
     - get_abs_diff
-    - get_abs_mean_fraction
-    - get_mean_fraction
+    - get_abs_mean_fraction_true_minus_pred
+    - get_mean_fraction_true_minus_pred
     - get_rmse
 
 
 models:
   uan: dense_net_regression
-#  uan3: xgb_regressor
-  small: xgb_regressor
+  uan3: xgb_regressor
+#  small: xgb_regressor
 #  uan4: linear_regression
 #  uan3k_fold1: xgb_regressor
 #  uan3k_fold0: xgb_regressor

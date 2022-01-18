@@ -14,7 +14,7 @@ class PlayerEvaluationPredictor(SimplePredictor):
     def __init__(self, configs: Dict):
         super().__init__(configs)
         self.scale = 1e-6
-        self.points = [10, 80, 200]
+        self.points = [10, 50, 110]
         self.steps = [1, 5, 10]
         self.graph = MatPlotLibGraph(self.configs)
         self.split_names = self.configs.get('splits', [])

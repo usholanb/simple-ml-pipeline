@@ -28,18 +28,18 @@ class SKLearnWrapper(DefaultWrapper):
             filters in needed features and makes prediction
         """
         examples = self.filter_features(examples)
-        return self.get_train_probs(examples.values)
+        return self.get_train_probs(examples)
 
-    def get_train_probs(self, examples: np.ndarray) -> np.ndarray:
+    def get_train_probs(self, examples: pd.DataFrame) -> np.ndarray:
         """ Returns probs
             makes prediction on pandas examples of dim N X M
             where N is number of examples and M number of features
         """
-        if self.configs.get('trainer').get('label_type') == 'classification':
-            result = np.zeros((len(examples), self.clf.n_outputs_))
-            result[np.arange(len(examples)), self.clf.predict(examples).astype(int)] = 1
-        else:
-            result = self.clf.predict(examples)
+        # if self.classification:
+        #     result = np.zeros((len(examples), self.n_outputs))
+        #     result[np.arange(len(examples)), self.clf.predict(examples).astype(int)] = 1
+        # else:
+        result = self.clf.predict(examples)
         return result
 
     def fit(self, inputs: np.ndarray, targets: np.ndarray) -> None:

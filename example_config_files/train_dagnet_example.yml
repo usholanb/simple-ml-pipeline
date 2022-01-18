@@ -84,7 +84,7 @@ special_inputs:
   _lambda: 0.01
   input_dim: 100
   n_outputs: 400
-  layers_sizes: [[10]]
+  layers_sizes: [[100, 20]]
 
 
 trainer:
@@ -125,7 +125,7 @@ trainer:
 # must be same hps actual optimizer
 # names must be the same as the actual parameters of the optimizer
 optim:
-  lr: 0.0001
+  lr: 0.001
 
 
 # list of registered metrics that are used during training on valid

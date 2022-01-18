@@ -43,9 +43,9 @@ class PreprocessingFlag(Flags):
         self._parser.add_argument_group("Core Arguments")
         self._parser.add_argument(
             "--config-yml",
-            # default=f'{CONFIGS_DIR}/preprocessing_regression.yml',
+            default=f'{CONFIGS_DIR}/preprocessing_regression.yml',
             # default=f'{CONFIGS_DIR}/preprocessing.yml',
-            default=f'{PROJECT_DIR}/example_config_files/preprocessing_example.yml',
+            # default=f'{PROJECT_DIR}/example_config_files/preprocessing_example.yml',
         )
 
 

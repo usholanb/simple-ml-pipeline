@@ -21,7 +21,7 @@ dataset:
 # These models are applied on <dataset.input_path> and their predictions are
 # saved for model comparison
 models:
-  uan: dense_net_regression_dagnet
+  uan2: dense_net_regression_dagnet
 
 
 metrics:

@@ -1,4 +1,5 @@
 from typing import AnyStr, Dict, Callable, List
+import torch
 from torch import nn
 from modules.containers.di_containers import TrainerContainer
 from modules.models.base_models.base_model import BaseModel
@@ -45,7 +46,7 @@ class DefaultModel(nn.Module, BaseModel):
         # assert len(layers_sizes) > 1, 'number of layers defined in config file ' \
         #                         'in special_inputs mut be at least 1+'
         if layers_sizes == 0 or len(layers_sizes) == 0:
-            layer1 = nn.Linear(self.input_dim, len(self.label_types))
+            layer1 = nn.Linear(self.input_dim, self.n_outputs)
             layers = [layer1]
             setattr(self, f'layer{index}', layer1)
         elif len(layers_sizes) > 0:
@@ -64,6 +65,7 @@ class DefaultModel(nn.Module, BaseModel):
         else:
             layers = []
         layers = [l.to(self.device) for l in layers]
+        self.apply(init_weights)
         return layers
 
     def model_epoch_logs(self) -> Dict:
@@ -71,6 +73,11 @@ class DefaultModel(nn.Module, BaseModel):
             Return: dict of whatever needs to be logged to tensorboard
         """
         return {}
+
+def init_weights(m):
+    if isinstance(m, nn.Linear):
+        nn.init.xavier_uniform_(m.weight)
+        m.bias.data.fill_(0.01)
 
 
 def run_hooks(func: Callable) -> Callable:

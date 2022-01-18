@@ -48,5 +48,5 @@ def get_split_metrics(y: np.ndarray, pred: np.ndarray, configs: Dict) -> Dict:
     results = {}
     for metric_name in m_names:
         metric = registry.get_metric_class(metric_name)()
-        results[metric_name] = metric.compute_metric(y.reshape(*pred.shape), pred)
+        results[metric_name] = metric.compute_metric(y, pred)
     return results

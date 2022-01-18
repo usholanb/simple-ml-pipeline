@@ -3,6 +3,7 @@ import torch
 from modules.datasets.base_datasets.default_dataset import DefaultDataset
 from modules.helpers.csv_saver import CSVSaver
 from utils.common import prepare_train
+from utils.constants import PROJECT_DIR
 from utils.registry import registry
 
 
@@ -14,7 +15,7 @@ class PandasDataset(DefaultDataset):
     """
     def __init__(self, configs: Dict, split_name: AnyStr):
         super(PandasDataset, self).__init__(configs, split_name)
-        data = prepare_train(configs, CSVSaver.load(configs))
+        data = prepare_train(configs, CSVSaver.load(configs, folder=PROJECT_DIR))
         self.x = data[f'{split_name}_x'].values
         self.y = data[f'{split_name}_y'].values
         self.shape_dataset()

@@ -10,7 +10,7 @@ from utils.constants import DATA_DIR
 from utils.registry import registry
 
 
-def seq_collate(data: List[torch.Tensor]) -> Tuple:
+def seq_collate(data: List[torch.Tensor]) -> List:
     (obs_traj, pred_traj, obs_traj_rel, pred_traj_rel,
      obs_goals, pred_goals) = zip(*data)
 
@@ -33,7 +33,7 @@ def seq_collate(data: List[torch.Tensor]) -> Tuple:
         obs_traj, pred_traj, obs_traj_rel, pred_traj_rel, obs_goals,
         pred_goals, torch.tensor(seq_start_end)
     ]
-    return tuple(out)
+    return out
 
 
 @registry.register_dataset('basket_dataset')

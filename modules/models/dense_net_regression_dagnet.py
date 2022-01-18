@@ -46,4 +46,6 @@ class DenseNetRegressionsDagnet(DenseNetRegressions):
 
     def get_x_y(self, batch):
         y = batch.pop(1)
-        return batch, y
+        batch_size = int(batch[1].shape[1] / 5 if self.players in ['atk', 'def']
+                         else batch[1].shape[1] / 10)
+        return batch, y.reshape(batch_size, -1)
