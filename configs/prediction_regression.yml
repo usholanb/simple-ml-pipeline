@@ -6,7 +6,7 @@ predictor: player_evaluation_predictor
 classification: false
 
 dataset:
-  input_path: processed_data/tf_was_merged_11012022_dups_removed2
+  input_path: processed_data/tf_ws_merged_11012022_dups_removed2
 
 
 print_important_features: true

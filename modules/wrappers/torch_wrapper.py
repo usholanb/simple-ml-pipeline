@@ -100,6 +100,7 @@ class TorchWrapper(DefaultWrapper):
                         'batch_size': loader.batch_size
                     }
                     pred = self.get_train_probs(data)
+                    pred = pred.reshape(y.shape)
                     preds.append(pred.cpu().detach().numpy())
                     ys.append(y.cpu().detach().numpy())
                 model_metrics[split].update({f'{split}_preds': np.concatenate(preds),

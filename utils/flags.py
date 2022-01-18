@@ -56,11 +56,11 @@ class TrainFlags(Flags):
         self._parser.add_argument(
             "--config-yml",
             # default=f'{CONFIGS_DIR}/train_dagnet_example.yml',
-            # default=f'{CONFIGS_DIR}/train_dense_net_regression.yml',
-            # default=f'{PROJECT_DIR}/example_config_files/train_dense_net_example.yml',
+            default=f'{CONFIGS_DIR}/train_dense_net_regression.yml',
+            # default=f'{PROJECT_DIR}/example_config_files/train_den\se_net_example.yml',
             # default=f'{PROJECT_DIR}/example_config_files/train_logistic_regression_example.yml',
             # default=f'{PROJECT_DIR}/example_config_files/train_xgboost_example.yml',
-            default=f'{PROJECT_DIR}/example_config_files/train_dagnet_example.yml',
+            # default=f'{PROJECT_DIR}/example_config_files/train_dagnet_example.yml',
             # default=f'{CONFIGS_DIR}/train_xgboost_regression.yml',
             # default=f'{CONFIGS_DIR}/train_dense_net.yml',
             help="path to config file starting from project home path",
@@ -74,10 +74,10 @@ class PredictionFlags(Flags):
         self._parser.add_argument(
             "--config-yml",
             # default=f'{CONFIGS_DIR}/prediction.yml',
-            # default=f'{CONFIGS_DIR}/prediction_regression.yml',
+            default=f'{CONFIGS_DIR}/prediction_regression.yml',
             # default=f'{CONFIGS_DIR}/prediction_multi_regression.yml',
             # default=f'{PROJECT_DIR}/example_config_files/prediction_example.yml',
-            default=f'{PROJECT_DIR}/example_config_files/prediction_dagnet_example.yml',
+            # default=f'{PROJECT_DIR}/example_config_files/prediction_dagnet_example.yml',
             help="path to config file starting from project home path",
         )
 
