@@ -56,7 +56,9 @@ class DefaultReader(BaseReader):
             valid_df = self.assign_columns(self.read_source(input_paths['valid']))
             train_df, test_df = self.split_df(train, train_df)
         else:
-            raise RuntimeError('at least train set file must exist')
+            train_df = data
+            valid_df = self.assign_columns(self.read_source(input_paths['valid']))
+            test_df = self.assign_columns(self.read_source(input_paths['test']))
         limit = self.reader_configs.get('limit', None)
         return {
             'train': train_df.iloc[:limit],
@@ -115,16 +117,23 @@ class DefaultReader(BaseReader):
     def get_features_order(self):
         print('If you need, you can copy these features to train config to pick'
               ' the features that you want to train on')
-        f_t = self.configs.get('features_list')
+        f_t = self.configs.get('features_list', {})
+        if not f_t:
+            f_t = self.data.columns.tolist()
+            f_t = {e: [] for e in f_t[len(self.configs.get('static_columns')):]}
 
-        def sort_logit(f):
+        def not_preprocessed_to_last(f):
+            """
+            Sort from least transformed to most transformed.
+            Not transformed go the end though
+            """
             if f not in f_t:
                 return sys.maxsize
             else:
                 return len(f_t[f])
 
         f_list = sorted(self.data.columns.tolist()[len(self.configs.get('static_columns')):],
-                        key=lambda x: (sort_logit(x), str(x)))
+                        key=lambda x: (not_preprocessed_to_last(x), str(x)))
         return self.data.columns.tolist()[:len(self.configs.get('static_columns'))] + f_list
 
     def shuffle(self, data: pd.DataFrame, shuffle: bool = True) -> pd.DataFrame:
@@ -140,8 +149,7 @@ class DefaultReader(BaseReader):
         return pd.concat(data.values(), ignore_index=True)
 
     def assign_columns(self, df: pd.DataFrame) -> pd.DataFrame:
-        """ Number of columns defined in preprocessing config must be equal
-            to number of features in the pandas created from the input source"""
+        """ Assigns columns if specific column names are defined in the config file """
 
         columns = self.configs.get('columns', [])
         if columns:

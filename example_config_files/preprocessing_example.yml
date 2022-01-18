@@ -10,8 +10,7 @@ includes:
 
 reader:
   name: csv_reader  # all variations are defined in modules/readers/
-  sheet_name: Sheet1
-  label_type: regression  # classification or regression
+  label_type: classification  # classification or regression
   input_path: data/pima-indians-diabetes.data
   limit: null
   # index or name of the labels column in the input data

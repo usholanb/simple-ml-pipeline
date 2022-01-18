@@ -13,9 +13,9 @@
 Example: **example_config_files/**_train_dense_net_example.yml_
 In the train config you can choose model, dataset, trainer, metrics, dataloader configs, features see the example
 ##### Requirement: Add these two parameters under special_inputs, more details in example config
-special_inputs: <br/>
-input_dim: 53  
-n_outputs: 2
+`special_inputs:
+    input_dim: 53  
+    n_outputs: 2`
 
 
 #### 2. `python run_train --config-yml configs/train_<something>.yml`

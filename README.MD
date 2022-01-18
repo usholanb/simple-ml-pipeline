@@ -1,6 +1,6 @@
-# Custom Machine Learning Framework(CMLF)
+# Experimentation ML Pipeline
 
-CMLF is a Python framework to speed up the ML process starting from dataset collection and preprocessing to training and prediction
+Python framework to speed up the ML process starting from dataset collection and preprocessing to training and prediction
 
 ## Installation
 

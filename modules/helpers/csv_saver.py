@@ -8,6 +8,8 @@ class CSVSaver:
     def save(cls, data: pd.DataFrame, reader_configs: Dict) -> None:
         """ saves csv to processed_ + input_path which is local path """
         path = reader_configs.get('input_path')
+        if isinstance(path, dict):
+            path = path['train'].replace('train', '')
         if isinstance(data, pd.DataFrame):
             path = path.split('.csv')[0]
             k_fold_tag = reader_configs.get('k_fold_tag', '')
