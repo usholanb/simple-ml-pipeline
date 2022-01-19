@@ -1,7 +1,7 @@
 from typing import Dict, Any, List, AnyStr
 import numpy as np
 import pandas as pd
-
+from pprint import pprint
 from modules.helpers.csv_saver import CSVSaver
 from modules.wrappers.base_wrappers.default_wrapper import DefaultWrapper
 from utils.common import get_outside_library, unpickle_obj
@@ -43,20 +43,20 @@ class SKLearnWrapper(DefaultWrapper):
             else targets.shape[1]
         self.clf.fit(inputs, targets)
 
-    def print_important_features(self) -> None:
-        if self.configs.get('print_important_features', False):
+    def print_important_features(self, pred_configs) -> None:
+        if pred_configs.get('print_important_features', False):
             feature_importance = {
                 k: v for k, v in
                 zip(self.features_list, self.clf.feature_importances_)
             }
             print(f'model: {self.name}')
-            print(sorted(feature_importance.items(), key=lambda x: -x[1]))
+            pprint(sorted(feature_importance.items(), key=lambda x: -x[1]))
 
-    def predict_dataset(self, configs: Dict, split_names: List[AnyStr]) -> Dict:
-        self.print_important_features()
+    def predict_dataset(self, pred_configs: Dict, split_names: List[AnyStr]) -> Dict:
+        self.print_important_features(pred_configs)
         splits = {}
-        data = CSVSaver().load(configs)
-        const = configs.get('static_columns')
+        data = CSVSaver().load(pred_configs)
+        const = pred_configs.get('static_columns')
         for split_name in split_names:
             split = data[data['split'] == split_name]
             split_y = split.iloc[:, const.get('FINAL_LABEL_INDEX')].values
