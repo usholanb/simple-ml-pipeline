@@ -6,8 +6,8 @@ import numpy as np
 import utils.small_functions as custom_functions_module
 
 
-@registry.register_predictor('player_evaluation_predictor')
-class PlayerEvaluationPredictor(SimplePredictor):
+@registry.register_predictor('player_valuation_predictor')
+class PlayerValuationPredictor(SimplePredictor):
     """ uses all wrappers specified in prediction config to
         create several prediction files """
 

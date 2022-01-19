@@ -74,10 +74,10 @@ class PredictionFlags(Flags):
         self._parser.add_argument(
             "--config-yml",
             # default=f'{CONFIGS_DIR}/prediction.yml',
-            default=f'{CONFIGS_DIR}/prediction_regression.yml',
+            # default=f'{CONFIGS_DIR}/prediction_regression.yml',
             # default=f'{CONFIGS_DIR}/prediction_multi_regression.yml',
             # default=f'{PROJECT_DIR}/example_config_files/prediction_example.yml',
-            # default=f'{PROJECT_DIR}/example_config_files/prediction_dagnet_example.yml',
+            default=f'{PROJECT_DIR}/example_config_files/prediction_dagnet_example.yml',
             help="path to config file starting from project home path",
         )
 
