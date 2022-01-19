@@ -43,7 +43,17 @@ class SKLearnWrapper(DefaultWrapper):
             else targets.shape[1]
         self.clf.fit(inputs, targets)
 
+    def print_important_features(self) -> None:
+        if self.configs.get('print_important_features', False):
+            feature_importance = {
+                k: v for k, v in
+                zip(self.features_list, self.clf.feature_importances_)
+            }
+            print(f'model: {self.name}')
+            print(sorted(feature_importance.items(), key=lambda x: -x[1]))
+
     def predict_dataset(self, configs: Dict, split_names: List[AnyStr]) -> Dict:
+        self.print_important_features()
         splits = {}
         data = CSVSaver().load(configs)
         const = configs.get('static_columns')

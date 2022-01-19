@@ -24,7 +24,6 @@ class SimplePredictor(BasePredictor):
         self.device = TrainerContainer.device
         self.train_loader, self.valid_loader, self.test_loader = \
             [None] * 3
-        self.feature_importance = None
         self.split_names = self.configs.get('splits', [])
 
     @property
@@ -35,14 +34,6 @@ class SimplePredictor(BasePredictor):
         else:
             dataset_name = self.configs.get('dataset').get('name')
         return create_folder(f'{PREDICTIONS_DIR}/{dataset_name}')
-
-    def print_important_features(self, wrapper: DefaultWrapper) -> None:
-        if self.configs.get('print_important_features', False):
-            self.feature_importance = {
-                k: v for k, v in
-                zip(wrapper.features_list, wrapper.clf.feature_importances_)
-            }
-            print(sorted(self.feature_importance.items(), key=lambda x: -x[1]))
 
     def get_preds_ys(self) -> Dict:
         model_results = {}
