@@ -1,8 +1,13 @@
 from abc import ABC, abstractmethod
 
+import torch
+
 
 class BaseLoss(ABC):
 
     @abstractmethod
-    def __call__(self, *args, **kwargs):
-        """ takes any input from forward and returns loss tensor of shape (1,) """
+    def __call__(self, train_outputs: torch.Tensor, y_true: torch.Tensor):
+        """ train_outputs: forward's output
+            y_true: target that comes with batches
+            returns: loss tensor of shape (1,)
+         """

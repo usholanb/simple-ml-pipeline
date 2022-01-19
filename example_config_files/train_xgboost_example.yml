@@ -58,13 +58,6 @@ trainer:
     resources_per_trial:
       cpu: 2
       gpu: 0
-  # name of checkpoint_metric is used to choose the best model
-  # "checkpoint_metric" is chosen based on valid set metrics
-  # Possible names examples: valid_precision, valid_mse, valid_<loss>
-  checkpoint_metric:
-    name: valid_accuracy
-    mode: max  # choose max or min
-
 
 # must be same hps actual optimizer
 # names must be the same as the actual parameters of the optimizer

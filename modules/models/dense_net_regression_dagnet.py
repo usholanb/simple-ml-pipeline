@@ -1,12 +1,14 @@
-from typing import Dict
+from typing import Dict, List, Tuple
 import torch
 import torch.nn.functional as F
+
+from modules.models.base_models.default_model import DefaultModel
 from modules.models.dense_net_regression import DenseNetRegressions
 from utils.registry import registry
 
 
 @registry.register_model('dense_net_regression_dagnet')
-class DenseNetRegressionsDagnet(DenseNetRegressions):
+class DenseNetRegressionsDagnet(DefaultModel):
     def __init__(self, configs: Dict):
         super(DenseNetRegressionsDagnet, self).__init__(configs)
         self.__dict__.update(configs.get('special_inputs', {}))
@@ -44,8 +46,9 @@ class DenseNetRegressionsDagnet(DenseNetRegressions):
         x = self.forward(x)
         return x
 
-    def get_x_y(self, batch):
+    def get_x_y(self, batch) -> Tuple[List, torch.Tensor]:
         y = batch.pop(1)
-        batch_size = int(batch[1].shape[1] / 5 if self.players in ['atk', 'def']
+        players = self.configs.get('dataset').get('players')
+        batch_size = int(batch[1].shape[1] / 5 if players in ['atk', 'def']
                          else batch[1].shape[1] / 10)
         return batch, y.reshape(batch_size, -1)

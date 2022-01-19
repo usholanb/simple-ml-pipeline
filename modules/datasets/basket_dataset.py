@@ -43,7 +43,7 @@ class BasketDataset(DefaultDataset):
     def __init__(self, configs: Dict, split_name: AnyStr):
         super(BasketDataset, self).__init__(configs, split_name)
         self.configs = configs
-        si = self.configs.get('special_inputs')
+        si = self.configs.get('dataset')
         self.name = split_name if split_name != 'valid' else 'validation'
         self.data_dir = f'{DATA_DIR}/dagnet/{self.name}'
         self.obs_len = si.get('obs_len')

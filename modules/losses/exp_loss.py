@@ -10,5 +10,5 @@ class ExpLoss(BaseLoss):
     def __init__(self, configs):
         self.configs = configs
 
-    def __call__(self, train_outputs, y_true) -> torch.Tensor:
+    def __call__(self, train_outputs: torch.Tensor, y_true: torch.Tensor) -> torch.Tensor:
         return ((train_outputs - y_true).abs() / ((10 ** y_true) / 1e6)).sum()

@@ -120,7 +120,7 @@ class TorchTrainer(DefaultTrainer):
             torch.nn.utils.clip_grad_norm_(self.wrapper.parameters(), clip)
 
     def __checkpoint(self, valid_results: Dict, wrapper: TorchWrapper) -> None:
-        if self.configs.get('trainer').get('checkpoint', True):
+        if self.configs.get('trainer').get('checkpoint', False):
             metric = self.configs.get('trainer').get('checkpoint_metric').get('name')
             if self.metric_val is None or \
                     valid_results[metric] < self.metric_val:

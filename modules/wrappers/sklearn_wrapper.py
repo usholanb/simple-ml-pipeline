@@ -35,10 +35,6 @@ class SKLearnWrapper(DefaultWrapper):
             makes prediction on pandas examples of dim N X M
             where N is number of examples and M number of features
         """
-        # if self.classification:
-        #     result = np.zeros((len(examples), self.n_outputs))
-        #     result[np.arange(len(examples)), self.clf.predict(examples).astype(int)] = 1
-        # else:
         result = self.clf.predict(examples)
         return result
 
