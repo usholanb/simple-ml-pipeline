@@ -68,7 +68,7 @@ class SimplePredictor(BasePredictor):
         CSVSaver.save_file(f'{self.pred_dir}/metrics',
                            df, gzip=False, index=True)
 
-    def yiled_model_path(self):
+    def yield_model_path(self):
         for tag, model_name in self.configs.get('models').items():
             k_fold_tag = self.configs.get('dataset').get('k_fold_tag', '')
             model_name_tag = f'{model_name}_{tag}{k_fold_tag}'
@@ -80,7 +80,7 @@ class SimplePredictor(BasePredictor):
             data = CSVSaver().load(self.configs)
             for split_name in self.configs.get('splits', []):
                 split = data[data['split'] == split_name]
-                for model_path, model_name_tag in self.yiled_model_path():
+                for model_path, model_name_tag in self.yield_model_path():
                     preds = preds_ys[model_name_tag][split_name][f'{split_name}_preds']
                     split.insert(len(split.columns), model_name_tag, preds, False)
                 CSVSaver.save_file(f'{self.pred_dir}/predictions_{split_name}', split, gzip=True, index=False)

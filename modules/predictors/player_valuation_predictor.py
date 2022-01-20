@@ -45,7 +45,7 @@ class PlayerValuationPredictor(SimplePredictor):
                 pred_name = f'{split_name}_preds'
                 y_name = f'{split_name}_ys'
                 pred = (10 ** split[pred_name]).astype(int) / 1e6
-                true = (10 ** split[y_name]).astype(int) / 1e6
+                true = ((10 ** split[y_name]).astype(int) / 1e6).round(2)
                 label = f'{model_name_tag} {f.__name__}_{split_name}'
                 loss_y, quantity = [], []
                 for prev_x_point, x_point in zip(x_ticks[:-1], x_ticks[1:]):
