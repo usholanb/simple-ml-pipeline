@@ -14,5 +14,5 @@ class ExpLoss(BaseLoss):
         # return ((train_outputs - y_true).abs() / ((10 ** y_true) / 1e6)).sum()
         gt = torch.where(train_outputs < y_true)[0]
         lt = torch.where(train_outputs > y_true)[0]
-
-        return ((y_true[gt] / train_outputs[gt] - 1).sum() + (train_outputs[lt] / y_true[lt] - 1).sum()) / len(t)
+        return ((y_true[gt] / train_outputs[gt] - 1).sum() +
+                (train_outputs[lt] / y_true[lt] - 1).sum()) / len(y_true)

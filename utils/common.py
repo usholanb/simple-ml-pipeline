@@ -311,9 +311,8 @@ class Timeit:
             iter_time = now - self.start
             expected = str(timedelta(seconds=self.iter_n * iter_time))[:-7]
             total = str(timedelta(seconds=round(now - Timeit.original_start, 2)))[:-7]
-            print(f'{self.to_print}:   time: {iter_time},    '
-                  f'total training time: {total},'
-                  f' expected for all {self.iter_n} iters: {expected}')
+            print(f'{self.to_print}: time: {round(iter_time, 2)} seconds,    '
+                  f'total: {total} / expected: {self.iter_n} iters: {expected}')
 
 
 def get_data_loaders(configs: Dict) -> Dict[AnyStr, DataLoader]:

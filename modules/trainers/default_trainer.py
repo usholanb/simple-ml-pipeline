@@ -28,10 +28,10 @@ class DefaultTrainer(BaseTrainer):
         pickle_obj(self.wrapper, self.model_path)
 
 
-def metrics_fom_torch(y: torch.Tensor, pred: torch.Tensor,
+def metrics_fom_torch(y: torch.Tensor, pred: np.ndarray,
                       split_name: AnyStr, configs: Dict) -> Dict:
     metrics = get_metrics(y.detach().cpu().numpy(),
-                          pred.detach().cpu().numpy(), split_name, configs)
+                          pred, split_name, configs)
     return metrics
 
 

@@ -58,6 +58,7 @@ class TorchTrainer(DefaultTrainer):
             loss.backward()
             self.__clip_gradients()
             self.optimizer.step()
+            pred = self.wrapper.get_prediction_probs(data)
             metrics = metrics_fom_torch(y, pred, split, self.configs)
             metrics.update({f'{split}_{self.loss_name}': loss.item()})
             epoch_metrics.append(metrics)
@@ -79,8 +80,9 @@ class TorchTrainer(DefaultTrainer):
                     'split': split,
                     'batch_size': batch_size,
                 }
-                pred = self.valid_forward(data)
-                loss = self.compute_loss_valid(y, pred, data)
+                outputs = self.valid_forward(data)
+                loss = self.compute_loss_valid(y, outputs, data)
+                pred = self.wrapper.get_prediction_probs(data)
                 metrics = metrics_fom_torch(y, pred, split, self.configs)
                 metrics.update({f'{split}_{self.loss_name}': loss.item()})
                 epoch_metrics.append(metrics)
