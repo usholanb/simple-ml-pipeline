@@ -1,4 +1,4 @@
-from typing import Dict, Tuple
+from typing import Dict, Tuple, List
 import torch
 from modules.models.base_models.default_model import run_hooks
 from modules.trainers.default_trainer import DefaultTrainer, metrics_fom_torch
@@ -19,6 +19,7 @@ class TorchTrainer(DefaultTrainer):
         self.criterion = self.__get_loss()
         self.metric_val = None
         self.wrapper = self._get_wrapper(self.configs)
+        self.wrapper.to(self.device)
         self.optimizer = self.__get_optimizer(self.wrapper)
 
     def train(self) -> None:
@@ -159,7 +160,16 @@ class TorchTrainer(DefaultTrainer):
         Return:
         x: Anything
         y: labels: [batch_size: n_outputs] """
-        return self.wrapper.get_x_y(batch)
+        x, y = self.wrapper.get_x_y(batch)
+        if isinstance(y, torch.Tensor):
+            y.to(self.device)
+        if isinstance(x, torch.Tensor):
+            x.to(self.device)
+        if isinstance(x, list):
+            for e in x:
+                if isinstance(e, torch.Tensor):
+                    e.to(self.device)
+        return x, y
 
     def __get_loss(self) -> torch.nn.Module:
         if hasattr(torch.nn, self.loss_name):
