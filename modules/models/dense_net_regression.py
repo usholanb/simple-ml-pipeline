@@ -13,7 +13,10 @@ class DenseNetRegressions(DefaultModel):
         self.layers = self.set_layers()
 
     def get_x_y(self, batch) -> Tuple:
-        return batch
+        x, y = batch
+        if self.n_outputs == 1:
+            y = y.reshape(-1, self.n_outputs)
+        return x, y
 
     def forward(self, data: Dict) -> torch.Tensor:
         x = data['x']

@@ -74,6 +74,7 @@ class DefaultModel(nn.Module, BaseModel):
         """
         return {}
 
+
 def init_weights(m):
     if isinstance(m, nn.Linear):
         nn.init.xavier_uniform_(m.weight)

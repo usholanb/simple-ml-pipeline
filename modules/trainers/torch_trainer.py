@@ -132,7 +132,19 @@ class TorchTrainer(DefaultTrainer):
 
     def __train_loop(self, epoch: int = 0) -> Dict:
         self.wrapper.train()
-        return self.train_epoch([epoch, 'train', self.loaders['train']])
+        metrics = self.train_epoch([epoch, 'train', self.loaders['train']])
+        checkpoint_metric = self.configs.get('trainer').get('checkpoint_metric')
+        metric = checkpoint_metric.get('name')
+        metric = metric.replace('valid_', 'train_')
+        example_metric = list(metrics.keys())[0].replace('train_', 'valid_')
+        if metric not in metrics:
+            checkpoint_metric['name'] = example_metric
+            raise ValueError(f'you probably forgot to place correct'
+                             f' checkpoint metric,  couldnt find {metric} in the'
+                             f' results that are generated each epoch,'
+                             f'put for example:\n {checkpoint_metric} \n '
+                             f'in the trainer block')
+        return metrics
 
     def __test_loop(self, epoch: int = 0) -> Dict:
         self.wrapper.eval()
