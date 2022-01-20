@@ -68,24 +68,22 @@ class SimplePredictor(BasePredictor):
         CSVSaver.save_file(f'{self.pred_dir}/metrics',
                            df, gzip=False, index=True)
 
-    def yiled_wrapper(self):
+    def yiled_model_path(self):
         for tag, model_name in self.configs.get('models').items():
             k_fold_tag = self.configs.get('dataset').get('k_fold_tag', '')
             model_name_tag = f'{model_name}_{tag}{k_fold_tag}'
             model_path = f'{CLASSIFIERS_DIR}/{model_name_tag}.pkl'
-            yield unpickle_obj(model_path), model_name_tag
+            yield model_path, model_name_tag
 
-    def save_predictions(self):
-        const = self.configs.get('static_columns')
+    def save_predictions(self, preds_ys):
         if self.configs.get('dataset').get('input_path', None):
             data = CSVSaver().load(self.configs)
             for split_name in self.configs.get('splits', []):
                 split = data[data['split'] == split_name]
-                for wrapper, model_name_tag in self.yiled_wrapper():
-                    split_x = split.iloc[:, len(const):]
-                    preds = wrapper.get_prediction_probs(split_x)
+                for model_path, model_name_tag in self.yiled_model_path():
+                    preds = preds_ys[model_name_tag][split_name][f'{split_name}_preds']
                     split.insert(len(split.columns), model_name_tag, preds, False)
-            CSVSaver.save_file(f'{self.pred_dir}/predictions_{split_name}', split, gzip=True, index=False)
+                CSVSaver.save_file(f'{self.pred_dir}/predictions_{split_name}', split, gzip=True, index=False)
 
     def save_graphs(self, output_dataset: Dict) -> None:
         """ override if need graphs """

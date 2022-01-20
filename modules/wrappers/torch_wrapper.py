@@ -81,6 +81,11 @@ class TorchWrapper(DefaultWrapper):
 
     def predict_dataset(self, configs: Dict, split_names: List[AnyStr]) -> Dict:
         configs['features_list'] = self._features_list
+        dl = self.configs.get('dataset')\
+            .get('data_loaders', {'train': {}, 'valid': {}, 'test': {}})
+        dl['train']['batch_size'] = 1
+        dl['valid']['batch_size'] = 1
+        dl['test']['batch_size'] = 1
         loaders = get_data_loaders({**configs, **self.configs})
         self.to(self.device)
         self.eval()

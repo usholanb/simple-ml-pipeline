@@ -26,7 +26,7 @@ def get_predictor(k_fold_tag: AnyStr) -> SimplePredictor:
 def save_files(predictor: SimplePredictor, preds_ys: Dict) -> None:
     """ Prepares Dataset """
     predictor.save_metrics(preds_ys)
-    predictor.save_predictions()
+    predictor.save_predictions(preds_ys)
     predictor.save_graphs(preds_ys)
 
 
