@@ -69,7 +69,5 @@ if __name__ == '__main__':
     del p_features[target]
     dump_yaml(p_features)
     df.to_csv(f'{DATA_DIR}/{f_name}2.{ext}', index=False)
-    df.to_excel(f'{DATA_DIR}/{f_name}2.xlsm', index=False)
-
     print_columns_weird(df)
 

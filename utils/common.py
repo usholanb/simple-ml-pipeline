@@ -329,9 +329,6 @@ def get_data_loaders(configs: Dict) -> Dict[AnyStr, DataLoader]:
             split = dataset_class(configs, split_name)
             hps.update({'collate_fn': split.collate})
         else:
-            input_path = configs.get('dataset').get('input_path')
-            print(f'no dataset class with name {name} is found\n'
-                  f'will try to look for file with input_path: {input_path}')
             pandas_dataset_class = registry.get_dataset_class('pandas_dataset')
             split = pandas_dataset_class(configs, split_name)
         split_to_loader[split_name] = DataLoader(split, **hps)
