@@ -309,9 +309,10 @@ class Timeit:
         if self.iter > 0 and self.iter % self.every == 0:
             now = time()
             iter_time = now - self.start
-            expected = str(timedelta(seconds=self.iter_n * iter_time))
+            expected = str(timedelta(seconds=self.iter_n * iter_time).total_seconds())
+            total = str(timedelta(seconds=round(now - Timeit.original_start, 2)).total_seconds())
             print(f'{self.to_print}:   time: {iter_time},    '
-                  f'total training time: {round(now - Timeit.original_start, 2)},'
+                  f'total training time: {total},'
                   f' expected for all {self.iter_n} iters: {expected}')
 
 
