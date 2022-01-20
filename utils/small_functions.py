@@ -15,7 +15,7 @@ def get_mean_fraction_true_minus_pred(t, p):
 
 
 def get_mean_fraction_true_over_pred(t, p):
-    return (t / p).sum() / len(t)
+    return np.absolute((t / p - 1)).sum() / len(t)
 
 
 def get_rmse(t, p):

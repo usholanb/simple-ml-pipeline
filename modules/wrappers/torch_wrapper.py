@@ -86,6 +86,9 @@ class TorchWrapper(DefaultWrapper):
         dl['train']['batch_size'] = 1
         dl['valid']['batch_size'] = 1
         dl['test']['batch_size'] = 1
+        dl['train']['shuffle'] = False
+        dl['valid']['shuffle'] = False
+        dl['test']['shuffle'] = False
         loaders = get_data_loaders({**configs, **self.configs})
         self.to(self.device)
         self.eval()
