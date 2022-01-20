@@ -19,7 +19,7 @@ class MatPlotLibGraph:
         plt.ticklabel_format(style='plain', useMathText=True)
         for y, quantity, line_label in zip(ys, quantities, lines_labels):
             plt.step(x, y, where='post', label=line_label, linewidth=7.0)
-            plt.legend(fontsize=40, loc="upper left")
+            plt.legend(fontsize=40, loc="upper right")
             for xx, yy, qq in zip(x, y, quantity):
                 plt.text(xx, yy, qq, color='blue', fontweight='bold', fontsize=40)
         plt.savefig(f'{save_folder}/{y_label}.png')
