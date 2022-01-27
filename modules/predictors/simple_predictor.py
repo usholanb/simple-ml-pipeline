@@ -68,22 +68,31 @@ class SimplePredictor(BasePredictor):
         CSVSaver.save_file(f'{self.pred_dir}/metrics',
                            df, gzip=False, index=True)
 
-    def yiled_model_path(self):
+    def yield_model_path(self):
         for tag, model_name in self.configs.get('models').items():
             k_fold_tag = self.configs.get('dataset').get('k_fold_tag', '')
             model_name_tag = f'{model_name}_{tag}{k_fold_tag}'
             model_path = f'{CLASSIFIERS_DIR}/{model_name_tag}.pkl'
             yield model_path, model_name_tag
 
-    def save_predictions(self, preds_ys):
+    def get_split_with_pred(self, preds_ys):
         if self.configs.get('dataset').get('input_path', None):
             data = CSVSaver().load(self.configs)
             for split_name in self.configs.get('splits', []):
                 split = data[data['split'] == split_name]
-                for model_path, model_name_tag in self.yiled_model_path():
+                for model_path, model_name_tag in self.yield_model_path():
                     preds = preds_ys[model_name_tag][split_name][f'{split_name}_preds']
                     split.insert(len(split.columns), model_name_tag, preds, False)
-                CSVSaver.save_file(f'{self.pred_dir}/predictions_{split_name}', split, gzip=True, index=False)
+                    yield split, split_name, model_path, model_name_tag
+
+    def get_prediction_name(self, split_name):
+        tag = self.configs.get('dataset').get('tag', '')
+        tag = '' if not tag else f'_{tag}'
+        return f'{self.pred_dir}/predictions_{split_name}{tag}'
+
+    def save_predictions(self, preds_ys):
+        for split, split_name, model_path, model_name_tag in self.get_split_with_pred(preds_ys):
+            CSVSaver.save_file(self.get_prediction_name(split_name), split, gzip=True, index=False)
 
     def save_graphs(self, output_dataset: Dict) -> None:
         """ override if need graphs """

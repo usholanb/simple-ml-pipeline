@@ -1,4 +1,4 @@
-from typing import Dict, Tuple
+from typing import Dict, Tuple, List
 import torch
 from modules.models.base_models.default_model import run_hooks
 from modules.trainers.default_trainer import DefaultTrainer, metrics_fom_torch
@@ -19,6 +19,7 @@ class TorchTrainer(DefaultTrainer):
         self.criterion = self.__get_loss()
         self.metric_val = None
         self.wrapper = self._get_wrapper(self.configs)
+        self.wrapper.to(self.device)
         self.optimizer = self.__get_optimizer(self.wrapper)
 
     def train(self) -> None:
@@ -57,6 +58,7 @@ class TorchTrainer(DefaultTrainer):
             loss.backward()
             self.__clip_gradients()
             self.optimizer.step()
+            pred = self.wrapper.get_prediction_probs(data)
             metrics = metrics_fom_torch(y, pred, split, self.configs)
             metrics.update({f'{split}_{self.loss_name}': loss.item()})
             epoch_metrics.append(metrics)
@@ -78,8 +80,9 @@ class TorchTrainer(DefaultTrainer):
                     'split': split,
                     'batch_size': batch_size,
                 }
-                pred = self.valid_forward(data)
-                loss = self.compute_loss_valid(y, pred, data)
+                outputs = self.valid_forward(data)
+                loss = self.compute_loss_valid(y, outputs, data)
+                pred = self.wrapper.get_prediction_probs(data)
                 metrics = metrics_fom_torch(y, pred, split, self.configs)
                 metrics.update({f'{split}_{self.loss_name}': loss.item()})
                 epoch_metrics.append(metrics)
@@ -132,7 +135,19 @@ class TorchTrainer(DefaultTrainer):
 
     def __train_loop(self, epoch: int = 0) -> Dict:
         self.wrapper.train()
-        return self.train_epoch([epoch, 'train', self.loaders['train']])
+        metrics = self.train_epoch([epoch, 'train', self.loaders['train']])
+        checkpoint_metric = self.configs.get('trainer').get('checkpoint_metric')
+        metric = checkpoint_metric.get('name')
+        metric = metric.replace('valid_', 'train_')
+        example_metric = list(metrics.keys())[0].replace('train_', 'valid_')
+        if metric not in metrics:
+            checkpoint_metric['name'] = example_metric
+            raise ValueError(f'you probably forgot to place correct'
+                             f' checkpoint metric,  couldnt find {metric} in the'
+                             f' results that are generated each epoch,'
+                             f'put for example:\n {checkpoint_metric} \n '
+                             f'in the trainer block')
+        return metrics
 
     def __test_loop(self, epoch: int = 0) -> Dict:
         self.wrapper.eval()
@@ -147,7 +162,16 @@ class TorchTrainer(DefaultTrainer):
         Return:
         x: Anything
         y: labels: [batch_size: n_outputs] """
-        return self.wrapper.get_x_y(batch)
+        x, y = self.wrapper.get_x_y(batch)
+        if isinstance(y, torch.Tensor):
+            y.to(self.device)
+        if isinstance(x, torch.Tensor):
+            x.to(self.device)
+        if isinstance(x, list):
+            for e in x:
+                if isinstance(e, torch.Tensor):
+                    e.to(self.device)
+        return x, y
 
     def __get_loss(self) -> torch.nn.Module:
         if hasattr(torch.nn, self.loss_name):

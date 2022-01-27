@@ -22,14 +22,6 @@ class BasePredictor:
         dataset_name = self.configs.get('dataset').get('input_path').split('/')[-1]
         return create_folder(f'{PREDICTIONS_DIR}/{dataset_name}')
 
-    def print_important_features(self, wrapper: DefaultWrapper) -> None:
-        if self.configs.get('print_important_features', False):
-            self.feature_importance = {
-                k: v for k, v in
-                zip(wrapper.features_list, wrapper.clf.feature_importances_)
-            }
-            print(sorted(self.feature_importance.items(), key=lambda x: -x[1]))
-
     @abstractmethod
     def get_preds_ys(self) -> Dict:
         """ """

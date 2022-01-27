@@ -1,5 +1,7 @@
 import sys
 from typing import Dict, Tuple, AnyStr
+
+import numpy as np
 import pandas as pd
 import modules.helpers.labels_processor
 from modules.readers.base_reader.base_reader import BaseReader
@@ -16,6 +18,13 @@ class DefaultReader(BaseReader):
         self.data = None
         self.split_i = self.configs.get('static_columns').get('FINAL_SPLIT_INDEX')
 
+    def split_df_by_feature(self, ratio: float, df: pd.DataFrame, feature: AnyStr)  \
+            -> Tuple[pd.DataFrame, pd.DataFrame]:
+        column = df[feature].unique()
+        first_index = int(len(column) * ratio)
+        idx = df[feature].apply(lambda x: x in set(column[:first_index]))
+        return df[idx], df[np.invert(idx)]
+
     @property
     def reader_configs(self) -> Dict:
         return self.configs.get('reader')
@@ -26,15 +35,18 @@ class DefaultReader(BaseReader):
 
     def split_df(self, ratio: float, df: pd.DataFrame)  \
             -> Tuple[pd.DataFrame, pd.DataFrame]:
-        first_index = int(len(df) * ratio)
-        return df.iloc[:first_index, :], df.iloc[first_index:, :]
+        by_feature = self.configs.get('reader').get('by_feature', False)
+        if by_feature:
+            return self.split_df_by_feature(ratio, df, by_feature)
+        else:
+            first_index = int(len(df) * ratio)
+            return df.iloc[:first_index, :], df.iloc[first_index:, :]
 
     def split(self, input_paths: Dict, shuffle: bool = True) -> Dict:
         """
         reads source and splits to train, valid and test
         if valid or test is absence, train is split accordingly the split ratio
         """
-
         ratio = self.reader_configs.get('split_ratio')
         train, valid, test = ratio['train'], ratio['valid'], ratio['test']
         assert 'train' in input_paths, \
@@ -124,8 +136,10 @@ class DefaultReader(BaseReader):
 
         def not_preprocessed_to_last(f):
             """
-            Sort from least transformed to most transformed.
+            For printing features list in handy way
+            Sort features list from least transformed to most transformed.
             Not transformed go the end though
+
             """
             if f not in f_t:
                 return sys.maxsize

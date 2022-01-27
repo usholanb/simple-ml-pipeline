@@ -86,6 +86,9 @@ class TorchWrapper(DefaultWrapper):
         dl['train']['batch_size'] = 1
         dl['valid']['batch_size'] = 1
         dl['test']['batch_size'] = 1
+        dl['train']['shuffle'] = False
+        dl['valid']['shuffle'] = False
+        dl['test']['shuffle'] = False
         loaders = get_data_loaders({**configs, **self.configs})
         self.to(self.device)
         self.eval()
@@ -104,9 +107,9 @@ class TorchWrapper(DefaultWrapper):
                         'split': split,
                         'batch_size': loader.batch_size
                     }
-                    pred = self.get_train_probs(data)
+                    pred = self.get_prediction_probs(data)
                     pred = pred.reshape(y.shape)
-                    preds.append(pred.cpu().detach().numpy())
+                    preds.append(pred)
                     ys.append(y.cpu().detach().numpy())
                 model_metrics[split].update({f'{split}_preds': np.concatenate(preds),
                                             f'{split}_ys': np.concatenate(ys)})

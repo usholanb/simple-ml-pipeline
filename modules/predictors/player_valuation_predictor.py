@@ -1,4 +1,8 @@
 from typing import AnyStr, Dict, Callable
+
+import pandas as pd
+
+from modules.helpers.csv_saver import CSVSaver
 from modules.helpers.matplotlibgraph import MatPlotLibGraph
 from modules.predictors.simple_predictor import SimplePredictor
 from utils.registry import registry
@@ -14,7 +18,7 @@ class PlayerValuationPredictor(SimplePredictor):
     def __init__(self, configs: Dict):
         super().__init__(configs)
         self.scale = 1e-6
-        self.points = [10, 50, 110]
+        self.points = [10, 50, 130]
         self.steps = [1, 5, 10]
         self.graph = MatPlotLibGraph(self.configs)
         self.split_names = self.configs.get('splits', [])
@@ -25,6 +29,7 @@ class PlayerValuationPredictor(SimplePredictor):
             f = getattr(custom_functions_module, f_name)
             self.plot_one_f(f, x_ticks, preds_ys)
         self.one_hist(x_ticks, preds_ys, 'distribution')
+
 
     def one_hist(self, x_ticks: np.ndarray, preds_ys: Dict,
                  name: AnyStr) -> None:
@@ -45,7 +50,7 @@ class PlayerValuationPredictor(SimplePredictor):
                 pred_name = f'{split_name}_preds'
                 y_name = f'{split_name}_ys'
                 pred = (10 ** split[pred_name]).astype(int) / 1e6
-                true = (10 ** split[y_name]).astype(int) / 1e6
+                true = ((10 ** split[y_name]).astype(int) / 1e6).round(2)
                 label = f'{model_name_tag} {f.__name__}_{split_name}'
                 loss_y, quantity = [], []
                 for prev_x_point, x_point in zip(x_ticks[:-1], x_ticks[1:]):
@@ -71,3 +76,36 @@ class PlayerValuationPredictor(SimplePredictor):
             current = p
         return np.array(x_ticks)
 
+    def save_predictions(self, preds_ys):
+        split_name_to_split = {}
+        for split, split_name, model_path, model_name_tag in self.get_split_with_pred(preds_ys):
+            split_name_to_split[split_name] = split, model_path, model_name_tag
+        for split_name, (split, model_path, model_name_tag) in split_name_to_split.items():
+            test_mv = 10 ** split['_mv'].values
+            test_pred = 10 ** split[model_name_tag].values
+            t_p = np.stack([test_mv / test_pred, test_pred / test_mv], axis=1)
+            perc = t_p.max(axis=1)
+            threshold = len(self.configs.get('static_columns')) + 2
+            diff, names = [], []
+
+            # if split_name in []:
+            train, _, _ = split_name_to_split['train']
+            label = train.columns.tolist()[self.configs.get('static_columns').get('FINAL_LABEL_INDEX')]
+            for i in range(len(split)):
+                test_mv = 10 ** split[model_name_tag].iloc[i]
+                sim_train_rows = train[(10 ** train[label] < test_mv * 1.1) & (10 ** train[label] > test_mv * 0.9)]
+                if len(sim_train_rows) == 0:
+                    sim_train_rows = train[(10 ** train[label] < test_mv * 1.2) & (10 ** train[label] > test_mv * 0.8)]
+                train_mean = sim_train_rows.iloc[:, threshold:-len(self.configs.get('models'))].mean()
+                diff.append(train_mean - split.iloc[i, threshold:-len(self.configs.get('models'))])
+                names.append(', '.join(sim_train_rows['player_name']))
+            diff = pd.DataFrame(diff)
+            perc = pd.DataFrame(perc, columns=['larger / smaller'])
+            names = pd.DataFrame(names, columns=['similar_players'])
+            if len(diff) and self.configs.get('feature_importance', {}):
+                importance = self.configs.get('feature_importance').items()
+                importance = sorted(list(importance), key=lambda x: x[1], reverse=True)
+                f_list = [e[0] for e in importance]
+                diff = diff[f_list]
+            split = pd.concat([split.reset_index(drop=True), diff.reset_index(drop=True), perc, names], axis=1)
+            CSVSaver.save_file(self.get_prediction_name(split_name), split, gzip=True, index=False)
