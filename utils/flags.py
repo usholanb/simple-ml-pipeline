@@ -61,8 +61,8 @@ class TrainFlags(Flags):
             # default=f'{PROJECT_DIR}/example_config_files/train_logistic_regression_example.yml',
             # default=f'{PROJECT_DIR}/example_config_files/train_xgboost_example.yml',
             # default=f'{PROJECT_DIR}/example_config_files/train_dagnet_example.yml',
-            # default=f'{CONFIGS_DIR}/train_xgboost_regression.yml',
-            default=f'{CONFIGS_DIR}/train_linear_regression.yml',
+            default=f'{CONFIGS_DIR}/train_xgboost_regression.yml',
+            # default=f'{CONFIGS_DIR}/train_linear_regression.yml',
             # default=f'{CONFIGS_DIR}/train_dense_net.yml',
             help="path to config file starting from project home path",
         )
