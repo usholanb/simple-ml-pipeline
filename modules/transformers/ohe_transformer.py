@@ -19,9 +19,9 @@ def get_similar_words(words: List[AnyStr], coeff: float) -> None:
             if score > coeff:
                 scores[(i, j)] = score
 
-    for (i, j), score in scores.items():
+    for (i, j), score in sorted(scores.items(), key=lambda x: x[1], reverse=True):
         w1, w2 = words[i], words[j]
-        print(f'{w1} ---- {w2}, score: {score}\n')
+        print(f'"{w1}" ---- "{w2}", score: {score}\n')
 
 
 @registry.register_transformer('ohe')
