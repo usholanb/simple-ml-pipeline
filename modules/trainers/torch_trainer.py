@@ -53,8 +53,8 @@ class TorchTrainer(DefaultTrainer):
                 'split': split,
                 'batch_size': batch_size,
             }
-            pred = self.train_forward(data)
-            loss = self.compute_loss_train(y, pred, data)
+            outputs = self.train_forward(data)
+            loss = self.compute_loss_train(y, outputs, data)
             loss.backward()
             self.__clip_gradients()
             self.optimizer.step()

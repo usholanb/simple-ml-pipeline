@@ -349,8 +349,8 @@ def prepare_train(configs: Dict, dataset: pd.DataFrame,
     if not features_list:
         print('features_list not specified')
     filtered_f_list = figure_feature_list(features_list, dataset.columns.tolist())
+    split_column = dataset.iloc[:, split_i]
     for split in split_names:
-        split_column = dataset.iloc[:, split_i]
         data[f'{split}_y'] = \
             dataset.loc[split_column == split].iloc[:, label_index_i]
         if features_list:

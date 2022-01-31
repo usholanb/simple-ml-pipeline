@@ -1,4 +1,6 @@
 from typing import AnyStr, Dict, Callable
+
+from modules.helpers.csv_saver import CSVSaver
 from modules.helpers.matplotlibgraph import MatPlotLibGraph
 from modules.predictors.simple_predictor import SimplePredictor
 from utils.registry import registry

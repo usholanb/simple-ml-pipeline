@@ -1,5 +1,7 @@
 from typing import AnyStr, Dict
 from abc import abstractmethod
+
+import numpy as np
 import pandas as pd
 import torch
 from modules.containers.di_containers import TrainerContainer
@@ -75,14 +77,28 @@ class SimplePredictor(BasePredictor):
             model_path = f'{CLASSIFIERS_DIR}/{model_name_tag}.pkl'
             yield model_path, model_name_tag
 
+    def get_split_predictions(self, preds_ys):
+        def insert_into_df(df, i, name, column):
+            df.insert(i, name, column, False)
+            return i + 1
+
+        sc_i = len(self.configs.get('static_columns'))
+        data = CSVSaver().load(self.configs)
+        for split_name in self.configs.get('splits', []):
+            split = data[data['split'] == split_name]
+            for model_path, model_name_tag in self.yield_model_path():
+                preds = preds_ys[model_name_tag][split_name][f'{split_name}_preds']
+                sc_i = insert_into_df(split, sc_i, model_name_tag, preds)
+                ys = preds_ys[model_name_tag][split_name][f'{split_name}_ys']
+                t = 10 ** ys
+                p = 10 ** preds
+                percentage_diff = np.stack((t / p, p / t), axis=1).max(axis=1).round(2)
+                sc_i = insert_into_df(split, sc_i, f'{model_name_tag}_percentage_diff', percentage_diff)
+            yield split, split_name
+
     def save_predictions(self, preds_ys):
         if self.configs.get('dataset').get('input_path', None):
-            data = CSVSaver().load(self.configs)
-            for split_name in self.configs.get('splits', []):
-                split = data[data['split'] == split_name]
-                for model_path, model_name_tag in self.yield_model_path():
-                    preds = preds_ys[model_name_tag][split_name][f'{split_name}_preds']
-                    split.insert(len(split.columns), model_name_tag, preds, False)
+            for split, split_name in self.get_split_predictions(preds_ys):
                 CSVSaver.save_file(f'{self.pred_dir}/predictions_{split_name}', split, gzip=True, index=False)
 
     def save_graphs(self, output_dataset: Dict) -> None:

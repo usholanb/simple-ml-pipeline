@@ -2,6 +2,8 @@ from typing import List, AnyStr
 
 import numpy as np
 import nltk
+import pandas as pd
+
 from modules.transformers.base_transformers.base_transformer import BaseTransformer
 from utils.registry import registry
 
@@ -33,5 +35,5 @@ class OheTransformer(BaseTransformer):
         output = np.zeros((len(vector), len(val_to_index)))
         idx = np.array([val_to_index[val] for val in vector.tolist()])
         output[np.arange(len(vector)), idx] = 1
-        return output
+        return pd.DataFrame(data=output, columns=uniq)
 

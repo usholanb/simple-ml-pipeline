@@ -16,8 +16,7 @@ class SKLearnTrainer(DefaultTrainer):
         super().__init__(configs)
         dataset = CSVSaver().load(configs, folder=PROJECT_DIR)
         self.data = prepare_train(configs, dataset)
-        self.label_name = dataset.columns[self.configs.get('static_columns')
-            .get('FINAL_LABEL_INDEX')]
+        self.label_name = dataset.columns[self.label_i]
         self.split_column = dataset.iloc[:, self.split_i]
 
     def train(self) -> None:

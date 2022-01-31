@@ -68,6 +68,27 @@ class DefaultModel(nn.Module, BaseModel):
         self.apply(init_weights)
         return layers
 
+    def set_batches(self):
+        """ Creates a structure of batches layers
+            specified under special_inputs
+        """
+        batch_norms = []
+        if hasattr(self, 'batchnorm') and getattr(self, 'batchnorm'):
+            print('adding batchnorm layers to the NN')
+            index = 1
+            layers_sizes = getattr(self, 'layers_sizes', [10, 10, 10])
+            if len(layers_sizes) > 0:
+                for layer_size in layers_sizes[:-1]:
+                    batch_norm = nn.BatchNorm1d(layer_size)  # nn.Linear(layer_size, layers_sizes[index - 1])
+                    setattr(self, f'batchnorm{index}', batch_norm)
+                    batch_norms.append(batch_norm)
+                    index += 1
+            else:
+                batch_norms = []
+            batch_norms = [b.to(self.device) for b in batch_norms]
+            self.apply(init_weights)
+        return batch_norms
+
     def model_epoch_logs(self) -> Dict:
         """ Called after each epoch
             Return: dict of whatever needs to be logged to tensorboard

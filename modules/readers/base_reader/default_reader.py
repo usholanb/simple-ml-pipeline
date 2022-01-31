@@ -1,5 +1,7 @@
 import sys
 from typing import Dict, Tuple, AnyStr
+
+import numpy as np
 import pandas as pd
 import modules.helpers.labels_processor
 from modules.readers.base_reader.base_reader import BaseReader
@@ -85,15 +87,17 @@ class DefaultReader(BaseReader):
                 try:
                     feature_to_process = t_obj.apply(feature_to_process)
                 except Exception as e:
-                    # print([e for e in feature_to_process if isinstance(e, float)])
-                    feature_to_process = t_obj.apply(feature_to_process)
                     raise TypeError(f'feature {feature} could not be {t_name}: {e}')
 
             if len(feature_to_process.shape) == 1:
                 processed_data[feature] = feature_to_process
             elif len(feature_to_process.shape) == 2:
-                for i in range(feature_to_process.shape[1]):
-                    processed_data[f'{feature}_{i + 1}'] = feature_to_process[:, i]
+                if isinstance(feature_to_process, np.ndarray):
+                    for i in range(feature_to_process.shape[1]):
+                        processed_data[f'{feature}_{i + 1}'] = feature_to_process[:, i]
+                elif isinstance(feature_to_process, pd.DataFrame):
+                    for i, c in enumerate(feature_to_process.columns.tolist()):
+                        processed_data[f'{feature}_{c}'] = feature_to_process[c].values
             else:
                 raise ValueError('feature after transformation has 0 or'
                                  ' 3+ dimensions. Must be 1 or 2')

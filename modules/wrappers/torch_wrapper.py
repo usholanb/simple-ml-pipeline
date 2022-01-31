@@ -36,10 +36,14 @@ class TorchWrapper(DefaultWrapper):
         return model
 
     def get_prediction_probs(self, data: (Dict, pd.DataFrame)) -> np.ndarray:
-        if isinstance(data, pd.DataFrame):
-            data = self.filter_features(data)
-            data = {'x': (torch.FloatTensor(data.values)).to(self.device)}
-        return self.clf.predict(data).cpu().detach().numpy()
+        with torch.no_grad():
+            self.clf.eval()
+            if isinstance(data, pd.DataFrame):
+                data = self.filter_features(data)
+                data = {'x': (torch.FloatTensor(data.values)).to(self.device)}
+            result = self.clf.predict(data).cpu().detach().numpy()
+            self.clf.train()
+            return result
 
     def get_train_probs(self, data: Dict):
         """ returned to metrics or predict_proba in prediction step """

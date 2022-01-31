@@ -14,8 +14,10 @@ from utils.registry import registry
 class DefaultTrainer(BaseTrainer):
     def __init__(self, configs: Dict):
         self.configs = configs
-        self.label_i = self.configs.get('static_columns').get('FINAL_LABEL_NAME_INDEX')
-        self.split_i = self.configs.get('static_columns').get('FINAL_SPLIT_INDEX')
+        sc = self.configs.get('static_columns')
+        self.label_name_i = sc.get('FINAL_LABEL_NAME_INDEX')
+        self.label_i = sc.get('FINAL_LABEL_INDEX')
+        self.split_i = sc.get('FINAL_SPLIT_INDEX')
         self.wrapper = None
         self.device = TrainerContainer.device
 

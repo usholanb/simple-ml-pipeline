@@ -10,7 +10,7 @@ def get_abs_mean_fraction_true_minus_pred(t, p):
     return (np.absolute(t - p) / t).sum() / len(t)
 
 
-def get_mean_fraction_true_minus_pred(t, p):
+def get_mean_fraction_true_minus_pred_over_true(t, p):
     return ((t - p) / t).sum() / len(t)
 
 
