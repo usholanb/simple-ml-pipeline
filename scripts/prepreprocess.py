@@ -43,7 +43,19 @@ if __name__ == '__main__':
     for money_f in ['_mv']:
         df[money_f] = df[money_f].apply(lambda x: to_log(x, money_f))
 
-    df = df[df['position'].apply(lambda x: 'GK' not in x)]
+    df = df[df['position'].apply(lambda x: 'G' not in x)]
+
+    new_df = []
+    for player_name in df['player_name'].unique():
+        player_rows = df[df['player_name'] == player_name]
+        player_rows = player_rows.sort_values(by='season_start')
+        player_rows = player_rows[1:]
+        new_df.append(player_rows)
+    df = pd.concat(new_df)
+
+    # float_df = df.select_dtypes(include=[float, np.number])
+    # float_df = float_df.drop(['_mv'], axis=1)
+    # df[float_df.columns] = float_df.divide(df['minutes'], axis=0)
 
     df = df.drop(['Total_Saves', 'SixYardBox_Saves', 'PenaltyArea_Saves', 'OutOfBox_Saves'], axis=1)
     df = df.fillna(0)
@@ -101,6 +113,6 @@ if __name__ == '__main__':
     p_features = dict(p_features)
     del p_features[target]
     dump_yaml(p_features)
-    df.to_csv(f'{DATA_DIR}/{f_name}2.{ext}', index=False)
+    df.to_csv(f'{DATA_DIR}/player_valuation.{ext}', index=False)
     print_columns_weird(df)
 

@@ -77,7 +77,7 @@ class SimplePredictor(BasePredictor):
             model_path = f'{CLASSIFIERS_DIR}/{model_name_tag}.pkl'
             yield model_path, model_name_tag
 
-    def get_split_predictions(self, preds_ys):
+    def get_split_with_pred(self, preds_ys):
         def insert_into_df(df, i, name, column):
             df.insert(i, name, column, False)
             return i + 1
@@ -94,12 +94,16 @@ class SimplePredictor(BasePredictor):
                 p = 10 ** preds
                 percentage_diff = np.stack((t / p, p / t), axis=1).max(axis=1).round(2)
                 sc_i = insert_into_df(split, sc_i, f'{model_name_tag}_percentage_diff', percentage_diff)
-            yield split, split_name
+            yield split, split_name, model_path, model_name_tag
+
+    def get_prediction_name(self, split_name):
+        tag = self.configs.get('dataset').get('tag', '')
+        tag = '' if not tag else f'_{tag}'
+        return f'{self.pred_dir}/predictions_{split_name}{tag}'
 
     def save_predictions(self, preds_ys):
-        if self.configs.get('dataset').get('input_path', None):
-            for split, split_name in self.get_split_predictions(preds_ys):
-                CSVSaver.save_file(f'{self.pred_dir}/predictions_{split_name}', split, gzip=True, index=False)
+        for split, split_name, model_path, model_name_tag in self.get_split_with_pred(preds_ys):
+            CSVSaver.save_file(self.get_prediction_name(split_name), split, gzip=True, index=False)
 
     def save_graphs(self, output_dataset: Dict) -> None:
         """ override if need graphs """
