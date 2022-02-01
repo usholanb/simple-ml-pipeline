@@ -82,9 +82,9 @@ class SimplePredictor(BasePredictor):
             df.insert(i, name, column, False)
             return i + 1
 
-        sc_i = len(self.configs.get('static_columns'))
         data = CSVSaver().load(self.configs)
         for split_name in self.configs.get('splits', []):
+            sc_i = len(self.configs.get('static_columns'))
             split = data[data['split'] == split_name]
             for model_path, model_name_tag in self.yield_model_path():
                 preds = preds_ys[model_name_tag][split_name][f'{split_name}_preds']
@@ -94,7 +94,7 @@ class SimplePredictor(BasePredictor):
                 p = 10 ** preds
                 percentage_diff = np.stack((t / p, p / t), axis=1).max(axis=1).round(2)
                 sc_i = insert_into_df(split, sc_i, f'{model_name_tag}_percentage_diff', percentage_diff)
-            yield split, split_name, model_path, model_name_tag
+                yield split, split_name, model_path, model_name_tag
 
     def get_prediction_name(self, split_name):
         tag = self.configs.get('dataset').get('tag', '')

@@ -121,7 +121,18 @@ if __name__ == '__main__':
         df = df.drop(['highest_market_price'], axis=1)
 
     # remove all where same player, same year, diff clubs - stats are split, not unbiased in terms of time
-
+    to_remove = []
+    d = {}
+    for index, row in df.iterrows():
+        p_id_year = row['playerid'], row['year']
+        if p_id_year not in d:
+            d[p_id_year] = [index]
+        else:
+            d[p_id_year].append(index)
+    for p_id_year, idx in d.items():
+        if len(idx) > 1:
+            to_remove.extend(idx)
+    df = df.drop(to_remove)
 
     # fix unique cases field_position
     for curr_fp, curr_p, next_fp, next_p in [

@@ -103,8 +103,8 @@ class PlayerValuationPredictor(SimplePredictor):
                     importance = sorted(list(importance), key=lambda x: x[1], reverse=True)
                     f_list = [e[0] for e in importance]
                     diff = diff[f_list]
-                mv_again = split[['_mv']].rename(columns={"_mv": "_mv again"})
-                pred_again = split[[model_name_tag]].rename(columns={model_name_tag: f'{model_name_tag} again'})
-                split = pd.concat([split.reset_index(drop=True).round(2), diff.reset_index(drop=True).round(2),
-                                   perc.reset_index(drop=True), mv_again.reset_index(drop=True), pred_again.reset_index(drop=True), names], axis=1)
+                pred_again = split[[model_name_tag]].rename(columns={model_name_tag: model_name_tag})
+                diff = pd.concat([perc.reset_index(drop=True), split[['_mv']].reset_index(drop=True), pred_again.reset_index(drop=True),
+                                  names, diff.reset_index(drop=True).round(2)], axis=1)
+                CSVSaver.save_file(self.get_prediction_name(f'{split_name}_diff_train'), diff, gzip=True, index=False)
             CSVSaver.save_file(self.get_prediction_name(split_name), split, gzip=True, index=False)
