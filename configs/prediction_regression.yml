@@ -1,0 +1,38 @@
+includes:
+  - configs/constant_configs.yml
+
+predictor: player_valuation_predictor
+
+dataset:
+  input_path: processed_data/player_valuation2
+
+
+print_important_features: true
+
+
+splits:
+  - train
+  - valid
+  - test
+
+plots:
+  steps_func:
+#    - get_abs_diff
+    - get_abs_mean_fraction_true_minus_pred_over_true
+    - get_mean_fraction_true_minus_pred_over_true
+#    - get_rmse
+    - get_mean_fraction_larger_over_smaller
+
+
+models:
+#  uan: dense_net_regression
+#  adam: dense_net_regression
+#  linear: linear_regression
+  uan3: xgb_regressor
+#  small: xgb_regressor
+#  uan4: linear_regression
+#  uan3k_fold1: xgb_regressor
+#  uan3k_fold0: xgb_regressor
+
+
+metrics: [mse]

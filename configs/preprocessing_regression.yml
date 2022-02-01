@@ -1,0 +1,104 @@
+includes:
+  - configs/constant_configs.yml
+
+
+reader:
+  name: csv_reader  # csv_reader current alternatives: xlsx_reader, xlsm_reader. More can be implemented
+  sheet_name: Worksheet  # needed only for excel type files
+  label_type: regression  # classification or regression
+  input_path: data/player_valuation2
+  limit: null
+  # index or name of the labels column in the input data
+  label: _mv
+  shuffle: 1 # can be (0, false null) OR (anything else, which means true)
+   # if "split_ratio" doesn't sum to 1, then valid + test will be 1 - train
+  split_ratio:
+    train: 0.8
+    valid: 0.1
+    test: 0.1
+
+to_all_features: []
+
+
+#Pick Transformers(defined in modules/transformers/) or create your own
+#defined: norm, ohe
+features_list:
+  playerid: [ ]
+  club_id: [ ]
+  foot: [ ohe ]
+  field_position: [ ohe ]
+  position: [ ohe ]
+  nationality: [ ohe ]
+  club_name: [ ohe ]
+  year: [ min_max_scaler ]
+  height_in_cm: [ min_max_scaler ]
+  Apps_Aerial: [ min_max_scaler ]
+  Mins_Aerial: [ min_max_scaler ]
+  Total_Aerial: [ min_max_scaler ]
+  Won_Aerial: [ min_max_scaler ]
+  Lost_Aerial: [ min_max_scaler ]
+  Rating_Aerial: [ min_max_scaler ]
+  Apps_Assists: [ min_max_scaler ]
+  Cross_Assists: [ min_max_scaler ]
+  Corner_Assists: [ min_max_scaler ]
+  Throughball_Assists: [ min_max_scaler ]
+  Freekick_Assists: [ min_max_scaler ]
+  Throwin_Assists: [ min_max_scaler ]
+  Other_Assists: [ min_max_scaler ]
+  Total_Assists: [ min_max_scaler ]
+  Apps_Blocks: [ min_max_scaler ]
+  ShotsBlocked_Blocks: [ min_max_scaler ]
+  CrossesBlocked_Blocks: [ min_max_scaler ]
+  PassesBlocked_Blocks: [ min_max_scaler ]
+  Apps_Cards: [ min_max_scaler ]
+  Yellow_Cards: [ min_max_scaler ]
+  Red_Cards: [ min_max_scaler ]
+  Apps_Clearances: [ min_max_scaler ]
+  Total_Clearances: [ min_max_scaler ]
+  Apps_Dribbles: [ min_max_scaler ]
+  Unsuccessful_Dribbles: [ min_max_scaler ]
+  Successful_Dribbles: [ min_max_scaler ]
+  TotalDribbles_Dribbles: [ min_max_scaler ]
+  Apps_Fouls: [ min_max_scaler ]
+  Fouled_Fouls: [ min_max_scaler ]
+  Fouls_Fouls: [ min_max_scaler ]
+  Apps_Goals: [ min_max_scaler ]
+  Total_Goals: [ min_max_scaler ]
+  SixYardBox_Goals: [ min_max_scaler ]
+  PenaltyArea_Goals: [ min_max_scaler ]
+  OutOfBox_Goals: [ min_max_scaler ]
+  Apps_Interception: [ min_max_scaler ]
+  Total_Interception: [ min_max_scaler ]
+  Apps_Keypasses: [ min_max_scaler ]
+  Total_Keypasses: [ min_max_scaler ]
+  Long_Keypasses: [ min_max_scaler ]
+  Short_Keypasses: [ min_max_scaler ]
+  Apps_Offsides: [ min_max_scaler ]
+  CaughtOffside_Offsides: [ min_max_scaler ]
+  Apps_Passes: [ min_max_scaler ]
+  Total_Passes: [ min_max_scaler ]
+  AccLB_Passes: [ min_max_scaler ]
+  InAccLB_Passes: [ min_max_scaler ]
+  AccSP_Passes: [ min_max_scaler ]
+  InAccSP_Passes: [ min_max_scaler ]
+  Apps_Possessionloss: [ min_max_scaler ]
+  UnsuccessfulTouches_Possessionloss: [ min_max_scaler ]
+  Dispossessed_Possessionloss: [ min_max_scaler ]
+  Apps_Saves: [ min_max_scaler ]
+  Total_Saves: [ min_max_scaler ]
+  SixYardBox_Saves: [ min_max_scaler ]
+  PenaltyArea_Saves: [ min_max_scaler ]
+  OutOfBox_Saves: [ min_max_scaler ]
+  Apps_Shots: [ min_max_scaler ]
+  Total_Shots: [ min_max_scaler ]
+  OutOfBox_Shots: [ min_max_scaler ]
+  SixYardBox_Shots: [ min_max_scaler ]
+  PenaltyArea_Shots: [ min_max_scaler ]
+  Apps_Tackles: [ min_max_scaler ]
+  TotalTackles_Tackles: [ min_max_scaler ]
+  DribbledPast_Tackles: [ min_max_scaler ]
+  TotalAttemptedTackles_Tackles: [ min_max_scaler ]
+  age: [ min_max_scaler ]
+  days: [ min_max_scaler ]
+  last_values: [ min_max_scaler ]
+

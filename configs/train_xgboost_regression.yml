@@ -1,0 +1,307 @@
+includes:
+  - configs/constant_configs.yml
+
+
+dataset:
+  input_path: processed_data/player_valuation2
+  label_type: regression
+
+
+model:
+  name: xgboost.XGBRegressor
+  tag: uan3
+
+# inputs go to __init__ of the model (sklearn xgboost model in this case)
+special_inputs:
+#  booster: dart
+  n_estimators: [100, 150, 200, 250]
+  max_depth: 2
+  gamma: .015
+  num_parallel_tree: [4, 6, 8, 10]
+  learning_rate: [0.55, 0.6, 0.65, 0.7, 0.75]
+  subsample: .9
+  colsample_bytree: [0.5, 0.6, 0.7, 0.8]
+# Best configs:  {'n_estimators': 200, 'max_depth': 2, 'gamma': 0.015, 'num_parallel_tree': 8, 'learning_rate': 0.6, 'subsample': 0.9, 'colsample_bytree': 0.8}
+
+trainer:
+  name: sklearn_trainer
+  save: 1
+  tune:
+    resources_per_trial:
+      cpu: 5
+      gpu: 0
+    max_concurrent_trials: 54
+
+  checkpoint_metric:
+    name: valid_mse
+    mode: min
+
+metrics: [mse]
+
+
+features_list:
+#  - club_id
+#  - playerid
+  - AccLB_Passes
+  - AccSP_Passes
+  - Apps_Aerial
+  - Apps_Assists
+  - Apps_Blocks
+  - Apps_Cards
+  - Apps_Clearances
+  - Apps_Dribbles
+  - Apps_Fouls
+  - Apps_Goals
+  - Apps_Interception
+  - Apps_Keypasses
+  - Apps_Offsides
+  - Apps_Passes
+  - Apps_Possessionloss
+  - Apps_Saves
+  - Apps_Shots
+  - Apps_Tackles
+  - CaughtOffside_Offsides
+  - Corner_Assists
+  - Cross_Assists
+  - CrossesBlocked_Blocks
+  - Dispossessed_Possessionloss
+  - DribbledPast_Tackles
+  - Fouled_Fouls
+  - Fouls_Fouls
+  - Freekick_Assists
+  - InAccLB_Passes
+  - InAccSP_Passes
+  - Long_Keypasses
+  - Lost_Aerial
+  - Mins_Aerial
+  - Other_Assists
+  - OutOfBox_Goals
+  - OutOfBox_Saves
+  - OutOfBox_Shots
+  - PassesBlocked_Blocks
+  - PenaltyArea_Goals
+  - PenaltyArea_Saves
+  - PenaltyArea_Shots
+  - Rating_Aerial
+  - Red_Cards
+  - Short_Keypasses
+  - ShotsBlocked_Blocks
+  - SixYardBox_Goals
+  - SixYardBox_Saves
+  - SixYardBox_Shots
+  - Successful_Dribbles
+  - Throughball_Assists
+  - Throwin_Assists
+  - TotalAttemptedTackles_Tackles
+  - TotalDribbles_Dribbles
+  - TotalTackles_Tackles
+  - Total_Aerial
+  - Total_Assists
+  - Total_Clearances
+  - Total_Goals
+  - Total_Interception
+  - Total_Keypasses
+  - Total_Passes
+  - Total_Saves
+  - Total_Shots
+  - UnsuccessfulTouches_Possessionloss
+  - Unsuccessful_Dribbles
+  - Won_Aerial
+  - Yellow_Cards
+  - age
+  - days
+  - height_in_cm
+  - last_values
+  - year
+  - club_name_arsenal fc
+  - club_name_aston villa
+  - club_name_birmingham city
+  - club_name_blackburn rovers
+  - club_name_blackpool fc
+  - club_name_bolton wanderers
+  - club_name_brentford fc
+  - club_name_brighton & hove albion
+  - club_name_burnley fc
+  - club_name_cardiff city
+  - club_name_chelsea fc
+  - club_name_crystal palace
+  - club_name_everton fc
+  - club_name_fulham fc
+  - club_name_huddersfield town
+  - club_name_hull city
+  - club_name_leeds united
+  - club_name_leicester city
+  - club_name_liverpool fc
+  - club_name_manchester city
+  - club_name_middlesbrough fc
+  - club_name_newcastle united
+  - club_name_norwich city
+  - club_name_not_premier
+  - club_name_queens park rangers
+  - club_name_reading fc
+  - club_name_sheffield united
+  - club_name_southampton fc
+  - club_name_stoke city
+  - club_name_sunderland afc
+  - club_name_swansea city
+  - club_name_tottenham hotspur
+  - club_name_watford fc
+  - club_name_west bromwich albion
+  - club_name_wigan athletic
+  - club_name_wolverhampton wanderers
+  - field_position_attacking midfield
+  - field_position_central midfield
+  - field_position_centre back
+  - field_position_centre forward
+  - field_position_defensive midfield
+  - field_position_goalkeeper
+  - field_position_left back
+  - field_position_left midfield
+  - field_position_left winger
+  - field_position_right back
+  - field_position_right midfield
+  - field_position_right winger
+  - field_position_second striker
+  - foot_both
+  - foot_left
+  - foot_right
+  - nationality_albania
+  - nationality_algeria
+  - nationality_angola
+  - nationality_antigua and barbudaengland
+  - nationality_argentina
+  - nationality_argentinaitaly
+  - nationality_argentinamexico
+  - nationality_armenia
+  - nationality_australia
+  - nationality_austria
+  - nationality_belgium
+  - nationality_belgiumcote d'ivoire
+  - nationality_benin
+  - nationality_bosnia herzegovina
+  - nationality_brazil
+  - nationality_brazilitaly
+  - nationality_bulgaria
+  - nationality_burundi
+  - nationality_cameroon
+  - nationality_cameroonsomalia
+  - nationality_canada
+  - nationality_chile
+  - nationality_chilehaiti
+  - nationality_colombia
+  - nationality_costa rica
+  - nationality_cote d'ivoire
+  - nationality_croatia
+  - nationality_curacao
+  - nationality_czech republic
+  - nationality_denmark
+  - nationality_dominican republic
+  - nationality_dr congo
+  - nationality_dr congoengland
+  - nationality_ecuador
+  - nationality_ecuadorspain
+  - nationality_egypt
+  - nationality_england
+  - nationality_englandantigua and barbuda
+  - nationality_englanddr congo
+  - nationality_englandfrance
+  - nationality_englandguyana
+  - nationality_englandireland
+  - nationality_englandjamaica
+  - nationality_englandmontserrat
+  - nationality_englandnigeria
+  - nationality_englandseychelles
+  - nationality_englandsierra leone
+  - nationality_englandwales
+  - nationality_equatorial guinea
+  - nationality_estonia
+  - nationality_finland
+  - nationality_france
+  - nationality_francecongo
+  - nationality_francedr congo
+  - nationality_francesenegal
+  - nationality_french guiana
+  - nationality_gabon
+  - nationality_gabonfrance
+  - nationality_germany
+  - nationality_ghana
+  - nationality_ghanaengland
+  - nationality_gibraltarengland
+  - nationality_greece
+  - nationality_grenada
+  - nationality_guadeloupe
+  - nationality_guadeloupefrance
+  - nationality_guyana
+  - nationality_honduras
+  - nationality_iceland
+  - nationality_iran
+  - nationality_ireland
+  - nationality_irelandaustralia
+  - nationality_irelandengland
+  - nationality_israel
+  - nationality_israelitaly
+  - nationality_italy
+  - nationality_jamaica
+  - nationality_jamaicaengland
+  - nationality_japan
+  - nationality_kenya
+  - nationality_korea, south
+  - nationality_kosovo
+  - nationality_latvia
+  - nationality_mali
+  - nationality_malifrance
+  - nationality_mauritania
+  - nationality_mexico
+  - nationality_montenegro
+  - nationality_montenegroswitzerland
+  - nationality_morocco
+  - nationality_netherlands
+  - nationality_netherlandssuriname
+  - nationality_new zealand
+  - nationality_nigeria
+  - nationality_nigeriaengland
+  - nationality_north macedonia
+  - nationality_northern ireland
+  - nationality_norway
+  - nationality_paraguay
+  - nationality_philippines
+  - nationality_poland
+  - nationality_portugal
+  - nationality_portugalbrazil
+  - nationality_romania
+  - nationality_russia
+  - nationality_scotland
+  - nationality_scotlandengland
+  - nationality_scotlandnigeria
+  - nationality_senegal
+  - nationality_senegalfrance
+  - nationality_serbia
+  - nationality_sierra leone
+  - nationality_slovakia
+  - nationality_slovenia
+  - nationality_south africa
+  - nationality_spain
+  - nationality_spainitaly
+  - nationality_st. kitts & nevis
+  - nationality_sweden
+  - nationality_switzerland
+  - nationality_the gambia
+  - nationality_togo
+  - nationality_tunisia
+  - nationality_turkey
+  - nationality_ukraine
+  - nationality_united states
+  - nationality_united statesengland
+  - nationality_united statesnigeria
+  - nationality_united statesscotland
+  - nationality_uruguay
+  - nationality_wales
+  - nationality_walescyprus
+  - nationality_walesengland
+  - nationality_walesjamaica
+  - nationality_zambia
+  - nationality_zimbabwe
+  - position_attack
+  - position_defender
+  - position_goalkeeper
+  - position_midfield
