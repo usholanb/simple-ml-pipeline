@@ -422,3 +422,7 @@ def mean_dict_values(ds: List[Dict]) -> Dict:
         for k, v in d.items():
             sum_d[k] += v
     return {k: v * 1.0 / len(ds) for k, v in sum_d.items()}
+
+
+def cat_pandas(dfs):
+    return pd.concat([e.reset_index(drop=True) for e in dfs], axis=1)

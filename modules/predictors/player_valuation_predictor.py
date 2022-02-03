@@ -3,6 +3,7 @@ import pandas as pd
 from modules.helpers.csv_saver import CSVSaver
 from modules.helpers.matplotlibgraph import MatPlotLibGraph
 from modules.predictors.simple_predictor import SimplePredictor
+from utils.common import cat_pandas
 from utils.registry import registry
 import numpy as np
 import utils.small_functions as custom_functions_module
@@ -73,38 +74,51 @@ class PlayerValuationPredictor(SimplePredictor):
             current = p
         return np.array(x_ticks)
 
+    def get_f_list_order(self):
+        importance = self.configs.get('feature_importance').items()
+        importance = sorted(list(importance), key=lambda x: x[1], reverse=True)
+        f_list = [e[0] for e in importance]
+        return f_list
+
+    def make_diff_file(self, split_name_to_split, split, split_name, model_name_tag, perc):
+        threshold = len(self.configs.get('static_columns')) + 2
+        diff, names = [], []
+        if 'train' in split_name_to_split:
+            train, _, _ = split_name_to_split['train']
+            label = split.columns.tolist()[self.configs.get('static_columns').get('FINAL_LABEL_INDEX')]
+            for i in range(len(split)):
+                mv = 10 ** split[model_name_tag].iloc[i]
+                sim_train_rows = train[(10 ** train[label] < mv * 1.1) & (10 ** train[label] > mv * 0.9)]
+                if len(sim_train_rows) == 0:
+                    sim_train_rows = train[(10 ** train[label] < mv * 1.2) & (10 ** train[label] > mv * 0.8)]
+                train_mean = sim_train_rows.iloc[:, threshold:].mean()
+                diff.append(train_mean - split.iloc[i, threshold:])
+                names.append(', '.join([str(e) for e in sim_train_rows['playerid']]))
+            diff = pd.DataFrame(diff)
+
+            names = pd.DataFrame(names, columns=['similar_players'])
+            if self.configs.get('feature_importance', {}) and len(diff):
+                diff = diff[self.get_f_list_order()]
+            pred_again = split[[model_name_tag]]
+            _mv_millions = round(split[['_mv_millions']] / 1e6, 2)
+            diff = cat_pandas([perc, split[['_mv']],
+                              pred_again, _mv_millions,
+                              names, diff.round(2)])
+            CSVSaver.save_file(self.get_prediction_name(f'{split_name}_diff_train'), diff, gzip=True, index=False)
+
     def save_predictions(self, preds_ys):
         split_name_to_split = {}
         for split, split_name, model_path, model_name_tag in self.get_split_with_pred(preds_ys):
             split_name_to_split[split_name] = split, model_path, model_name_tag
+
         for split_name, (split, model_path, model_name_tag) in split_name_to_split.items():
             mv = 10 ** split['_mv'].values
-            test_pred = 10 ** split[model_name_tag].values
-            t_p = np.stack([mv / test_pred, test_pred / mv], axis=1)
+            pred = 10 ** split[model_name_tag].values
+            t_p = np.stack([mv / pred, pred / mv], axis=1)
             perc = t_p.max(axis=1)
-            threshold = len(self.configs.get('static_columns')) + 2
-            diff, names = [], []
-            if 'train' in split_name_to_split:
-                train, _, _ = split_name_to_split['train']
-                label = split.columns.tolist()[self.configs.get('static_columns').get('FINAL_LABEL_INDEX')]
-                for i in range(len(split)):
-                    mv = 10 ** split[model_name_tag].iloc[i]
-                    sim_train_rows = train[(10 ** train[label] < mv * 1.1) & (10 ** train[label] > mv * 0.9)]
-                    if len(sim_train_rows) == 0:
-                        sim_train_rows = train[(10 ** train[label] < mv * 1.2) & (10 ** train[label] > mv * 0.8)]
-                    train_mean = sim_train_rows.iloc[:, threshold:].mean()
-                    diff.append(train_mean - split.iloc[i, threshold:])
-                    names.append(', '.join([str(e) for e in sim_train_rows['playerid']]))
-                diff = pd.DataFrame(diff)
-                perc = pd.DataFrame(perc, columns=['larger / smaller'])
-                names = pd.DataFrame(names, columns=['similar_players'])
-                if len(diff) and self.configs.get('feature_importance', {}):
-                    importance = self.configs.get('feature_importance').items()
-                    importance = sorted(list(importance), key=lambda x: x[1], reverse=True)
-                    f_list = [e[0] for e in importance]
-                    diff = diff[f_list]
-                pred_again = split[[model_name_tag]].rename(columns={model_name_tag: model_name_tag})
-                diff = pd.concat([perc.reset_index(drop=True), split[['_mv']].reset_index(drop=True), pred_again.reset_index(drop=True),
-                                  names, diff.reset_index(drop=True).round(2)], axis=1)
-                CSVSaver.save_file(self.get_prediction_name(f'{split_name}_diff_train'), diff, gzip=True, index=False)
-            CSVSaver.save_file(self.get_prediction_name(split_name), split, gzip=True, index=False)
+            perc = pd.DataFrame(perc, columns=['larger / smaller'])
+            self.make_diff_file(split_name_to_split, split, split_name, model_name_tag, perc)
+
+            CSVSaver.save_file(self.get_prediction_name(split_name),
+                cat_pandas([split[['_mv']], split[[model_name_tag]], perc, split[self.get_f_list_order()]]),
+                               gzip=True, index=False)

@@ -35,4 +35,4 @@ models:
 #  uan3k_fold0: xgb_regressor
 
 
-metrics: [mse]
+metrics: [mse, r2]

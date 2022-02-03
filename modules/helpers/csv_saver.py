@@ -17,15 +17,18 @@ class CSVSaver:
             data.to_csv(name, index=False, compression='gzip')
 
     @classmethod
-    def load(cls, configs: Dict, folder: AnyStr = '') -> pd.DataFrame:
+    def load(cls, configs: Dict, folder: AnyStr = '', compression='gzip') -> pd.DataFrame:
         """ loads csv from input_path which is local path"""
         tag = configs.get('dataset').get('k_fold_tag', '')
         input_path = f"{configs.get('dataset').get('input_path')}{tag}"
-        gz_input_path = cls.add_csv_gz(input_path)
-        print(f'reading {gz_input_path}')
+        if compression == 'gzip':
+            ext_input_path = cls.add_csv_gz(input_path)
+        else:
+            ext_input_path = cls.add_csv(input_path)
+        print(f'reading {ext_input_path}')
         if folder:
-            gz_input_path = f'{folder}/{gz_input_path}'
-        dataset = pd.read_csv(gz_input_path,  compression='gzip')
+            ext_input_path = f'{folder}/{ext_input_path}'
+        dataset = pd.read_csv(ext_input_path,  compression=compression)
         print(f'dataset: {dataset.shape}')
         return dataset
 

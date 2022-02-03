@@ -25,12 +25,15 @@ to_all_features: []
 features_list:
   playerid: [ ]
   club_id: [ ]
+  _mv_millions: [ ]
+  last_values: [ min_max_scaler ]
+  current_age: [ min_max_scaler ]
   foot: [ ohe ]
   field_position: [ ohe ]
   position: [ ohe ]
   nationality: [ ohe ]
   club_name: [ ohe ]
-  year: [ min_max_scaler ]
+  year: [ ohe ]
   height_in_cm: [ min_max_scaler ]
   Apps_Aerial: [ min_max_scaler ]
   Mins_Aerial: [ min_max_scaler ]
@@ -100,5 +103,5 @@ features_list:
   TotalAttemptedTackles_Tackles: [ min_max_scaler ]
   age: [ min_max_scaler ]
   days: [ min_max_scaler ]
-  last_values: [ min_max_scaler ]
+
 
