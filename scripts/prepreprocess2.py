@@ -230,8 +230,13 @@ if __name__ == '__main__':
                                  ])
     df.loc[:, idx] = df.loc[:, idx].fillna(df.median())
     df = df.fillna(0)
-    ohe_features = ['foot', 'field_position', 'position', 'nationality', 'club_name', 'last_values']
-    no_t_features = ['playerid', 'club_id']
+    # divide certain features with "Mins_Aerial"
+    for f in df.columns.tolist():
+        if isinstance(df[f].loc[0], (float, int)):
+            df[f'_divided_{f}'] = df[f] / df['Mins_Aerial']
+
+    ohe_features = ['foot', 'field_position', 'position', 'nationality', 'club_name']
+    no_t_features = ['playerid', 'club_id', 'last_values']
     p_features = []
 
     for feature_name in no_t_features:

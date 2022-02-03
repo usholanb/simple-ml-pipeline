@@ -13,13 +13,13 @@ model:
 
 # inputs go to __init__ of the model (sklearn xgboost model in this case)
 special_inputs:
-  n_estimators: 100
+  n_estimators: 500
   max_depth: 4
   gamma: .03
   num_parallel_tree:  16
-  learning_rate: 0.5
+  learning_rate: [0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8]
   subsample: .9
-  colsample_bytree: 0.8
+  colsample_bytree: 1.
 
 #special_inputs:
 #  n_estimators: [150, 200, 300]
@@ -49,8 +49,7 @@ metrics: [mse, r2]
 features_list:
 #  - club_id
 #  - playerid
-#  - _mv_millions
-  - current_age
+  - last_values
   - AccLB_Passes
   - AccSP_Passes
   - Apps_Aerial
@@ -117,10 +116,68 @@ features_list:
   - Unsuccessful_Dribbles
   - Won_Aerial
   - Yellow_Cards
+  - _divided_AccLB_Passes
+  - _divided_AccSP_Passes
+  - _divided_Apps_Assists
+  - _divided_Apps_Passes
+  - _divided_CaughtOffside_Offsides
+  - _divided_Corner_Assists
+  - _divided_Cross_Assists
+  - _divided_CrossesBlocked_Blocks
+  - _divided_Dispossessed_Possessionloss
+  - _divided_DribbledPast_Tackles
+  - _divided_Fouled_Fouls
+  - _divided_Fouls_Fouls
+  - _divided_Freekick_Assists
+  - _divided_InAccLB_Passes
+  - _divided_InAccSP_Passes
+  - _divided_Long_Keypasses
+  - _divided_Lost_Aerial
+  - _divided_Other_Assists
+  - _divided_OutOfBox_Goals
+  - _divided_OutOfBox_Saves
+  - _divided_OutOfBox_Shots
+  - _divided_PassesBlocked_Blocks
+  - _divided_PenaltyArea_Goals
+  - _divided_PenaltyArea_Saves
+  - _divided_PenaltyArea_Shots
+  - _divided_Rating_Aerial
+  - _divided_Red_Cards
+  - _divided_Short_Keypasses
+  - _divided_ShotsBlocked_Blocks
+  - _divided_SixYardBox_Goals
+  - _divided_SixYardBox_Saves
+  - _divided_SixYardBox_Shots
+  - _divided_Successful_Dribbles
+  - _divided_Throughball_Assists
+  - _divided_Throwin_Assists
+  - _divided_TotalAttemptedTackles_Tackles
+  - _divided_TotalDribbles_Dribbles
+  - _divided_TotalTackles_Tackles
+  - _divided_Total_Aerial
+  - _divided_Total_Assists
+  - _divided_Total_Clearances
+  - _divided_Total_Goals
+  - _divided_Total_Interception
+  - _divided_Total_Keypasses
+  - _divided_Total_Passes
+  - _divided_Total_Saves
+  - _divided_Total_Shots
+  - _divided_UnsuccessfulTouches_Possessionloss
+  - _divided_Unsuccessful_Dribbles
+  - _divided_Won_Aerial
+  - _divided_Yellow_Cards
+  - _divided__mv
+  - _divided_age
+  - _divided_club_id
+  - _divided_current_age
+  - _divided_height_in_cm
+  - _divided_last_values
   - age
+  - current_age
   - days
   - height_in_cm
-  - last_values
+  - year
   - club_name_Arsenal FC
   - club_name_Aston Villa
   - club_name_Birmingham City
@@ -306,16 +363,5 @@ features_list:
   - position_defender
   - position_goalkeeper
   - position_midfield
-  - year_2009
-  - year_2010
-  - year_2011
-  - year_2012
-  - year_2013
-  - year_2014
-  - year_2015
-  - year_2016
-  - year_2017
-  - year_2018
-  - year_2019
-  - year_2020
-  - year_2021
+
+
