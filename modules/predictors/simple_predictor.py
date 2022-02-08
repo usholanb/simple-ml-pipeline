@@ -96,6 +96,7 @@ class SimplePredictor(BasePredictor):
                 sc_i = insert_into_df(split, sc_i, f'{model_name_tag}_percentage_diff', percentage_diff)
                 yield split, split_name, model_path, model_name_tag
 
+
     def get_prediction_name(self, split_name):
         tag = self.configs.get('dataset').get('tag', '')
         tag = '' if not tag else f'_{tag}'

@@ -13,15 +13,22 @@ model:
 
 # inputs go to __init__ of the model (sklearn xgboost model in this case)
 special_inputs:
-#  booster: dart
-  n_estimators: 200
-  max_depth: 2
-  gamma: .015
-  num_parallel_tree: 8
-  learning_rate: 0.6
+  n_estimators: 500
+  max_depth: 4
+  gamma: .03
+  num_parallel_tree:  16
+  learning_rate: 0.5
   subsample: .9
-  colsample_bytree: 0.8
+  colsample_bytree: 1.
 
+#special_inputs:
+#  n_estimators: [150, 200, 300]
+#  max_depth: 2
+#  gamma: .03
+#  num_parallel_tree:  8
+#  learning_rate: [0.5, 0.1, 0.6, 0.3]
+#  subsample: [.9, 0.8, 1., 0.7]
+#  colsample_bytree: [0.8, 0.7, 0.9, 1.]
 
 trainer:
   name: sklearn_trainer
@@ -36,12 +43,13 @@ trainer:
     name: valid_mse
     mode: min
 
-metrics: [mse]
+metrics: [mse, r2]
 
 
 features_list:
 #  - club_id
 #  - playerid
+  - last_values
   - AccLB_Passes
   - AccSP_Passes
   - Apps_Aerial
@@ -108,47 +116,103 @@ features_list:
   - Unsuccessful_Dribbles
   - Won_Aerial
   - Yellow_Cards
+  - _divided_AccLB_Passes
+  - _divided_AccSP_Passes
+  - _divided_Apps_Assists
+  - _divided_Apps_Passes
+  - _divided_CaughtOffside_Offsides
+  - _divided_Corner_Assists
+  - _divided_Cross_Assists
+  - _divided_CrossesBlocked_Blocks
+  - _divided_Dispossessed_Possessionloss
+  - _divided_DribbledPast_Tackles
+  - _divided_Fouled_Fouls
+  - _divided_Fouls_Fouls
+  - _divided_Freekick_Assists
+  - _divided_InAccLB_Passes
+  - _divided_InAccSP_Passes
+  - _divided_Long_Keypasses
+  - _divided_Lost_Aerial
+  - _divided_Other_Assists
+  - _divided_OutOfBox_Goals
+  - _divided_OutOfBox_Saves
+  - _divided_OutOfBox_Shots
+  - _divided_PassesBlocked_Blocks
+  - _divided_PenaltyArea_Goals
+  - _divided_PenaltyArea_Saves
+  - _divided_PenaltyArea_Shots
+  - _divided_Rating_Aerial
+  - _divided_Red_Cards
+  - _divided_Short_Keypasses
+  - _divided_ShotsBlocked_Blocks
+  - _divided_SixYardBox_Goals
+  - _divided_SixYardBox_Saves
+  - _divided_SixYardBox_Shots
+  - _divided_Successful_Dribbles
+  - _divided_Throughball_Assists
+  - _divided_Throwin_Assists
+  - _divided_TotalAttemptedTackles_Tackles
+  - _divided_TotalDribbles_Dribbles
+  - _divided_TotalTackles_Tackles
+  - _divided_Total_Aerial
+  - _divided_Total_Assists
+  - _divided_Total_Clearances
+  - _divided_Total_Goals
+  - _divided_Total_Interception
+  - _divided_Total_Keypasses
+  - _divided_Total_Passes
+  - _divided_Total_Saves
+  - _divided_Total_Shots
+  - _divided_UnsuccessfulTouches_Possessionloss
+  - _divided_Unsuccessful_Dribbles
+  - _divided_Won_Aerial
+  - _divided_Yellow_Cards
+  - _divided_age
+  - _divided_club_id
+  - _divided_current_age
+  - _divided_height_in_cm
+  - _divided_last_values
   - age
+  - current_age
   - days
   - height_in_cm
-  - last_values
   - year
-  - club_name_arsenal fc
-  - club_name_aston villa
-  - club_name_birmingham city
-  - club_name_blackburn rovers
-  - club_name_blackpool fc
-  - club_name_bolton wanderers
-  - club_name_brentford fc
-  - club_name_brighton & hove albion
-  - club_name_burnley fc
-  - club_name_cardiff city
-  - club_name_chelsea fc
-  - club_name_crystal palace
-  - club_name_everton fc
-  - club_name_fulham fc
-  - club_name_huddersfield town
-  - club_name_hull city
-  - club_name_leeds united
-  - club_name_leicester city
-  - club_name_liverpool fc
-  - club_name_manchester city
-  - club_name_middlesbrough fc
-  - club_name_newcastle united
-  - club_name_norwich city
+  - club_name_Arsenal FC
+  - club_name_Aston Villa
+  - club_name_Birmingham City
+  - club_name_Blackburn Rovers
+  - club_name_Blackpool FC
+  - club_name_Bolton Wanderers
+  - club_name_Brentford FC
+  - club_name_Brighton & Hove Albion
+  - club_name_Burnley FC
+  - club_name_Cardiff City
+  - club_name_Chelsea FC
+  - club_name_Crystal Palace
+  - club_name_Everton FC
+  - club_name_Fulham FC
+  - club_name_Huddersfield Town
+  - club_name_Hull City
+  - club_name_Leeds United
+  - club_name_Leicester City
+  - club_name_Liverpool FC
+  - club_name_Manchester City
+  - club_name_Middlesbrough FC
+  - club_name_Newcastle United
+  - club_name_Norwich City
+  - club_name_Queens Park Rangers
+  - club_name_Reading FC
+  - club_name_Sheffield United
+  - club_name_Southampton FC
+  - club_name_Stoke City
+  - club_name_Sunderland AFC
+  - club_name_Swansea City
+  - club_name_Tottenham Hotspur
+  - club_name_Watford FC
+  - club_name_West Bromwich Albion
+  - club_name_Wigan Athletic
+  - club_name_Wolverhampton Wanderers
   - club_name_not_premier
-  - club_name_queens park rangers
-  - club_name_reading fc
-  - club_name_sheffield united
-  - club_name_southampton fc
-  - club_name_stoke city
-  - club_name_sunderland afc
-  - club_name_swansea city
-  - club_name_tottenham hotspur
-  - club_name_watford fc
-  - club_name_west bromwich albion
-  - club_name_wigan athletic
-  - club_name_wolverhampton wanderers
   - field_position_attacking midfield
   - field_position_central midfield
   - field_position_centre back
@@ -165,143 +229,138 @@ features_list:
   - foot_both
   - foot_left
   - foot_right
-  - nationality_albania
-  - nationality_algeria
-  - nationality_angola
-  - nationality_antigua and barbudaengland
-  - nationality_argentina
-  - nationality_argentinaitaly
-  - nationality_argentinamexico
-  - nationality_armenia
-  - nationality_australia
-  - nationality_austria
-  - nationality_belgium
-  - nationality_belgiumcote d'ivoire
-  - nationality_benin
-  - nationality_bosnia herzegovina
-  - nationality_brazil
-  - nationality_brazilitaly
-  - nationality_bulgaria
-  - nationality_burundi
-  - nationality_cameroon
-  - nationality_cameroonsomalia
-  - nationality_canada
-  - nationality_chile
-  - nationality_chilehaiti
-  - nationality_colombia
-  - nationality_costa rica
-  - nationality_cote d'ivoire
-  - nationality_croatia
-  - nationality_curacao
-  - nationality_czech republic
-  - nationality_denmark
-  - nationality_dominican republic
-  - nationality_dr congo
-  - nationality_dr congoengland
-  - nationality_ecuador
-  - nationality_ecuadorspain
-  - nationality_egypt
-  - nationality_england
-  - nationality_englandantigua and barbuda
-  - nationality_englanddr congo
-  - nationality_englandfrance
-  - nationality_englandguyana
-  - nationality_englandireland
-  - nationality_englandjamaica
-  - nationality_englandmontserrat
-  - nationality_englandnigeria
-  - nationality_englandseychelles
-  - nationality_englandsierra leone
-  - nationality_englandwales
-  - nationality_equatorial guinea
-  - nationality_estonia
-  - nationality_finland
-  - nationality_france
-  - nationality_francecongo
-  - nationality_francedr congo
-  - nationality_francesenegal
-  - nationality_french guiana
-  - nationality_gabon
-  - nationality_gabonfrance
-  - nationality_germany
-  - nationality_ghana
-  - nationality_ghanaengland
-  - nationality_gibraltarengland
-  - nationality_greece
-  - nationality_grenada
-  - nationality_guadeloupe
-  - nationality_guadeloupefrance
-  - nationality_guyana
-  - nationality_honduras
-  - nationality_iceland
-  - nationality_iran
-  - nationality_ireland
-  - nationality_irelandaustralia
-  - nationality_irelandengland
-  - nationality_israel
-  - nationality_israelitaly
-  - nationality_italy
-  - nationality_jamaica
-  - nationality_jamaicaengland
-  - nationality_japan
-  - nationality_kenya
-  - nationality_korea, south
-  - nationality_kosovo
-  - nationality_latvia
-  - nationality_mali
-  - nationality_malifrance
-  - nationality_mauritania
-  - nationality_mexico
-  - nationality_montenegro
-  - nationality_montenegroswitzerland
-  - nationality_morocco
-  - nationality_netherlands
-  - nationality_netherlandssuriname
-  - nationality_new zealand
-  - nationality_nigeria
-  - nationality_nigeriaengland
-  - nationality_north macedonia
-  - nationality_northern ireland
-  - nationality_norway
-  - nationality_paraguay
-  - nationality_philippines
-  - nationality_poland
-  - nationality_portugal
-  - nationality_portugalbrazil
-  - nationality_romania
-  - nationality_russia
-  - nationality_scotland
-  - nationality_scotlandengland
-  - nationality_scotlandnigeria
-  - nationality_senegal
-  - nationality_senegalfrance
-  - nationality_serbia
-  - nationality_sierra leone
-  - nationality_slovakia
-  - nationality_slovenia
-  - nationality_south africa
-  - nationality_spain
-  - nationality_spainitaly
-  - nationality_st. kitts & nevis
-  - nationality_sweden
-  - nationality_switzerland
-  - nationality_the gambia
-  - nationality_togo
-  - nationality_tunisia
-  - nationality_turkey
-  - nationality_ukraine
-  - nationality_united states
-  - nationality_united statesengland
-  - nationality_united statesnigeria
-  - nationality_united statesscotland
-  - nationality_uruguay
-  - nationality_wales
-  - nationality_walescyprus
-  - nationality_walesengland
-  - nationality_walesjamaica
-  - nationality_zambia
-  - nationality_zimbabwe
+  - nationality_Albania
+  - nationality_Algeria
+  - nationality_Angola
+  - nationality_Antigua and BarbudaEngland
+  - nationality_Argentina
+  - nationality_ArgentinaItaly
+  - nationality_ArgentinaMexico
+  - nationality_Armenia
+  - nationality_Australia
+  - nationality_Austria
+  - nationality_Belgium
+  - nationality_BelgiumCote d'Ivoire
+  - nationality_Benin
+  - nationality_Bosnia-Herzegovina
+  - nationality_Brazil
+  - nationality_BrazilItaly
+  - nationality_Bulgaria
+  - nationality_Burundi
+  - nationality_Cameroon
+  - nationality_CameroonSomalia
+  - nationality_Canada
+  - nationality_Chile
+  - nationality_ChileHaiti
+  - nationality_Colombia
+  - nationality_Costa Rica
+  - nationality_Cote d'Ivoire
+  - nationality_Croatia
+  - nationality_Curacao
+  - nationality_Czech Republic
+  - nationality_DR Congo
+  - nationality_Denmark
+  - nationality_Dominican Republic
+  - nationality_Ecuador
+  - nationality_EcuadorSpain
+  - nationality_Egypt
+  - nationality_England
+  - nationality_EnglandAntigua and Barbuda
+  - nationality_EnglandDR Congo
+  - nationality_EnglandFrance
+  - nationality_EnglandIreland
+  - nationality_EnglandJamaica
+  - nationality_EnglandMontserrat
+  - nationality_EnglandNigeria
+  - nationality_EnglandSeychelles
+  - nationality_EnglandSierra Leone
+  - nationality_EnglandWales
+  - nationality_Equatorial Guinea
+  - nationality_Estonia
+  - nationality_Finland
+  - nationality_France
+  - nationality_FranceCongo
+  - nationality_FranceDR Congo
+  - nationality_FranceSenegal
+  - nationality_French Guiana
+  - nationality_Gabon
+  - nationality_GabonFrance
+  - nationality_Germany
+  - nationality_Ghana
+  - nationality_GibraltarEngland
+  - nationality_Greece
+  - nationality_Grenada
+  - nationality_Guadeloupe
+  - nationality_Guyana
+  - nationality_Honduras
+  - nationality_Iceland
+  - nationality_Iran
+  - nationality_Ireland
+  - nationality_IrelandAustralia
+  - nationality_IrelandEngland
+  - nationality_Israel
+  - nationality_IsraelItaly
+  - nationality_Italy
+  - nationality_Jamaica
+  - nationality_JamaicaEngland
+  - nationality_Japan
+  - nationality_Kenya
+  - nationality_Korea, South
+  - nationality_Kosovo
+  - nationality_Latvia
+  - nationality_Mali
+  - nationality_Mauritania
+  - nationality_Mexico
+  - nationality_Montenegro
+  - nationality_MontenegroSwitzerland
+  - nationality_Morocco
+  - nationality_Netherlands
+  - nationality_New Zealand
+  - nationality_Nigeria
+  - nationality_NigeriaEngland
+  - nationality_North Macedonia
+  - nationality_Northern Ireland
+  - nationality_Norway
+  - nationality_Paraguay
+  - nationality_Philippines
+  - nationality_Poland
+  - nationality_Portugal
+  - nationality_PortugalBrazil
+  - nationality_Romania
+  - nationality_Russia
+  - nationality_Scotland
+  - nationality_ScotlandEngland
+  - nationality_ScotlandNigeria
+  - nationality_Senegal
+  - nationality_SenegalFrance
+  - nationality_Serbia
+  - nationality_Sierra Leone
+  - nationality_Slovakia
+  - nationality_Slovenia
+  - nationality_South Africa
+  - nationality_Spain
+  - nationality_SpainItaly
+  - nationality_St. Kitts & Nevis
+  - nationality_Sweden
+  - nationality_Switzerland
+  - nationality_The Gambia
+  - nationality_Togo
+  - nationality_Tunisia
+  - nationality_Turkey
+  - nationality_Ukraine
+  - nationality_United States
+  - nationality_United StatesEngland
+  - nationality_United StatesNigeria
+  - nationality_United StatesScotland
+  - nationality_Uruguay
+  - nationality_Wales
+  - nationality_WalesEngland
+  - nationality_WalesJamaica
+  - nationality_Zambia
+  - nationality_Zimbabwe
   - position_attack
   - position_defender
   - position_goalkeeper
   - position_midfield
+
+

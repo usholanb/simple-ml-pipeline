@@ -5,6 +5,7 @@ import pandas as pd
 import numpy as np
 from utils.constants import DATA_DIR
 import ast
+from datetime import date
 
 
 def to_log(v):
@@ -74,18 +75,70 @@ def zero_to_mean(h, height_mean):
         return h
 
 
+def get_latest_value(df):
+    # Add latest value
+    d = {}
+    idx_to_drop = set()
+    pl_year_to_index = {}
+    for index, (player_id, year, value) in enumerate(zip(df['playerid'], df['year'],
+                                                         df[target].apply(lambda x: ast.literal_eval(x)).values)):
+        if player_id not in d:
+            d[player_id] = {year: value}
+            pl_year_to_index[(player_id, year)] = index
+        else:
+            if year not in d[player_id]:
+                d[player_id][year] = value
+                pl_year_to_index[(player_id, year)] = index
+            else:
+                print(f'year: {year} again for player {player_id}')
+                idx_to_drop.add(index)
+                idx_to_drop.add(pl_year_to_index[(player_id, year)])
+    df = df.drop(list(idx_to_drop)).reset_index(drop=True)
+
+    d = {}
+    for index, (player_id, year, value) in enumerate(zip(df['playerid'], df['year'],
+                                                         df[target].apply(lambda x: ast.literal_eval(x)).values)):
+        if player_id not in d:
+            d[player_id] = {year: value}
+        else:
+            if year not in d[player_id]:
+                d[player_id][year] = value
+
+    last_values = []
+
+    for index, (player_id, year) in enumerate(zip(df['playerid'], df['year'])):
+        years_before = filter(lambda x: x[0] <= year, d[player_id].items())
+        years_before = sorted(years_before, key=lambda x: x[0])
+        player_values = list(map(lambda y: y[1], years_before))
+
+        player_values = [e for l in player_values for e in l]
+        if len(player_values) > 1:
+            last_values.append(player_values[-2])
+        else:
+            last_values.append(None)
+
+    last_values = pd.DataFrame(last_values)
+    last_values.fillna(last_values[last_values.notna()].median())
+    df['last_values'] = np.log10(last_values)
+
+    return df
+
+
 if __name__ == '__main__':
-    f_name = 'tf_df_v10_shared'
+    f_name = 'tf_df_v10_shared_v2'
     ext = 'xlsx'
     target = '_mv_list'
     df = pd.read_excel(f'{DATA_DIR}/{f_name}.{ext}', sheet_name='data with list columns only')
-    mv_list = df[target].apply(lambda x: ast.literal_eval(x))
+    # mv_list = df[target].apply(lambda x: ast.literal_eval(x))
     df['_mv'] = df[target].apply(lambda x: to_log(get_last(ast.literal_eval(x))))
+    df = get_latest_value(df)
     df['club_id_list'] = df['club_id_list'].apply(lambda x: x.replace('nan', '7777777'))
     df['club_id'] = df['club_id_list'].apply(lambda x: get_last(ast.literal_eval(x)))
     df['club_name_list'] = df['club_name_list'].apply(lambda x: x.replace('nan', "'not_premier'"))
     df['club_name'] = df['club_name_list'].apply(lambda x: get_last(ast.literal_eval(x)))
     df['age'] = df['year'] - df['date_birth'].apply(lambda x: x.year)
+    todays_date = date.today()
+    df['current_age'] = todays_date.year - df['date_birth'].apply(lambda x: x.year)
     df = df[df['date_birth'].notna()]
     df = df[df['foot'].notna()]
     df = df[df['foot'] != 0]
@@ -102,8 +155,8 @@ if __name__ == '__main__':
     df = df[df['field_position'] != '']
     df = df.drop(['club_id_list', 'club_name_list', 'date_birth'], axis=1)
 
-    ### lower strip
-    for c in ['nationality', 'position', 'field_position', 'club_name', 'foot']:
+    # lower strip
+    for c in ['position', 'field_position', 'foot']:
         df[c] = df[c].apply(lambda x: x.lower().strip())
 
     # remove 0
@@ -112,13 +165,16 @@ if __name__ == '__main__':
         df[c] = df[c].apply(lambda x: zero_to_mean(x, c_mean))
 
     # remove -
-    for c in ['field_position', 'position', 'nationality', 'club_name']:
+    for c in ['field_position', 'position']:
         df[c] = df[c].apply(lambda x: ' '.join(
             [e.strip() for e in x.replace('-', ' ').split(' ') if e]))
 
     # remove columns
     for c in ['highest_market_price']:
         df = df.drop(['highest_market_price'], axis=1)
+
+    # remove columns
+    df = df[df['height_in_cm'] > 0]
 
     # remove all where same player, same year, diff clubs - stats are split, not unbiased in terms of time
     to_remove = []
@@ -132,7 +188,7 @@ if __name__ == '__main__':
     for p_id_year, idx in d.items():
         if len(idx) > 1:
             to_remove.extend(idx)
-    df = df.drop(to_remove)
+    df = df.drop(to_remove).reset_index(drop=True)
 
     # fix unique cases field_position
     for curr_fp, curr_p, next_fp, next_p in [
@@ -154,55 +210,35 @@ if __name__ == '__main__':
         df.at[df['position'] == curr_p, 'position'] = next_p
         df.at[df['field_position'] == curr_fp, 'field_position'] = next_fp
 
-    # Add latest value
-    values = df[target].apply(lambda x: ast.literal_eval(x)).values
-    player_ids = df['playerid']
-    years = df['year']
-    d = {}
-    idx_to_drop = []
-    for index, (player_id, year, value) in enumerate(zip(player_ids, years, values)):
-        if player_id not in d:
-            d[player_id] = {year: value}
-        else:
-            if year not in d[player_id]:
-                d[player_id][year] = value
-            else:
-                print(f'year: {year} again for player {player_id}')
-                idx_to_drop.append(index)
-                idx_to_drop.append(index - 1)
 
-    df.drop(idx_to_drop, inplace=True)
-    d = {}
-    values = df[target].apply(lambda x: ast.literal_eval(x)).values
-    player_ids = df['playerid']
-    years = df['year']
-    for index, (player_id, year, value) in enumerate(zip(player_ids, years, values)):
-        if player_id not in d:
-            d[player_id] = {year: value}
-        else:
-            if year not in d[player_id]:
-                d[player_id][year] = value
-            else:
-                print(f'year: {year} again for player {player_id}')
-                idx_to_drop.append(index)
-                idx_to_drop.append(index - 1)
-    last_values = []
-    for player_id, year in zip(player_ids, years):
-        player_values = list([e[-1] for e in map(lambda y: y[1], filter(lambda x: x[0] < year, d[player_id].items()))])
-        if not player_values:
-            last_values.append(None)
-        else:
-            last_values.append(max(player_values))
 
-    last_values = pd.DataFrame(last_values)
-    last_values.fillna(last_values[last_values.notna()].mean())
+    ## fill median
+    idx = df.columns.difference(['Cross_Assists',
+                                 'Corner_Assists',
+                                 'Throughball_Assists',
+                                 'Freekick_Assists',
+                                 'Throwin_Assists',
+                                 'Other_Assists',
+                                 'Total_Assists'
+                                 'Red_Cards',
+                                 'Yellow_Cards',
+                                 'Total_Saves',
+                                 'SixYardBox_Saves',
+                                 'PenaltyArea_Saves',
+                                 'OutOfBox_Saves',
+                                 'OutOfBox_Shots',
+                                 'SixYardBox_Shots',
+                                 'PenaltyArea_Shots',
+                                 ])
+    df.loc[:, idx] = df.loc[:, idx].fillna(df.median())
+    df = df.fillna(0)
+    # divide certain features with "Mins_Aerial"
+    for f in df.columns.tolist():
+        if isinstance(df[f].loc[0], (float, int)) and f != '_mv':
+            df[f'_divided_{f}'] = df[f] / df['Mins_Aerial']
 
-    df['last_values'] = last_values
-
-    ## fill mean
-    df = df.fillna(df.mean())
     ohe_features = ['foot', 'field_position', 'position', 'nationality', 'club_name']
-    no_t_features = ['playerid', 'club_id']
+    no_t_features = ['playerid', 'club_id', 'last_values']
     p_features = []
 
     for feature_name in no_t_features:
@@ -219,6 +255,7 @@ if __name__ == '__main__':
     del p_features['_mv']
     dump_yaml(p_features)
     df = df.drop(['_mv_list'], axis=1)
+    df['_mv_millions'] = 10 ** df['_mv']
     df.to_csv(f'{DATA_DIR}/player_valuation2.csv', index=False)
     print_columns_weird(df)
 
