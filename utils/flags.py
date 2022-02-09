@@ -43,7 +43,8 @@ class PreprocessingFlag(Flags):
         self._parser.add_argument_group("Core Arguments")
         self._parser.add_argument(
             "--config-yml",
-            default=f'{CONFIGS_DIR}/preprocessing_regression.yml',
+            # default=f'{CONFIGS_DIR}/preprocessing_regression.yml',
+            default=f'{CONFIGS_DIR}/preprocessing_regression_no_first_year.yml',
             # default=f'{CONFIGS_DIR}/preprocessing.yml',
             # default=f'{PROJECT_DIR}/example_config_files/preprocessing_example.yml',
         )
@@ -56,13 +57,14 @@ class TrainFlags(Flags):
         self._parser.add_argument(
             "--config-yml",
             # default=f'{CONFIGS_DIR}/train_dagnet_example.yml',
-            # default=f'{CONFIGS_DIR}/train_dense_net_regression.yml',
+            default=f'{CONFIGS_DIR}/train_dense_net_regression.yml',
             # default=f'{PROJECT_DIR}/example_config_files/train_dense_net_example.yml',
             # default=f'{PROJECT_DIR}/example_config_files/train_logistic_regression_example.yml',
             # default=f'{PROJECT_DIR}/example_config_files/train_xgboost_example.yml',
             # default=f'{PROJECT_DIR}/example_config_files/train_dagnet_example.yml',
+
             # default=f'{CONFIGS_DIR}/train_xgboost_regression.yml',
-            default=f'{CONFIGS_DIR}/train_rf_regression.yml',
+            # default=f'{CONFIGS_DIR}/train_rf_regression.yml',
             # default=f'{CONFIGS_DIR}/train_linear_regression.yml',
             # default=f'{CONFIGS_DIR}/train_dense_net.yml',
             help="path to config file starting from project home path",

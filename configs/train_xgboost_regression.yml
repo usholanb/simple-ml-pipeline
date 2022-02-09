@@ -3,7 +3,7 @@ includes:
 
 
 dataset:
-  input_path: processed_data/player_valuation2
+  input_path: processed_data/player_valuation2_no_first_year
   label_type: regression
 
 

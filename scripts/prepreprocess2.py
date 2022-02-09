@@ -205,7 +205,7 @@ if __name__ == '__main__':
     df = get_club_standing(df)
 
     # remove first season
-    # df = remove_first_year(df)
+    df = remove_first_year(df)
 
     # lower strip
     for c in ['position', 'field_position', 'foot']:
@@ -228,8 +228,6 @@ if __name__ == '__main__':
     # remove columns
     df = df[df['height_in_cm'] > 0]
 
-
-
     # fix unique cases field_position
     for curr_fp, curr_p, next_fp, next_p in [
         ['attack centre forward', 'centre forward', 'centre forward', 'attack'],
@@ -249,8 +247,6 @@ if __name__ == '__main__':
     ]:
         df.at[df['position'] == curr_p, 'position'] = next_p
         df.at[df['field_position'] == curr_fp, 'field_position'] = next_fp
-
-
 
     ## fill mean
     idx = df.columns.difference(['Cross_Assists',
@@ -296,6 +292,6 @@ if __name__ == '__main__':
     dump_yaml(p_features)
     df = df.drop(['_mv_list'], axis=1).reset_index(drop=True)
     df['_mv_millions'] = 10 ** df['_mv']
-    df.to_csv(f'{DATA_DIR}/player_valuation2.csv', index=False)
+    df.to_csv(f'{DATA_DIR}/player_valuation2_no_first_year.csv', index=False)
     print_columns_weird(df)
 

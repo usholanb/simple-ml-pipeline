@@ -25,9 +25,9 @@ plots:
 
 
 models:
-  with_first_year_rf: random_forest_regressor
-  with_first_year: xgb_regressor
-#  no_first_year: xgb_regressor
+#  with_first_year_rf: random_forest_regressor
+#  with_first_year: xgb_regressor
+  no_first_year: xgb_regressor
 #  uan4: random_forest_regressor
 
 
