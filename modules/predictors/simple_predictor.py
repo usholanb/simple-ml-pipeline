@@ -86,6 +86,7 @@ class SimplePredictor(BasePredictor):
         for split_name in self.configs.get('splits', []):
             sc_i = len(self.configs.get('static_columns'))
             split = data[data['split'] == split_name]
+            model_name_tags = []
             for model_path, model_name_tag in self.yield_model_path():
                 preds = preds_ys[model_name_tag][split_name][f'{split_name}_preds']
                 sc_i = insert_into_df(split, sc_i, model_name_tag, preds)
@@ -94,8 +95,8 @@ class SimplePredictor(BasePredictor):
                 p = 10 ** preds
                 percentage_diff = np.stack((t / p, p / t), axis=1).max(axis=1).round(2)
                 sc_i = insert_into_df(split, sc_i, f'{model_name_tag}_percentage_diff', percentage_diff)
-                yield split, split_name, model_path, model_name_tag
-
+                model_name_tags.append(model_name_tag)
+            yield split, split_name, model_name_tags
 
     def get_prediction_name(self, split_name):
         tag = self.configs.get('dataset').get('tag', '')
@@ -103,7 +104,7 @@ class SimplePredictor(BasePredictor):
         return f'{self.pred_dir}/predictions_{split_name}{tag}'
 
     def save_predictions(self, preds_ys):
-        for split, split_name, model_path, model_name_tag in self.get_split_with_pred(preds_ys):
+        for split, split_name, model_name_tags in self.get_split_with_pred(preds_ys):
             CSVSaver.save_file(self.get_prediction_name(split_name), split, gzip=True, index=False)
 
     def save_graphs(self, output_dataset: Dict) -> None:

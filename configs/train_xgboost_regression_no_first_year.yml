@@ -3,7 +3,7 @@ includes:
 
 
 dataset:
-  input_path: processed_data/player_valuation2
+  input_path: processed_data/player_valuation2_no_first_year
   label_type: regression
 
 
@@ -230,18 +230,13 @@ features_list:
   - foot_both
   - foot_left
   - foot_right
-  - nationality_Albania
   - nationality_Algeria
   - nationality_Angola
-  - nationality_Antigua and BarbudaEngland
   - nationality_Argentina
-  - nationality_ArgentinaItaly
-  - nationality_ArgentinaMexico
   - nationality_Armenia
   - nationality_Australia
   - nationality_Austria
   - nationality_Belgium
-  - nationality_BelgiumCote d'Ivoire
   - nationality_Benin
   - nationality_Bosnia-Herzegovina
   - nationality_Brazil
@@ -252,7 +247,6 @@ features_list:
   - nationality_CameroonSomalia
   - nationality_Canada
   - nationality_Chile
-  - nationality_ChileHaiti
   - nationality_Colombia
   - nationality_Costa Rica
   - nationality_Cote d'Ivoire
@@ -261,72 +255,53 @@ features_list:
   - nationality_Czech Republic
   - nationality_DR Congo
   - nationality_Denmark
-  - nationality_Dominican Republic
   - nationality_Ecuador
-  - nationality_EcuadorSpain
   - nationality_Egypt
   - nationality_England
   - nationality_EnglandAntigua and Barbuda
   - nationality_EnglandDR Congo
-  - nationality_EnglandFrance
   - nationality_EnglandIreland
   - nationality_EnglandJamaica
   - nationality_EnglandMontserrat
   - nationality_EnglandNigeria
-  - nationality_EnglandSeychelles
   - nationality_EnglandSierra Leone
   - nationality_EnglandWales
-  - nationality_Equatorial Guinea
   - nationality_Estonia
   - nationality_Finland
   - nationality_France
-  - nationality_FranceCongo
-  - nationality_FranceDR Congo
   - nationality_FranceSenegal
   - nationality_French Guiana
   - nationality_Gabon
-  - nationality_GabonFrance
   - nationality_Germany
   - nationality_Ghana
   - nationality_GibraltarEngland
   - nationality_Greece
-  - nationality_Grenada
-  - nationality_Guadeloupe
   - nationality_Guyana
   - nationality_Honduras
   - nationality_Iceland
   - nationality_Iran
   - nationality_Ireland
-  - nationality_IrelandAustralia
   - nationality_IrelandEngland
   - nationality_Israel
   - nationality_IsraelItaly
   - nationality_Italy
   - nationality_Jamaica
-  - nationality_JamaicaEngland
   - nationality_Japan
   - nationality_Kenya
   - nationality_Korea, South
-  - nationality_Kosovo
-  - nationality_Latvia
   - nationality_Mali
   - nationality_Mauritania
   - nationality_Mexico
   - nationality_Montenegro
-  - nationality_MontenegroSwitzerland
   - nationality_Morocco
   - nationality_Netherlands
   - nationality_New Zealand
   - nationality_Nigeria
   - nationality_NigeriaEngland
-  - nationality_North Macedonia
   - nationality_Northern Ireland
   - nationality_Norway
-  - nationality_Paraguay
-  - nationality_Philippines
   - nationality_Poland
   - nationality_Portugal
-  - nationality_PortugalBrazil
   - nationality_Romania
   - nationality_Russia
   - nationality_Scotland
@@ -340,8 +315,6 @@ features_list:
   - nationality_Slovenia
   - nationality_South Africa
   - nationality_Spain
-  - nationality_SpainItaly
-  - nationality_St. Kitts & Nevis
   - nationality_Sweden
   - nationality_Switzerland
   - nationality_The Gambia
@@ -350,9 +323,6 @@ features_list:
   - nationality_Turkey
   - nationality_Ukraine
   - nationality_United States
-  - nationality_United StatesEngland
-  - nationality_United StatesNigeria
-  - nationality_United StatesScotland
   - nationality_Uruguay
   - nationality_Wales
   - nationality_WalesEngland

@@ -84,13 +84,15 @@ class PlayerValuationPredictor(SimplePredictor):
         threshold = len(self.configs.get('static_columns')) + 2
         diff, names = [], []
         if 'train' in split_name_to_split:
-            train, _, _ = split_name_to_split['train']
+            train, _ = split_name_to_split['train']
             label = split.columns.tolist()[self.configs.get('static_columns').get('FINAL_LABEL_INDEX')]
             for i in range(len(split)):
-                mv = 10 ** split[model_name_tag].iloc[i]
-                sim_train_rows = train[(10 ** train[label] < mv * 1.1) & (10 ** train[label] > mv * 0.9)]
+                value_in_train = 10 ** split[model_name_tag].iloc[i]
+                sim_train_rows = train[(10 ** train[label] < value_in_train * 1.1) &
+                                       (10 ** train[label] > value_in_train * 0.9)]
                 if len(sim_train_rows) == 0:
-                    sim_train_rows = train[(10 ** train[label] < mv * 1.2) & (10 ** train[label] > mv * 0.8)]
+                    sim_train_rows = train[(10 ** train[label] < value_in_train * 1.2) &
+                                           (10 ** train[label] > value_in_train * 0.8)]
                 train_mean = sim_train_rows.iloc[:, threshold:].mean()
                 diff.append(train_mean - split.iloc[i, threshold:])
                 names.append(', '.join([str(e) for e in sim_train_rows['playerid']]))
@@ -100,25 +102,30 @@ class PlayerValuationPredictor(SimplePredictor):
             if self.configs.get('feature_importance', {}) and len(diff):
                 diff = diff[self.get_f_list_order()]
             pred_again = split[[model_name_tag]]
-            _mv_millions = round(split[['_mv_millions']] / 1e6, 2)
+
             diff = cat_pandas([perc, split[['_mv']],
-                              pred_again, _mv_millions,
+                              pred_again,
                               names, diff.round(2)])
-            CSVSaver.save_file(self.get_prediction_name(f'{split_name}_diff_train'), diff, gzip=True, index=False)
+            CSVSaver.save_file(self.get_prediction_name(f'{split_name}_{model_name_tag}_diff_train'), diff, gzip=True, index=False)
 
     def save_predictions(self, preds_ys):
         split_name_to_split = {}
-        for split, split_name, model_path, model_name_tag in self.get_split_with_pred(preds_ys):
-            split_name_to_split[split_name] = split, model_path, model_name_tag
+        for split, split_name, model_name_tags in self.get_split_with_pred(preds_ys):
+            split_name_to_split[split_name] = split, model_name_tags
 
-        for split_name, (split, model_path, model_name_tag) in split_name_to_split.items():
+        for split_name, (split, model_name_tags) in split_name_to_split.items():
+            perc_list = []
             mv = 10 ** split['_mv'].values
-            pred = 10 ** split[model_name_tag].values
-            t_p = np.stack([mv / pred, pred / mv], axis=1)
-            perc = t_p.max(axis=1)
-            perc = pd.DataFrame(perc, columns=['larger / smaller'])
-            self.make_diff_file(split_name_to_split, split, split_name, model_name_tag, perc)
-
+            for model_name_tag in model_name_tags:
+                pred = 10 ** split[model_name_tag].values
+                t_p = np.stack([mv / pred, pred / mv], axis=1)
+                perc = t_p.max(axis=1)
+                perc = pd.DataFrame(perc, columns=[f'{model_name_tag} larger / smaller'])
+                perc_list.append(perc)
+                self.make_diff_file(split_name_to_split, split, split_name, model_name_tag, perc)
+            perc_list = cat_pandas(perc_list)
+            playerid = split[['playerid']]
             CSVSaver.save_file(self.get_prediction_name(split_name),
-                cat_pandas([split[['_mv']], split[[model_name_tag]], perc, split[self.get_f_list_order()]]),
+                               cat_pandas([split[['_mv']], split[model_name_tags], perc_list,
+                                           playerid, split[self.get_f_list_order()]]),
                                gzip=True, index=False)

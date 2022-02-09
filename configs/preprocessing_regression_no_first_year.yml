@@ -6,7 +6,7 @@ reader:
   name: csv_reader  # csv_reader current alternatives: xlsx_reader, xlsm_reader. More can be implemented
   sheet_name: Worksheet  # needed only for excel type files
   label_type: regression  # classification or regression
-  input_path: data/player_valuation2
+  input_path: data/player_valuation2_no_first_year
   limit: null
   # index or name of the labels column in the input data
   label: _mv
@@ -159,4 +159,5 @@ features_list:
   _divided_age: [standard_scaler]
   _divided_current_age: [standard_scaler]
   _divided_last_values: [standard_scaler]
+
 
