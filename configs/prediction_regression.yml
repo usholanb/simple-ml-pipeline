@@ -25,14 +25,10 @@ plots:
 
 
 models:
-#  uan: dense_net_regression
-#  adam: dense_net_regression
-#  linear: linear_regression
-  uan3: xgb_regressor
-#  small: xgb_regressor
-#  uan4: linear_regression
-#  uan3k_fold1: xgb_regressor
-#  uan3k_fold0: xgb_regressor
+  with_first_year_rf: random_forest_regressor
+  with_first_year: xgb_regressor
+#  no_first_year: xgb_regressor
+#  uan4: random_forest_regressor
 
 
 metrics: [mse, r2]

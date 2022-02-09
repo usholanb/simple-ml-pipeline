@@ -8,27 +8,14 @@ dataset:
 
 
 model:
-  name: xgboost.XGBRegressor
-  tag: with_first_year
+  name: sklearn.ensemble.RandomForestRegressor
+  tag: with_first_year_rf
 
 # inputs go to __init__ of the model (sklearn xgboost model in this case)
-#special_inputs:
-#  n_estimators: 100
-#  max_depth: 4
-#  gamma: .03
-#  num_parallel_tree:  16
-#  learning_rate: 0.5
-#  subsample: .9
-#  colsample_bytree: 1.
-
 special_inputs:
-  n_estimators: 500
-  max_depth: 4
-  gamma: .03
-  num_parallel_tree:  16
-  learning_rate: 0.5
-  subsample: .9
-  colsample_bytree: 1.
+  n_estimators: 1000
+  max_depth: 8
+
 
 trainer:
   name: sklearn_trainer
@@ -363,6 +350,3 @@ features_list:
   - position_defender
   - position_goalkeeper
   - position_midfield
-
-
-
