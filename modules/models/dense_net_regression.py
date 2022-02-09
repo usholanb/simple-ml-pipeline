@@ -26,7 +26,7 @@ class DenseNetRegressions(DefaultModel):
         x = data['x']
         for i, layer in enumerate(self.layers[:-1]):
             x = layer(x)
-            if self.batchnorms:
+            if self.batchnorms and i in self.batchnorms:
                 x = self.batchnorms[i](x)
             x = F.relu(x)
             if hasattr(self, 'drop_layer'):

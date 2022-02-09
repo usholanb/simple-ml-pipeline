@@ -75,7 +75,7 @@ class DefaultModel(nn.Module, BaseModel):
         batch_norms = []
         if hasattr(self, 'batchnorm') and getattr(self, 'batchnorm'):
             print('adding batchnorm layers to the NN')
-            index = 1
+            index = 0
             layers_sizes = getattr(self, 'layers_sizes', [10, 10, 10])
             if len(layers_sizes) > 0:
                 for layer_size in layers_sizes[:-1]:

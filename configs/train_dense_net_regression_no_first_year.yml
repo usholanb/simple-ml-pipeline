@@ -9,14 +9,14 @@ dataset:
   data_loaders:
 
     train:
-      batch_size: 424
+      batch_size: 256
       shuffle: true
       num_workers: 4
       multiprocessing_context: spawn
       pin_memory: true
 
     valid:
-      batch_size: 53
+      batch_size: 64
       shuffle: false
       num_workers: 4
       multiprocessing_context: spawn
@@ -32,18 +32,18 @@ dataset:
 
 model:
   name: dense_net_regression
-  tag: uan
+  tag: no_first_year
 
 
 # must be same names as parameters of the actual optimizer
 optim:
-  lr: 0.01
-  weight_decay: 0.001
+  lr:  0.001
+  weight_decay: 0.01
 
 # this inputs will go to your specific model __init__
 special_inputs:
-  layers_sizes: [[20, 20]]
-  input_dim: 49
+  layers_sizes: [[100, 100]]
+  input_dim: 284
   n_outputs: 1
 
 
@@ -52,11 +52,11 @@ trainer:
   optim: Adam
   loss: MSELoss
   save: 1
-  epochs: 100
-  log_valid_every: 25
+  epochs: 300
+  log_valid_every: 50
   tune:
     resources_per_trial:
-      cpu: 3
+      cpu: 8
       gpu: 0
 
   checkpoint_metric:

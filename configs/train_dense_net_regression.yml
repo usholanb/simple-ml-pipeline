@@ -37,14 +37,16 @@ model:
 
 # must be same names as parameters of the actual optimizer
 optim:
-  lr: 0.01
-  weight_decay: 0.001
+  lr: 0.001
+  weight_decay: 0.01
 
 # this inputs will go to your specific model __init__
 special_inputs:
-  layers_sizes: [[20, 20]]
-  input_dim: 49
+  layers_sizes: [[20, 20], [100, 100], [100], [500], [30, 30, 30], [100, 100, 100], [20, 20, 20], [50, 50], [50, 50, 50]]
+  input_dim: 314
   n_outputs: 1
+  batchnorm: [true, false]
+  dropout: [0.5, 0.2, 0.8]
 
 
 trainer:
