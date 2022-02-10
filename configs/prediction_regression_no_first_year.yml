@@ -4,7 +4,7 @@ includes:
 predictor: player_valuation_predictor
 
 dataset:
-  input_path: processed_data/player_valuation2
+  input_path: processed_data/player_valuation2_no_first_year
 
 
 print_important_features: true
@@ -25,9 +25,9 @@ plots:
 
 
 models:
-#  with_first_year_xgb: xgb_regressor
-#  with_first_year_lr: linear_regression
-  with_first_year_net: dense_net_regression
+#  no_first_year_xgb: xgb_regressor
+#  no_first_year_lr: linear_regression
+  no_first_year_net: dense_net_regression
 
 
 metrics: [mse, r2]

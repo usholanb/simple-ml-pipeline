@@ -44,6 +44,7 @@ class SimplePredictor(BasePredictor):
             model_name_tag = f'{model_name}_{tag}{k_fold_tag}'
             model_path = f'{CLASSIFIERS_DIR}/{model_name_tag}.pkl'
             wrapper = unpickle_obj(model_path)
+            wrapper.device = self.device
             model_results[model_name_tag] = \
                 wrapper.predict_dataset(self.configs, self.split_names)
         return model_results
