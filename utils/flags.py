@@ -63,10 +63,10 @@ class TrainFlags(Flags):
             # default=f'{PROJECT_DIR}/example_config_files/train_xgboost_example.yml',
             # default=f'{PROJECT_DIR}/example_config_files/train_dagnet_example.yml',
 
-            default=f'{CONFIGS_DIR}/train_dense_net_regression.yml',
+            # default=f'{CONFIGS_DIR}/train_dense_net_regression.yml',
             # default=f'{CONFIGS_DIR}/train_dense_net_regression_no_first_year.yml',
             # default=f'{CONFIGS_DIR}/train_xgboost_regression_no_first_year.yml',
-            # default=f'{CONFIGS_DIR}/train_xgboost_regression.yml',
+            default=f'{CONFIGS_DIR}/train_xgboost_regression.yml',
             # default=f'{CONFIGS_DIR}/train_rf_regression.yml',
             # default=f'{CONFIGS_DIR}/train_linear_regression.yml',
             # default=f'{CONFIGS_DIR}/train_dense_net.yml',

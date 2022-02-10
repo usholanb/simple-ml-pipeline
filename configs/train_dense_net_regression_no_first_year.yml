@@ -3,7 +3,7 @@ includes:
 
 
 dataset:
-  input_path: processed_data/player_valuation2
+  input_path: processed_data/player_valuation2_no_first_year
   label_type: regression
 
   data_loaders:
@@ -42,7 +42,7 @@ optim:
 
 # this inputs will go to your specific model __init__
 special_inputs:
-  layers_sizes: [[100, 100]]
+  layers_sizes: [[100]]
   input_dim: 284
   n_outputs: 1
 
