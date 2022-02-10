@@ -125,7 +125,9 @@ class PlayerValuationPredictor(SimplePredictor):
                 self.make_diff_file(split_name_to_split, split, split_name, model_name_tag, perc)
             perc_list = cat_pandas(perc_list)
             playerid = split[['playerid']]
+            if self.configs.get('feature_importance', {}):
+                split = split[self.get_f_list_order()]
             CSVSaver.save_file(self.get_prediction_name(split_name),
                                cat_pandas([split[['_mv']], split[model_name_tags], perc_list,
-                                           playerid, split[self.get_f_list_order()]]),
+                                           playerid, split]),
                                gzip=True, index=False)

@@ -8,34 +8,19 @@ dataset:
 
 
 model:
-  name: xgboost.XGBRegressor
+  name: sklearn.linear_model.LinearRegression
   tag: no_first_year
 
 # inputs go to __init__ of the model (sklearn xgboost model in this case)
-#special_inputs:
-#  n_estimators: 100
-#  max_depth: 4
-#  gamma: .03
-#  num_parallel_tree:  16
-#  learning_rate: 0.5
-#  subsample: .9
-#  colsample_bytree: 1.
-
 special_inputs:
-  n_estimators: 500
-  max_depth: 4
-  gamma: .03
-  num_parallel_tree:  16
-  learning_rate: 0.5
-  subsample: .9
-  colsample_bytree: 1.
+  positive: true
 
 trainer:
   name: sklearn_trainer
   save: 1
   tune:
     resources_per_trial:
-      cpu: 7
+      cpu: 1
       gpu: 0
     max_concurrent_trials: 54
 
@@ -43,7 +28,8 @@ trainer:
     name: valid_mse
     mode: min
 
-metrics: [mse, r2]
+metrics: [mse]
+
 
 
 features_list:
@@ -333,6 +319,3 @@ features_list:
   - position_defender
   - position_goalkeeper
   - position_midfield
-
-
-

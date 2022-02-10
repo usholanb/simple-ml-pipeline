@@ -64,6 +64,12 @@ class SKLearnWrapper(DefaultWrapper):
             split_x = split.iloc[:, len(const):]
             preds = self.get_prediction_probs(split_x)
 
+            # print(type(preds), split_name, (preds == 0).any(), (10**preds == 0).any())
+            # idx = np.where(10**preds == 0)[0]
+            # if split_name == 'test' and len(idx) > 0:
+            #     print(preds[idx])
+            #     exit()
+
             splits[split_name] = {f'{split_name}_preds': preds,
                                   f'{split_name}_ys': split_y}
         return splits
