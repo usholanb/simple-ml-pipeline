@@ -32,7 +32,7 @@ dataset:
 
 model:
   name: dense_net_regression
-  tag: uan
+  tag: with_first_year_net
 
 
 # must be same names as parameters of the actual optimizer

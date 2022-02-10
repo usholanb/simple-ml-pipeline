@@ -9,7 +9,7 @@ dataset:
 
 model:
   name: xgboost.XGBRegressor
-  tag: with_first_year
+  tag: with_first_year_xgb
 
 # inputs go to __init__ of the model (sklearn xgboost model in this case)
 #special_inputs:

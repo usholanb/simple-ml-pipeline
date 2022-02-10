@@ -9,7 +9,7 @@ dataset:
 
 model:
   name: xgboost.XGBRegressor
-  tag: no_first_year
+  tag: no_first_year_xgb
 
 # inputs go to __init__ of the model (sklearn xgboost model in this case)
 #special_inputs:
@@ -22,7 +22,7 @@ model:
 #  colsample_bytree: 1.
 
 special_inputs:
-  n_estimators: 500
+  n_estimators: 100
   max_depth: 4
   gamma: .03
   num_parallel_tree:  16

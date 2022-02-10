@@ -9,7 +9,7 @@ dataset:
 
 model:
   name: sklearn.linear_model.LinearRegression
-  tag: no_first_year
+  tag: no_first_year_lr
 
 # inputs go to __init__ of the model (sklearn xgboost model in this case)
 special_inputs:
