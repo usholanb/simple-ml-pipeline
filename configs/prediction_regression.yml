@@ -17,17 +17,17 @@ splits:
 
 plots:
   steps_func:
-    - get_abs_diff
-    - get_abs_mean_fraction_true_minus_pred_over_true
+#    - get_abs_diff
+#    - get_abs_mean_fraction_true_minus_pred_over_true
     - get_mean_fraction_true_minus_pred_over_true
-    - get_rmse
+#    - get_rmse
     - get_mean_fraction_larger_over_smaller
 
 
 models:
-#  with_first_year_xgb: xgb_regressor
+  with_first_year_xgb: xgb_regressor
 #  with_first_year_lr: linear_regression
-  with_first_year_net: dense_net_regression
+#  with_first_year_net: dense_net_regression
 
 
 metrics: [mse, r2]
