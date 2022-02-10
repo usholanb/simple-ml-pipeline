@@ -22,13 +22,13 @@ model:
 #  colsample_bytree: 1.
 
 special_inputs:
-  n_estimators: [100, 250, 500, 100]
-  max_depth: [1,2,3,4]
+  n_estimators: 250
+  max_depth: 2
   gamma: .03
   num_parallel_tree:  16
   learning_rate: 0.5
-  subsample: [.9, 0.8, 0.7, 1.]
-  colsample_bytree: [1., 0.8]
+  subsample: .9
+  colsample_bytree: 0.8
 
 trainer:
   name: sklearn_trainer
