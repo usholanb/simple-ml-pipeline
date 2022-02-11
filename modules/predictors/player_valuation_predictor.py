@@ -128,7 +128,7 @@ class PlayerValuationPredictor(SimplePredictor):
             if self.configs.get('feature_importance', {}):
                 split_only_features = split[self.get_f_list_order()]
             else:
-                split_only_features = split[list(set(split.columns) - {'_mv', model_name_tags, 'playerid'})]
+                split_only_features = split[list(set(split.columns) - {'_mv', *model_name_tags, 'playerid'})]
             CSVSaver.save_file(self.get_prediction_name(split_name),
                                cat_pandas([split[['_mv']], split[model_name_tags], perc_list,
                                            playerid, split_only_features]),

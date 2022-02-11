@@ -42,7 +42,7 @@ optim:
 
 # this inputs will go to your specific model __init__
 special_inputs:
-  layers_sizes: [[100]]
+  layers_sizes: [[200, 200]]
   input_dim: 314
   n_outputs: 1
   batchnorm: false

@@ -25,9 +25,9 @@ plots:
 
 
 models:
-  with_first_year_xgb: xgb_regressor
+#  with_first_year_xgb: xgb_regressor
 #  with_first_year_lr: linear_regression
-#  with_first_year_net: dense_net_regression
+  with_first_year_net: dense_net_regression
 
 
 metrics: [mse, r2]
