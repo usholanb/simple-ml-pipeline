@@ -1,0 +1,31 @@
+includes:
+  - configs/constant_configs.yml
+
+
+
+
+reader:
+  name: csv_reader
+  label_type: classification  # classification or regression
+#  input_path:
+#    train: data/toy_dataset.csv
+#    test: data/toy_dataset2.csv
+  input_path: data/iris.csv
+  # index or name of the labels column in the input data
+  label: -1
+  shuffle: 1 # can be (0, false null) OR (anything else, which means true)
+   # if "split_ratio" doesn't sum to 1, then valid + test will be 1 - train
+  split_ratio:
+    train: 0.8
+    valid: 0.1
+    test: 0.1
+
+
+
+#Pick Transformers(defined in modules/transformers/) or create your own
+#defined: norm, ohe
+features_list:
+  sepal width (cm): [norm]
+  petal length (cm): norm
+  petal width (cm): norm
+  sepal length (cm): norm
