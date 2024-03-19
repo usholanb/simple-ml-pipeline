@@ -1,6 +1,6 @@
 # Simple ML Pipeline
 
-CMLF is a Python framework to speed up the ML process starting from dataset collection and preprocessing to training and prediction
+Simple ML Pipeline is a Python framework to speed up the ML process starting from dataset collection and preprocessing to training and prediction
 
 ## Installation
 
