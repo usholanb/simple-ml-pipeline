@@ -293,6 +293,12 @@ class Timeit:
     original_start = None
 
     def __init__(self, to_print, iter, iter_n=0, every=1):
+        """
+        :param to_print:
+        :param iter: this iteration
+        :param iter_n: total number of iteration
+        :param every: time it every certain iteration
+        """
         self.iter = iter
         self.every = every
         self.start = None

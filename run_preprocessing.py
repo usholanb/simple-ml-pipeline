@@ -3,7 +3,7 @@ This script utilizes one of the readers and processes the data converting
 it to gz
 
 input reader is in data/ folder or/and from remote server
-output reader is is processed_data/ folder
+output reader is processed_data/ folder
 """
 from modules.helpers.csv_saver import CSVSaver
 from utils.common import build_config, setup_imports, setup_directories
