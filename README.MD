@@ -1,4 +1,4 @@
-# Experimentation ML Pipeline
+# Simple ML Pipeline
 
 Python framework to speed up the ML process starting from dataset collection and preprocessing to training and prediction
 
